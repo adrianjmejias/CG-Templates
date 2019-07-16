@@ -18,7 +18,7 @@ IncludeDir["SDL"] = "dependencies/SDL/include"
 
 group "Dependencies"
 	include "dependencies/Glad"
-	-- include "dependencies/SDL2"
+	include "dependencies/nuklear"
 group ""
 
 project "PressF"
@@ -33,7 +33,9 @@ project "PressF"
       "%{prj.name}/src/**.h",
       "%{prj.name}/src/**.cpp",
       "dependencies/glm/glm/**.hpp",
-      "dependencies/glm/glm/**.inl"
+      "dependencies/glm/glm/**.inl",
+      -- "dependencies/nuklear/src/**.h",
+      -- "dependencies/nuklear/src/**.c"
    }
 
    includedirs {
@@ -56,8 +58,10 @@ project "PressF"
    links {
       "Glad",
       "SDL2",
+      "nuklear"
    }
 
+   -- linkoptions { "``" }
    -- prebuildcommands { "MyTool --dosomething" }
 
    filter "configurations:Debug"

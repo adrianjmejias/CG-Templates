@@ -28,9 +28,18 @@
     <Filter Include="dependencies\glm\glm\gtx">
       <UniqueIdentifier>{0C6E722F-F892-C1AF-21DE-A63F0D62C0CD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dependencies\nuklear">
+      <UniqueIdentifier>{CD6C5FE0-B9FB-E8A9-621A-FDA44E88F94F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dependencies\nuklear\src">
+      <UniqueIdentifier>{64C9CEA8-50EE-1D29-7939-03B965BD1C47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PressF\src\main.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\glm\glm\common.hpp">
@@ -1137,10 +1146,136 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="dependencies\nuklear\src\nuklear.h">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies\nuklear\src\nuklear_internal.h">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\main.cpp">
       <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_buffer.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_button.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_chart.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_color.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_color_picker.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_combo.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_context.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_contextual.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_draw.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_edit.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_font.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_group.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_image.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_input.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_layout.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_list_view.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_math.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_menu.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_page_element.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_panel.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_pool.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_popup.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_progress.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_property.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_scrollbar.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_selectable.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_slider.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_string.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_style.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_table.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_text.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_text_editor.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_toggle.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_tooltip.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_tree.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_utf8.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_util.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_vertex.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_widget.c">
+      <Filter>dependencies\nuklear\src</Filter>
+    </ClCompile>
+    <ClCompile Include="dependencies\nuklear\src\nuklear_window.c">
+      <Filter>dependencies\nuklear\src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -78,7 +78,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear\src;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -95,7 +95,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear\src;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -115,7 +115,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear\src;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -127,6 +127,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PressF\src\main.h" />
+    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h" />
     <ClInclude Include="dependencies\glm\glm\common.hpp" />
     <ClInclude Include="dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="dependencies\glm\glm\detail\_fixes.hpp" />
@@ -495,13 +496,58 @@
     <ClInclude Include="dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="dependencies\nuklear\src\nuklear.h" />
+    <ClInclude Include="dependencies\nuklear\src\nuklear_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\main.cpp" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_buffer.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_button.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_chart.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_color.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_color_picker.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_combo.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_context.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_contextual.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_draw.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_edit.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_font.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_group.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_image.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_input.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_layout.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_list_view.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_math.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_menu.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_page_element.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_panel.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_pool.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_popup.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_progress.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_property.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_scrollbar.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_selectable.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_slider.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_string.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_style.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_table.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_text.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_text_editor.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_toggle.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_tooltip.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_tree.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_utf8.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_util.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_vertex.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_widget.c" />
+    <ClCompile Include="dependencies\nuklear\src\nuklear_window.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="dependencies\nuklear\nuklear.vcxproj">
+      <Project>{577BFE2F-C35A-7DCB-CC72-08A238D1E32C}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
