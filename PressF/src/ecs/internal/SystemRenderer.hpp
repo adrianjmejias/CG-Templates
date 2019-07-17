@@ -120,7 +120,7 @@ public:
 				
 				switch (l->type)
 				{
-				case LightType::DIRECTIONAL :
+				case LightType::DIRECTIONAL:
 					name = "directionals[" + std::string(buff) + "]";
 					shader.setVec3(name+".direction", l->direction);
 					shader.setBool(name + ".isOn", l->isOn);

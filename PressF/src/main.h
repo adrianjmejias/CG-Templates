@@ -68,10 +68,11 @@
 * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
 * done with this library. To try out an example uncomment the defines */
-#define INCLUDE_ALL 
+//#define INCLUDE_ALL 
 /*#define INCLUDE_STYLE */
+#define INCLUDE_OVERVIEW
+
 /*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_OVERVIEW */
 /*#define INCLUDE_NODE_EDITOR */
 
 #ifdef INCLUDE_ALL
@@ -105,6 +106,20 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+
+#define COMP_PARAMS GameObject &o, Transform &t
+#define INIT_COMP(n) :Component(o,t, n)
+#define PF_NK(a) a ? NK_MAXIMIZED: NK_MINIMIZED
+/* Platform */
+SDL_Window *win;
+SDL_GLContext glContext;
+int win_width, win_height;
+int running = 1;
+
+/* GUI */
+
+struct nk_context *ctx;
+struct nk_colorf bg;
 
 #pragma region Types
 
@@ -152,18 +167,18 @@ public:
 
 class Component {
 public:
-	bool enabled = true;
+	std::string name;
+	int openUI = true;
+	int enabled = true;
 	Transform &transform;
 	GameObject &gameobject;
 
-	Component(GameObject &o, Transform &t) :
-		transform(t),
-		gameobject(o)
+	Component(GameObject &o, Transform &t, const std::string n) : transform(t), gameobject(o)
 	{
-
+		name = n;
 	}
 
-	void UI() {
+	virtual void UI() {
 
 	}
 
@@ -185,6 +200,7 @@ public:
 	bool isDirty = true;
 
 	Mat4& GetModel() {
+		model = Mat4(1);
 		model = glm::rotate(model, rotation.x, { 1,0,0 });
 		model = glm::rotate(model, rotation.y, { 0,1,0 });
 		model = glm::rotate(model, rotation.z, { 0,0,1 });
@@ -198,25 +214,45 @@ class GameObject {
 	std::list<Component*> components;
 	
 public:
+	int openUI = false;
 	Transform transform;
-
-	GameObject(): transform(*this) {
-
+	std::string name;
+	GameObject(std::string n): transform(*this) {
+		name = n;
 	}
 	void Update() {
 		for each (auto comp in components)
 		{
-			//PF_ASSERT(comp && "");
-
+			PF_ASSERT(comp && "COMPONENT IS NULL");
 			if (comp->enabled) {
 				comp->Update();
 			}
 		}
 	}
 	void UI() {
-		for each (auto comp in components)
-		{
-			comp->UI();
+
+		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), PF_NK(openUI))) {
+			
+				
+
+
+			for each (auto comp in components)
+			{
+				PF_ASSERT(comp && "component is null");
+
+				if (nk_group_begin(ctx, comp->name.data(), 
+					NK_WINDOW_TITLE  |
+					NK_WINDOW_BORDER
+				)) {
+
+					nk_checkbox_label(ctx, comp->name.data(), &comp->enabled);
+					nk_group_end(ctx);
+				}
+
+				comp->UI();
+			}
+			
+			nk_tree_pop(ctx);
 		}
 	}
 
@@ -379,8 +415,7 @@ public:
 
 		friend class GameObject;
 
-		Camera(GameObject &o, Transform &t ) : 
-			Component(o,t) 
+		Camera(COMP_PARAMS) INIT_COMP("Camera")
 		{
 
 		}
@@ -401,22 +436,109 @@ public:
 		Mesh mesh;
 	};
 
+
+
+	enum class LightType {
+		POINT,
+		DIRECTIONAL,
+		SPOTLIGHT
+	};
+
+	#define LIGHT_PARAMS COMP_PARAMS
+	#define INIT_LIGHT(n) : Light(o,t,n)
+
+
 	class Light : public Component {
+	public:
+		LightType type;
 		Vec3 kA;
 		Vec3 kD;
 		Vec3 kS;
 		Vec3 kE;
 
+
+		virtual void Bind() = 0;
+		
+
+		virtual void UI() override {
+			
+		}
+
+	protected:
+		Light(COMP_PARAMS, std::string n) INIT_COMP(n)
+		{
+
+		}
+	};
+
+	class PointLight : public Light {
+	public:
 		Vec3 attenuation;
 
+		PointLight(LIGHT_PARAMS) INIT_LIGHT("PointLight")
+		{
+			this->type = LightType::POINT;
+		}
+		// Inherited via Light
+		virtual void Update() override {
+			PF_INFO("PointLight running");
+		}
+
+		virtual void Bind() override {
+
+		}
+
+	};
+
+	class SpotLight : public Light {
+	public:
+		Vec3 attenuation;
 		float innerAngle = 15.f;
 		float outterAngle = 20.f;
+		SpotLight(LIGHT_PARAMS)  INIT_LIGHT("SpotLight")
+		{
+			this->type = LightType::SPOTLIGHT;
+
+		}
+		// Inherited via Light
+		virtual void Update() override {
+			PF_INFO("SpotLight running");
+
+		}
+
+		virtual void Bind() override {
+
+		}
 	};
+	class DirectionalLight : public Light {
+	public:
+		DirectionalLight(LIGHT_PARAMS)  INIT_LIGHT("DirectionalLight")
+		{
+			this->type = LightType::DIRECTIONAL;
+
+		}
+		// Inherited via Light
+		virtual void Update() override {
+			PF_INFO("DirectionalLight running");
+
+
+		}
+		virtual void Bind() override {
+
+		}
+	};
+
 
 
 
 #pragma endregion Components
 
 class SystemRenderer {
+	//std::list<Light&> lights;
+	//std::list<Camera&> camera;
+	
+public:
+
+
 
 };
