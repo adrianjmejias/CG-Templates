@@ -78,7 +78,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -95,7 +95,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -115,7 +115,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;dependencies\nuklear;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -126,8 +126,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="PressF\src\main.h" />
-    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h" />
     <ClInclude Include="dependencies\glm\glm\common.hpp" />
     <ClInclude Include="dependencies\glm\glm\detail\_features.hpp" />
     <ClInclude Include="dependencies\glm\glm\detail\_fixes.hpp" />
@@ -496,9 +494,8 @@
     <ClInclude Include="dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="PressF\src\main.cpp" />
+    <ClInclude Include="PressF\src\main.h" />
+    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">
@@ -507,6 +504,9 @@
     <ProjectReference Include="dependencies\nuklear\nuklear.vcxproj">
       <Project>{577BFE2F-C35A-7DCB-CC72-08A238D1E32C}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PressF\src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -77,71 +77,15 @@ void clear() {
 	SDL_Quit();
 }
 
+void InitScene() {
 
-/* nuklear - 1.32.0 - public domain */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdarg.h>
-#include <string.h>
-#include <math.h>
-#include <assert.h>
-#include <math.h>
-#include <limits.h>
-#include <time.h>
+	GameObject *go(new GameObject());
+	Camera& cam = go->AddComponent<Camera>();
+
+	//objects.push_back();
+}
 
 
-
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#define NK_IMPLEMENTATION
-#define NK_SDL_GL3_IMPLEMENTATION
-#include <nuklear.h>
-#include "nuklear_sdl_gl3.h"
-
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 800
-
-#define MAX_VERTEX_MEMORY 512 * 1024
-#define MAX_ELEMENT_MEMORY 128 * 1024
-
-/* ===============================================================
-*
-*                          EXAMPLE
-*
-* ===============================================================*/
-/* This are some code examples to provide a small overview of what can be
-* done with this library. To try out an example uncomment the defines */
-#define INCLUDE_ALL 
-/*#define INCLUDE_STYLE */
-/*#define INCLUDE_CALCULATOR */
-/*#define INCLUDE_OVERVIEW */
-/*#define INCLUDE_NODE_EDITOR */
-
-#ifdef INCLUDE_ALL
-#define INCLUDE_STYLE
-#define INCLUDE_CALCULATOR
-#define INCLUDE_OVERVIEW
-#define INCLUDE_NODE_EDITOR
-#endif
-
-#ifdef INCLUDE_STYLE
-#include "style.c"
-#endif
-#ifdef INCLUDE_CALCULATOR
-#include "calculator.c"
-#endif
-#ifdef INCLUDE_OVERVIEW
-#include "overview.c"
-#endif
-#ifdef INCLUDE_NODE_EDITOR
-#include "node_editor.c"
-#endif
 
 /* ===============================================================
 *
@@ -216,11 +160,16 @@ int main(void)
 		} nk_input_end(ctx);
 
 
+		for each (auto go in objects)
+		{
+			go->Update();
+		}
 
 
-
-
-
+		for each (auto go in objects)
+		{
+			go->UI();
+		}
 
 		/* GUI */
 		if (nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250),
@@ -292,5 +241,3 @@ cleanup:
 	SDL_Quit();
 	return 0;
 }
-
-
