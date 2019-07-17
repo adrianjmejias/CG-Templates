@@ -110,6 +110,8 @@
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 #define PF_NK(a) a ? NK_MAXIMIZED: NK_MINIMIZED
+
+std::unique_ptr<SystemRenderer> renderer;
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
@@ -140,7 +142,7 @@ struct nk_colorf bg;
 	}
 	using Mat4 = glm::mat4;
 	//template <typename TT> using uptr<TT> = std::unique_ptr<TT>;
-
+	class SystemRenderer;
 	class GameObject;
 	class Component;
 	class Texture;
@@ -150,11 +152,12 @@ struct nk_colorf bg;
 	class GameObject;
 	class Mesh;
 
+
 #pragma endregion Types
 
 
 
-
+#include "Loaders.h"
 
 
 
@@ -215,6 +218,7 @@ public:
 };
 
 class GameObject {
+	friend class SystemRenderer;
 	std::list<Component*> components;
 	
 public:
@@ -267,145 +271,6 @@ public:
 
 
 
-#pragma region Models
-
-	using Face = iVec3;
-
-	class Vertex {
-	public:
-		Vec3 pos;
-		Vec3 uv;
-		Vec3 normal;
-		Vec3 tangent;
-		Vec3 bitangent;
-	};
-
-#pragma region Texture
-
-	enum class ClampType {
-		REPEAT = GL_REPEAT,
-		MIRROR_REPEAT = GL_MIRRORED_REPEAT,
-		EDGE = GL_CLAMP_TO_EDGE,
-		BORDER = GL_CLAMP_TO_BORDER,
-	};
-
-	enum class TexInterpolation {
-		NEAREST = GL_NEAREST,
-		LINEAR = GL_LINEAR,
-	};
-
-
-
-	class Texture : public Asset{
-		//int width, height, nrChannels;
-		//unsigned char *data;
-		//for (GLuint i = 0; i < textures_faces.size(); i++)
-		//{
-		//	data = stbi_load(textures_faces[i].c_str(), &width, &height, &nrChannels, 0);
-		//	glTexImage2D(
-		//		GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-		//		0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-		//	);
-		//}
-
-		Texture(const std::string path) {
-			this->path = path;
-			LoadTexture(path);
-		}
-
-		~Texture() {
-			glDeleteTextures(1, &id);
-		}
-
-		unsigned int id;
-		int width;
-		int height;
-		int nChannels;
-		ClampType clamp = ClampType::REPEAT;
-		TexInterpolation texInterpolation = TexInterpolation::LINEAR;
-
-		float borderColor[4] = { 1,1,1,1 };
-		unsigned int LoadTexture(const std::string path) {
-			// Creates the texture on GPU
-			glGenTextures(1, &id);
-			// Loads the texture
-			// Flips the texture when loads it because in opengl the texture coordinates are flipped
-			stbi_set_flip_vertically_on_load(true);
-			// Loads the texture file data
-			unsigned char *data = stbi_load(path.data(), &width, &height, &nChannels, 0);
-			if (data)
-			{
-				// Gets the texture channel format
-				GLenum format;
-				switch (nChannels)
-				{
-				case 1:
-					format = GL_RED;
-					break;
-				case 3:
-					format = GL_RGB;
-					break;
-				case 4:
-					format = GL_RGBA;
-					break;
-				}
-
-				// Binds the texture
-				glBindTexture(GL_TEXTURE_2D, id);
-				// Creates the texture
-				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-				// Creates the texture mipmaps
-				glGenerateMipmap(GL_TEXTURE_2D);
-
-				// Set the filtering parameters
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<int>(clamp));
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<int>(clamp));
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<int>(texInterpolation));
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<int>(texInterpolation));
-
-			}
-			else
-			{
-				PF_ERROR("ERROR:: Unable to load texture ", path);
-				glDeleteTextures(1, &id);
-			}
-			// We dont need the data texture anymore because is loaded on the GPU
-			stbi_image_free(data);
-			PF_INFO("texture loaded {0}", path);
-			return id;
-		}
-	};
-
-	class CubeMap {
-		std::array<Texture, 6> texs;
-
-
-
-	};
-	
-#pragma endregion Texture
-
-
-
-	
-	class Material : public Asset {
-	public:
-		Vec3 kA;
-		Vec3 kD;
-		Vec3 kS;
-		Vec3 kE;
-	};
-
-	class Mesh : protected Asset{
-	public:
-		std::vector<Vertex> vertex;
-	};
-
-
-
-
-
-#pragma endregion Models
 
 
 
@@ -430,20 +295,27 @@ public:
 		virtual void UI() override {
 			fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
 		}
-
 	};
 
 	class Mover : public Component {
 
 	};
 
-	class MeshRenderer : public Component {
+
+	class Renderer : public Component{
+
 	public:
-		Mesh mesh;
+		virtual void Bind() = 0;
+	};
+
+	class MeshRenderer : public Renderer {
+	public:
+		Mesh& mesh;
 	};
 
 
 
+#pragma region Light
 	enum class LightType {
 		POINT,
 		DIRECTIONAL,
@@ -452,7 +324,6 @@ public:
 
 	#define LIGHT_PARAMS COMP_PARAMS
 	#define INIT_LIGHT(n) : Light(o,t,n)
-
 
 	class Light : public Component {
 	public:
@@ -538,6 +409,7 @@ public:
 			outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
 		}
 	};
+	
 	class DirectionalLight : public Light {
 	public:
 		DirectionalLight(LIGHT_PARAMS)  INIT_LIGHT("DirectionalLight")
@@ -559,17 +431,38 @@ public:
 		}
 	};
 
+#pragma endregion Light
+
 
 
 
 #pragma endregion Components
 
+//#define STEAL(TT, stolenCollection, ii) if (TT *___tt = dynamic_cast<TT*>(stolenCollection[ii])) {
+//
+//	}
+
 class SystemRenderer {
-	//std::list<Light&> lights;
-	//std::list<Camera&> camera;
-	
 public:
+	std::list<Light*> lights;
+	std::list<Camera*> camera;
+	std::list<Renderer*> renderers;
+	std::unique_ptr<CubeMap> cubemap;
+public:
+	void Steal(std::vector<GameObject> gos) {
 
+		for each (GameObject go in gos)
+		{
+			for (auto ii = go.components.begin(); ii != go.components.end(); ii++)
+			{
+				
+				if (Light *light = dynamic_cast<Light*>((*ii))) {
+					lights.push_back(light);
+					go.components.erase(ii);
+					continue;
+				}
+			}
+		}
 
-
+	}
 };
