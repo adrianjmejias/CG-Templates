@@ -1,0 +1,1393 @@
+﻿  CCG.cpp
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_impl_sdl.cpp
+  imgui_widgets.cpp
+  Generating Code...
+  glad.c
+c:\program files (x86)\windows kits\10\include\10.0.16299.0\shared\minwindef.h(130): warning C4005: 'APIENTRY': macro redefinition
+  c:\users\adrianjmejias\desktop\cg-templates\include\glad\glad.h(32): note: see previous definition of 'APIENTRY'
+  
+  Starting pass 1
+  Processed /DEFAULTLIB:MSVCRTD
+  Processed /DEFAULTLIB:OLDNAMES
+  Processed /DEFAULTLIB:uuid.lib
+  Processed /DEFAULTLIB:user32
+  Processed /DEFAULTLIB:imm32
+  
+  Searching libraries
+      Searching lib\SDL2\SDL2.lib:
+        Found SDL_GetError
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_CreateWindow
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetWindowID
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_DestroyWindow
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_SetAttribute
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_CreateContext
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_MakeCurrent
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_SetSwapInterval
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_SwapWindow
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_DeleteContext
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_PollEvent
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_Init
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_Quit
+          Referenced in CCG.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_free
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_SetClipboardText
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetClipboardText
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetWindowPosition
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetWindowSize
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GL_GetDrawableSize
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetKeyboardFocus
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetModState
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetMouseState
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetGlobalMouseState
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_WarpMouseInWindow
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_CaptureMouse
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_CreateSystemCursor
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_SetCursor
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_FreeCursor
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_ShowCursor
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GameControllerOpen
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GameControllerGetAxis
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GameControllerGetButton
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetPerformanceCounter
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetPerformanceFrequency
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_GetWindowWMInfo
+          Referenced in imgui_impl_sdl.obj
+          Loaded SDL2.lib(SDL2.dll)
+        Found __IMPORT_DESCRIPTOR_SDL2
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Referenced in SDL2.lib(SDL2.dll)
+          Loaded SDL2.lib(SDL2.dll)
+        Found __NULL_IMPORT_DESCRIPTOR
+          Referenced in SDL2.lib(SDL2.dll)
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL2_NULL_THUNK_DATA
+          Referenced in SDL2.lib(SDL2.dll)
+          Loaded SDL2.lib(SDL2.dll)
+      Searching lib\SDL2\SDL2main.lib:
+      Searching lib\SDL2\SDL2test.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\kernel32.lib:
+        Found __imp_FreeLibrary
+          Referenced in glad.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetProcAddress
+          Referenced in glad.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_LoadLibraryW
+          Referenced in glad.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GlobalAlloc
+          Referenced in imgui.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GlobalUnlock
+          Referenced in imgui.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GlobalLock
+          Referenced in imgui.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GlobalFree
+          Referenced in imgui.obj
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __IMPORT_DESCRIPTOR_KERNEL32
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found KERNEL32_NULL_THUNK_DATA
+          Referenced in kernel32.lib(KERNEL32.dll)
+          Loaded kernel32.lib(KERNEL32.dll)
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\user32.lib:
+        Found __imp_OpenClipboard
+          Referenced in imgui.obj
+          Loaded user32.lib(USER32.dll)
+        Found __imp_CloseClipboard
+          Referenced in imgui.obj
+          Loaded user32.lib(USER32.dll)
+        Found __imp_SetClipboardData
+          Referenced in imgui.obj
+          Loaded user32.lib(USER32.dll)
+        Found __imp_GetClipboardData
+          Referenced in imgui.obj
+          Loaded user32.lib(USER32.dll)
+        Found __imp_EmptyClipboard
+          Referenced in imgui.obj
+          Loaded user32.lib(USER32.dll)
+        Found __IMPORT_DESCRIPTOR_USER32
+          Referenced in user32.lib(USER32.dll)
+          Referenced in user32.lib(USER32.dll)
+          Referenced in user32.lib(USER32.dll)
+          Referenced in user32.lib(USER32.dll)
+          Referenced in user32.lib(USER32.dll)
+          Loaded user32.lib(USER32.dll)
+        Found USER32_NULL_THUNK_DATA
+          Referenced in user32.lib(USER32.dll)
+          Loaded user32.lib(USER32.dll)
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\MSVCRTD.lib:
+        Found _RTC_CheckStackVars
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(stack.obj)
+        Found _RTC_InitBase
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(init.obj)
+        Found __CheckForDebuggerJustMyCode
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(debugger_jmc.obj)
+        Found __GSHandlerCheck
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(gshandler.obj)
+        Found __security_check_cookie
+          Referenced in MSVCRTD.lib(gshandler.obj)
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(amdsecgs.obj)
+        Found __security_cookie
+          Referenced in MSVCRTD.lib(amdsecgs.obj)
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(gs_cookie.obj)
+        Found _fltused
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in CCG.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Loaded MSVCRTD.lib(fltused.obj)
+        Found "void __cdecl `eh vector constructor iterator'(void *,unsigned __int64,unsigned __int64,void (__cdecl*)(void *),void (__cdecl*)(void *))" (??_L@YAXPEAX_K1P6AX0@Z2@Z)
+          Referenced in imgui.obj
+          Loaded MSVCRTD.lib(ehvecctr.obj)
+        Found "void __cdecl `eh vector destructor iterator'(void *,unsigned __int64,unsigned __int64,void (__cdecl*)(void *))" (??_M@YAXPEAX_K1P6AX0@Z@Z)
+          Referenced in imgui.obj
+          Loaded MSVCRTD.lib(ehvecdtr.obj)
+        Found "void __cdecl operator delete(void *,unsigned __int64)" (??3@YAXPEAX_K@Z)
+          Referenced in imgui.obj
+          Referenced in imgui_draw.obj
+          Loaded MSVCRTD.lib(delete_scalar_size.obj)
+        Found atexit
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded MSVCRTD.lib(utility.obj)
+        Found _Init_thread_header
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_impl_sdl.obj
+          Loaded MSVCRTD.lib(thread_safe_statics.obj)
+        Found __GSHandlerCheck_EH
+          Referenced in imgui_widgets.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded MSVCRTD.lib(gshandlereh.obj)
+        Found __chkstk
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded MSVCRTD.lib(chkstk.obj)
+        Found _tls_index
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_impl_sdl.obj
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded MSVCRTD.lib(tlssup.obj)
+        Found __report_rangecheckfailure
+          Referenced in imgui_demo.obj
+          Referenced in imgui_impl_sdl.obj
+          Loaded MSVCRTD.lib(gs_report.obj)
+        Found mainCRTStartup
+          Loaded MSVCRTD.lib(exe_main.obj)
+        Found "void __cdecl _RTC_StackFailure(void *,char const *)" (?_RTC_StackFailure@@YAXPEAXPEBD@Z)
+          Referenced in MSVCRTD.lib(stack.obj)
+          Loaded MSVCRTD.lib(error.obj)
+        Found _RTC_SetErrorFuncW
+          Referenced in MSVCRTD.lib(init.obj)
+          Loaded MSVCRTD.lib(userapi.obj)
+        Found __guard_dispatch_icall_fptr
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Referenced in MSVCRTD.lib(error.obj)
+          Referenced in MSVCRTD.lib(ehvecctr.obj)
+          Referenced in MSVCRTD.lib(ehvecdtr.obj)
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded MSVCRTD.lib(guard_support.obj)
+        Found "void __cdecl operator delete(void *)" (??3@YAXPEAX@Z)
+          Referenced in MSVCRTD.lib(delete_scalar_size.obj)
+          Loaded MSVCRTD.lib(delete_scalar.obj)
+        Found __isa_available_init
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded MSVCRTD.lib(cpu_disp.obj)
+        Found _get_startup_argv_mode
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(argv_mode.obj)
+        Found __scrt_is_ucrt_dll_in_use
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded MSVCRTD.lib(ucrt_detection.obj)
+        Found __scrt_fastfail
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(utility_desktop.obj)
+        Found __security_init_cookie
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(gs_support.obj)
+        Found _matherr
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(matherr.obj)
+        Found _get_startup_commit_mode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(commit_mode.obj)
+        Found _get_startup_file_mode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(file_mode.obj)
+        Found _get_startup_new_mode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(new_mode.obj)
+        Found _get_startup_thread_locale_mode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(thread_locale.obj)
+        Found "void __cdecl __scrt_initialize_type_info(void)" (?__scrt_initialize_type_info@@YAXXZ)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(tncleanup.obj)
+        Found _should_initialize_environment
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(env_mode.obj)
+        Found _initialize_invalid_parameter_handler
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(invalid_parameter_handler.obj)
+        Found _initialize_denormal_control
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(denormal_control.obj)
+        Found __scrt_initialize_default_local_stdio_options
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(default_local_stdio_options.obj)
+        Found __scrt_is_user_matherr_present
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(matherr_detection.obj)
+        Found __scrt_get_dyn_tls_init_callback
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(dyn_tls_init.obj)
+        Found __scrt_get_dyn_tls_dtor_callback
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(dyn_tls_dtor.obj)
+        Found _RTC_Initialize
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(initsect.obj)
+        Found __xi_a
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded MSVCRTD.lib(initializers.obj)
+  Processed /DEFAULTLIB:kernel32.lib
+   Processed /DISALLOWLIB:msvcrt.lib
+   Processed /DISALLOWLIB:libcmt.lib
+   Processed /DISALLOWLIB:libcmtd.lib
+   Processed /DISALLOWLIB:vcruntime.lib
+  Processed /DEFAULTLIB:vcruntimed.lib
+   Processed /DISALLOWLIB:libvcruntime.lib
+   Processed /DISALLOWLIB:libvcruntimed.lib
+   Processed /DISALLOWLIB:ucrt.lib
+  Processed /DEFAULTLIB:ucrtd.lib
+   Processed /DISALLOWLIB:libucrt.lib
+   Processed /DISALLOWLIB:libucrtd.lib
+        Found "int __cdecl _RTC_GetSrcLine(unsigned char *,wchar_t *,unsigned long,int *,wchar_t *,unsigned long)" (?_RTC_GetSrcLine@@YAHPEAEPEA_WKPEAH1K@Z)
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded MSVCRTD.lib(pdblkup.obj)
+        Found _guard_dispatch_icall_nop
+          Referenced in MSVCRTD.lib(guard_support.obj)
+          Loaded MSVCRTD.lib(guard_dispatch.obj)
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\OLDNAMES.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\imm32.lib:
+        Found ImmGetContext
+          Referenced in imgui.obj
+          Loaded imm32.lib(IMM32.dll)
+        Found ImmReleaseContext
+          Referenced in imgui.obj
+          Loaded imm32.lib(IMM32.dll)
+        Found ImmSetCompositionWindow
+          Referenced in imgui.obj
+          Loaded imm32.lib(IMM32.dll)
+        Found __IMPORT_DESCRIPTOR_IMM32
+          Referenced in imm32.lib(IMM32.dll)
+          Referenced in imm32.lib(IMM32.dll)
+          Referenced in imm32.lib(IMM32.dll)
+          Loaded imm32.lib(IMM32.dll)
+        Found IMM32_NULL_THUNK_DATA
+          Referenced in imm32.lib(IMM32.dll)
+          Loaded imm32.lib(IMM32.dll)
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\vcruntimed.lib:
+        Found memcpy
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_widgets.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found memchr
+          Referenced in imgui.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found memmove
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found memset
+          Referenced in imgui_widgets.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_sdl.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found strstr
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __CxxFrameHandler3
+          Referenced in imgui_widgets.obj
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Referenced in MSVCRTD.lib(gshandlereh.obj)
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found memcmp
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found strchr
+          Referenced in imgui_demo.obj
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __C_specific_handler
+          Referenced in MSVCRTD.lib(ehvecctr.obj)
+          Referenced in MSVCRTD.lib(ehvecdtr.obj)
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __C_specific_handler_noexcept
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __std_type_info_destroy_list
+          Referenced in MSVCRTD.lib(tncleanup.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __vcrt_GetModuleFileNameW
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __vcrt_GetModuleHandleW
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __vcrt_LoadLibraryExW
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found __IMPORT_DESCRIPTOR_VCRUNTIME140D
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+        Found VCRUNTIME140D_NULL_THUNK_DATA
+          Referenced in vcruntimed.lib(VCRUNTIME140D.dll)
+          Loaded vcruntimed.lib(VCRUNTIME140D.dll)
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x64\ucrtd.lib:
+        Found __imp___acrt_iob_func
+          Referenced in CCG.obj
+          Referenced in imgui.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp___stdio_common_vfprintf
+          Referenced in CCG.obj
+          Referenced in imgui.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp___stdio_common_vsscanf
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_free
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_malloc
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strlen
+          Referenced in imgui_impl_opengl3.obj
+          Referenced in imgui_widgets.obj
+          Referenced in glad.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_strncmp
+          Referenced in glad.obj
+          Referenced in imgui_demo.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strcmp
+          Referenced in imgui.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_strncpy
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp__wassert
+          Referenced in imgui_impl_sdl.obj
+          Referenced in imgui_widgets.obj
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp__wfopen
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fclose
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fflush
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fread
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fseek
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_ftell
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fwrite
+          Referenced in imgui.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp___stdio_common_vsprintf
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_qsort
+          Referenced in imgui.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found fabs
+          Referenced in imgui.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_fmodf
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_toupper
+          Referenced in imgui.obj
+          Referenced in imgui_demo.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strcpy
+          Referenced in imgui_demo.obj
+          Referenced in imgui_impl_opengl3.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_cosf
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_sinf
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_sqrtf
+          Referenced in imgui_demo.obj
+          Referenced in imgui_draw.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_acosf
+          Referenced in imgui_draw.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_ceilf
+          Referenced in imgui_draw.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_floorf
+          Referenced in imgui_draw.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strcat
+          Referenced in imgui_impl_opengl3.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_atof
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found pow
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_atan2f
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __imp_powf
+          Referenced in imgui_widgets.obj
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _CrtDbgReport
+          Referenced in MSVCRTD.lib(init.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _CrtDbgReportW
+          Referenced in MSVCRTD.lib(init.obj)
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found terminate
+          Referenced in MSVCRTD.lib(ehvecdtr.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _seh_filter_dll
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _configure_narrow_argv
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _initialize_narrow_environment
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _initialize_onexit_table
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _register_onexit_function
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _execute_onexit_table
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _crt_atexit
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _crt_at_quick_exit
+          Referenced in MSVCRTD.lib(utility.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _cexit
+          Referenced in MSVCRTD.lib(utility.obj)
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _seh_filter_exe
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _set_app_type
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __setusermatherr
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _get_initial_narrow_environment
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _initterm
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _initterm_e
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found exit
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _exit
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _set_fmode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __p___argc
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __p___argv
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _c_exit
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _register_thread_local_exe_atexit_callback
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _configthreadlocale
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _set_new_mode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __p__commode
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strcpy_s
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found strcat_s
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __stdio_common_vsprintf_s
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _free_dbg
+          Referenced in MSVCRTD.lib(delete_scalar.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _wmakepath_s
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found _wsplitpath_s
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found wcscpy_s
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found __IMPORT_DESCRIPTOR_ucrtbased
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Loaded ucrtd.lib(ucrtbased.dll)
+        Found ucrtbased_NULL_THUNK_DATA
+          Referenced in ucrtd.lib(ucrtbased.dll)
+          Loaded ucrtd.lib(ucrtbased.dll)
+      Searching lib\SDL2\SDL2.lib:
+      Searching lib\SDL2\SDL2main.lib:
+        Found main
+          Referenced in MSVCRTD.lib(exe_main.obj)
+          Loaded SDL2main.lib(SDL_windows_main.obj)
+      Searching lib\SDL2\SDL2test.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\kernel32.lib:
+        Found __imp_GetCurrentThreadId
+          Referenced in MSVCRTD.lib(debugger_jmc.obj)
+          Referenced in MSVCRTD.lib(gs_support.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_CloseHandle
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_EnterCriticalSection
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_LeaveCriticalSection
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_InitializeCriticalSectionAndSpinCount
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_DeleteCriticalSection
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_SetEvent
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_ResetEvent
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_WaitForSingleObjectEx
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_CreateEventW
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetModuleHandleW
+          Referenced in MSVCRTD.lib(thread_safe_statics.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_RtlCaptureContext
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_RtlLookupFunctionEntry
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_RtlVirtualUnwind
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_UnhandledExceptionFilter
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_SetUnhandledExceptionFilter
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetCurrentProcess
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_TerminateProcess
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found IsProcessorFeaturePresent
+          Referenced in MSVCRTD.lib(gs_report.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_IsDebuggerPresent
+          Referenced in MSVCRTD.lib(error.obj)
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_RaiseException
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_MultiByteToWideChar
+          Referenced in MSVCRTD.lib(error.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_WideCharToMultiByte
+          Referenced in MSVCRTD.lib(error.obj)
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetStartupInfoW
+          Referenced in MSVCRTD.lib(utility_desktop.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_QueryPerformanceCounter
+          Referenced in MSVCRTD.lib(gs_support.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetCurrentProcessId
+          Referenced in MSVCRTD.lib(gs_support.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetSystemTimeAsFileTime
+          Referenced in MSVCRTD.lib(gs_support.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_InitializeSListHead
+          Referenced in MSVCRTD.lib(tncleanup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetLastError
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_HeapAlloc
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_HeapFree
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetProcessHeap
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_VirtualQuery
+          Referenced in MSVCRTD.lib(pdblkup.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_VirtualFree
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_VirtualAlloc
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+        Found __imp_GetCommandLineW
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded kernel32.lib(KERNEL32.dll)
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\user32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\MSVCRTD.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\OLDNAMES.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\imm32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\vcruntimed.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x64\ucrtd.lib:
+      Searching lib\SDL2\SDL2.lib:
+        Found SDL_ShowSimpleMessageBox
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded SDL2.lib(SDL2.dll)
+        Found SDL_SetMainReady
+          Referenced in SDL2main.lib(SDL_windows_main.obj)
+          Loaded SDL2.lib(SDL2.dll)
+      Searching lib\SDL2\SDL2main.lib:
+      Searching lib\SDL2\SDL2test.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\kernel32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\user32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\MSVCRTD.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\OLDNAMES.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\imm32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\vcruntimed.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x64\ucrtd.lib:
+  
+  Finished searching libraries
+  
+  Searching libraries
+      Searching lib\SDL2\SDL2.lib:
+      Searching lib\SDL2\SDL2main.lib:
+      Searching lib\SDL2\SDL2test.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\kernel32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\user32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\MSVCRTD.lib:
+        Found __scrt_stub_for_acrt_initialize
+          Loaded MSVCRTD.lib(ucrt_stubs.obj)
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\OLDNAMES.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\imm32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\vcruntimed.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\ucrt\x64\ucrtd.lib:
+  
+  Finished searching libraries
+  
+  Finished pass 1
+  
+  
+  Searching libraries
+      Searching lib\SDL2\SDL2.lib:
+      Searching lib\SDL2\SDL2main.lib:
+      Searching lib\SDL2\SDL2test.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\kernel32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\user32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib:
+      Searching C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib:
+      Searching C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\MSVCRTD.lib:
+        Found _load_config_used
+          Loaded MSVCRTD.lib(loadcfg.obj)
+  
+  Finished searching libraries
+  
+  Invoking rc.exe:
+   /v
+   /x
+   /fo
+   "C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{F7147393-4016-4DA9-80BF-F8B0865AE78B}.tmp"
+   "C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{10EA6D63-0B5E-4816-9AAE-D37717608F01}.tmp"
+  Microsoft (R) Windows (R) Resource Compiler Version 10.0.10011.16384
+  
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  
+  Creating C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{F7147393-4016-4DA9-80BF-F8B0865AE78B}.tmp
+  
+  Using codepage 1252 as default
+  
+  C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{10EA6D63-0B5E-4816-9AAE-D37717608F01}.tmp.
+  Writing 24:1,	lang:0x409,	size 381
+  
+  Invoking cvtres.exe:
+   /machine:amd64
+   /verbose
+   /out:"C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{D76D6BCF-7F1A-40AC-ABBB-EF9157F40855}.tmp"
+   /readonly
+   "C:\Users\ADRIAN~1\AppData\Local\Temp\lnk{F7147393-4016-4DA9-80BF-F8B0865AE78B}.tmp"
+  Microsoft (R) Windows Resource To Object Converter Version 14.16.27027.1
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  adding resource. type:MANIFEST, name:1, language:0x0409, flags:0x30, size:381
+  
+  
+  Unused libraries:
+    lib\SDL2\SDL2test.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\gdi32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\winspool.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\comdlg32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\advapi32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\shell32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\ole32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\oleaut32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\uuid.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbc32.lib
+    C:\Program Files (x86)\Windows Kits\10\lib\10.0.16299.0\um\x64\odbccp32.lib
+    C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.16.27023\lib\x64\OLDNAMES.lib
+  
+  Starting pass 2
+       * linker generated manifest res *
+       imgui_widgets.obj
+       imgui_impl_sdl.obj
+       imgui_impl_opengl3.obj
+       imgui_draw.obj
+       imgui_demo.obj
+       imgui.obj
+       glad.obj
+       CCG.obj
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2.lib(SDL2.dll)
+       SDL2main.lib(SDL_windows_main.obj)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       kernel32.lib(KERNEL32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       user32.lib(USER32.dll)
+       MSVCRTD.lib(amdsecgs.obj)
+       MSVCRTD.lib(chkstk.obj)
+       MSVCRTD.lib(guard_dispatch.obj)
+       MSVCRTD.lib(gs_cookie.obj)
+       MSVCRTD.lib(gs_report.obj)
+       MSVCRTD.lib(gs_support.obj)
+       MSVCRTD.lib(guard_support.obj)
+       MSVCRTD.lib(loadcfg.obj)
+       MSVCRTD.lib(debugger_jmc.obj)
+       MSVCRTD.lib(dyn_tls_dtor.obj)
+       MSVCRTD.lib(dyn_tls_init.obj)
+       MSVCRTD.lib(matherr_detection.obj)
+       MSVCRTD.lib(ucrt_detection.obj)
+       MSVCRTD.lib(cpu_disp.obj)
+       MSVCRTD.lib(argv_mode.obj)
+       MSVCRTD.lib(commit_mode.obj)
+       MSVCRTD.lib(default_local_stdio_options.obj)
+       MSVCRTD.lib(denormal_control.obj)
+       MSVCRTD.lib(env_mode.obj)
+       MSVCRTD.lib(file_mode.obj)
+       MSVCRTD.lib(fltused.obj)
+       MSVCRTD.lib(invalid_parameter_handler.obj)
+       MSVCRTD.lib(matherr.obj)
+       MSVCRTD.lib(new_mode.obj)
+       MSVCRTD.lib(thread_locale.obj)
+       MSVCRTD.lib(ehvecctr.obj)
+       MSVCRTD.lib(ehvecdtr.obj)
+       MSVCRTD.lib(tncleanup.obj)
+       MSVCRTD.lib(delete_scalar.obj)
+       MSVCRTD.lib(delete_scalar_size.obj)
+       MSVCRTD.lib(thread_safe_statics.obj)
+       MSVCRTD.lib(exe_main.obj)
+       MSVCRTD.lib(tlssup.obj)
+       MSVCRTD.lib(initializers.obj)
+       MSVCRTD.lib(utility.obj)
+       MSVCRTD.lib(ucrt_stubs.obj)
+       MSVCRTD.lib(utility_desktop.obj)
+       MSVCRTD.lib(error.obj)
+       MSVCRTD.lib(init.obj)
+       MSVCRTD.lib(initsect.obj)
+       MSVCRTD.lib(pdblkup.obj)
+       MSVCRTD.lib(stack.obj)
+       MSVCRTD.lib(userapi.obj)
+       MSVCRTD.lib(gshandlereh.obj)
+       MSVCRTD.lib(gshandler.obj)
+       imm32.lib(IMM32.dll)
+       imm32.lib(IMM32.dll)
+       imm32.lib(IMM32.dll)
+       imm32.lib(IMM32.dll)
+       imm32.lib(IMM32.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       vcruntimed.lib(VCRUNTIME140D.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+       ucrtd.lib(ucrtbased.dll)
+  Finished pass 2
+  CCG.vcxproj -> C:\Users\adrianjmejias\Desktop\CG-Templates\x64\Debug\CCG.exe

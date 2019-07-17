@@ -174,10 +174,10 @@ int main(void)
 	glContext = SDL_GL_CreateContext(win);
 	SDL_GetWindowSize(win, &win_width, &win_height);
 
+	InitGlad();
 	/* OpenGL setup */
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	InitGlad();
 
 	ctx = nk_sdl_init(win);
 	/* Load Fonts: if none of these are loaded a default font will be used  */
