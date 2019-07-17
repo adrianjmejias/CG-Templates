@@ -123,7 +123,9 @@ struct nk_colorf bg;
 
 #pragma region Types
 
+	using Color = nk_colorf;
 	using Vec3 = glm::vec3;
+	using Vec4 = glm::vec4;
 	using iVec3 = glm::ivec3;
 
 	std::istream& operator>> (std::istream& is, Vec3& v)
@@ -149,6 +151,11 @@ struct nk_colorf bg;
 	class Mesh;
 
 #pragma endregion Types
+
+
+
+
+
 
 
 std::vector<GameObject*> objects;
@@ -178,10 +185,7 @@ public:
 		name = n;
 	}
 
-	virtual void UI() {
-
-	}
-
+	virtual void UI() = 0;
 	virtual void Update() = 0;
 };
 
@@ -230,26 +234,21 @@ public:
 		}
 	}
 	void UI() {
-
-		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), PF_NK(openUI))) {
-			
-				
-
+		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI))) {
 
 			for each (auto comp in components)
 			{
 				PF_ASSERT(comp && "component is null");
 
-				if (nk_group_begin(ctx, comp->name.data(), 
-					NK_WINDOW_TITLE  |
-					NK_WINDOW_BORDER
-				)) {
+				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))){
 
-					nk_checkbox_label(ctx, comp->name.data(), &comp->enabled);
-					nk_group_end(ctx);
+					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
+
+					comp->UI();
+					
+					nk_tree_pop(ctx);
 				}
 
-				comp->UI();
 			}
 			
 			nk_tree_pop(ctx);
@@ -414,7 +413,8 @@ public:
 	class Camera : public Component {
 
 		friend class GameObject;
-
+		float fov = 45;
+		unsigned int power = 10000;
 		Camera(COMP_PARAMS) INIT_COMP("Camera")
 		{
 
@@ -423,6 +423,12 @@ public:
 		// Inherited via Component
 		virtual void Update() override {
 			PF_INFO("Camera running");
+		}
+
+
+		// Inherited via Component
+		virtual void UI() override {
+			fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
 		}
 
 	};
@@ -451,17 +457,31 @@ public:
 	class Light : public Component {
 	public:
 		LightType type;
-		Vec3 kA;
-		Vec3 kD;
-		Vec3 kS;
-		Vec3 kE;
+		Color kA{1,1,1,1};
+		Vec3 kD{0,0,1};
+		Vec3 kS{1,0,0};
+		Vec3 kE{0,0,0};
 
 
 		virtual void Bind() = 0;
 		
 
 		virtual void UI() override {
-			
+
+
+			if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
+
+				nk_layout_row_dynamic(ctx, 120, 1);
+				kA = nk_color_picker(ctx, kA, NK_RGBA);
+				nk_layout_row_dynamic(ctx, 25, 2);
+				nk_layout_row_dynamic(ctx, 25, 1);
+
+				kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
+				kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
+				kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
+				kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
+				nk_combo_end(ctx);
+			}
 		}
 
 	protected:
@@ -487,7 +507,9 @@ public:
 		virtual void Bind() override {
 
 		}
-
+		virtual void UI() override {
+			Light::UI();
+		}
 	};
 
 	class SpotLight : public Light {
@@ -509,6 +531,12 @@ public:
 		virtual void Bind() override {
 
 		}
+
+		virtual void UI() override{
+			Light::UI();
+			innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
+			outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
+		}
 	};
 	class DirectionalLight : public Light {
 	public:
@@ -525,6 +553,9 @@ public:
 		}
 		virtual void Bind() override {
 
+		}
+		virtual void UI() override {
+			Light::UI();
 		}
 	};
 
