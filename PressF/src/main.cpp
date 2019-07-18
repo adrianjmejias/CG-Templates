@@ -140,13 +140,6 @@ void InitScene() {
 
 }
 
-
-
-/* ===============================================================
-*
-*                          DEMO
-*
-* ===============================================================*/
 int main(void)
 {
 
@@ -159,7 +152,7 @@ int main(void)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	win = SDL_CreateWindow("Demo",
+	win = SDL_CreateWindow("PressF",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 	glContext = SDL_GL_CreateContext(win);
@@ -177,11 +170,6 @@ int main(void)
 		struct nk_font_atlas *atlas;
 		nk_sdl_font_stash_begin(&atlas);
 		/*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-		//struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../assets/fonts/Roboto-Regular.ttf", 16, 0);
-		/*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-		/*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-		/*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-		/*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
 		nk_sdl_font_stash_end();
 		nk_style_load_all_cursors(ctx, atlas->cursors);
 		//nk_style_set_font(ctx, &roboto->handle);
@@ -240,15 +228,11 @@ int main(void)
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
 
-
-	
-
-
 	while (running)
 	{
 		LAST = NOW;
 
-		PF_INFO("deltaTime {0}", deltaTime);
+		//PF_INFO("deltaTime {0}", deltaTime);
 
 		/* Input */
 		SDL_GetWindowSize(win, &win_width, &win_height);
@@ -260,10 +244,17 @@ int main(void)
 		nk_input_begin(ctx);
 		while (SDL_PollEvent(&evt)) {
 			if (evt.type == SDL_QUIT) goto cleanup;
-			nk_sdl_handle_event(&evt);
-		} nk_input_end(ctx);
 
-		PF_INFO("UPDATE GO");
+			for each (auto go in objects)
+			{
+				go->HandleEvent(evt);
+			}
+
+
+			nk_sdl_handle_event(&evt);
+		} 
+		nk_input_end(ctx);
+		//PF_INFO("UPDATE GO");
 
 		for each (auto go in objects)
 		{
@@ -271,8 +262,8 @@ int main(void)
 		}
 
 
-		PF_INFO("UPDATE UI");
-		if (nk_begin(ctx, "Demo", nk_rect(500, 50, 230, 250),
+		//PF_INFO("UPDATE UI");
+		if (nk_begin(ctx, "Hierarchy", nk_rect(500, 50, 230, 250),
 			NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 			NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 		{
@@ -289,7 +280,7 @@ int main(void)
 								//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		PF_INFO("UPDATE RENDER");
+		//PF_INFO("UPDATE RENDER");
 		sRenderer->Render();
 
 //#define INCLUDE_OVERVIEW 
@@ -316,7 +307,7 @@ int main(void)
 
 		NOW = SDL_GetPerformanceCounter();
 
-		deltaTime = (double)((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency());
+		deltaTime = (double)((NOW - LAST)/ (double)SDL_GetPerformanceFrequency());
 	}
 
 

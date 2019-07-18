@@ -11,7 +11,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 
-#define PF_INFO(...)      //spdlog::info(__VA_ARGS__)
+#define PF_INFO(...)      spdlog::info(__VA_ARGS__)
 #define PF_ERROR(...)     spdlog::error(__VA_ARGS__)
 #define PF_DEBUG(...)     spdlog::debug(__VA_ARGS__)
 #define PF_WARN(...)      spdlog::warn(__VA_ARGS__)
@@ -817,6 +817,7 @@ public:
 
 	virtual void UI() = 0;
 	virtual void Update() = 0;
+	virtual void HandleEvent(const SDL_Event &e) = 0;
 };
 
 class Transform {
@@ -861,6 +862,19 @@ public:
 			PF_ASSERT(comp && "COMPONENT IS NULL");
 			if (comp->enabled) {
 				comp->Update();
+			}
+		}
+	}
+
+
+	void HandleEvent(const SDL_Event &e) {
+		for each (auto comp in components)
+		{
+			PF_ASSERT(comp && "COMPONENT IS NULL");
+			if (comp->enabled) {
+
+				//PF_INFO("HANDLE EVENT ,{0}", this->name);
+				comp->HandleEvent(e);
 			}
 		}
 	}
@@ -998,13 +1012,33 @@ class Camera : public Component {
 
 	// Inherited via Component
 	virtual void Update() override {
-		PF_INFO("Camera running");
+		//PF_INFO("Camera running");
 	}
 
 
 	// Inherited via Component
 	virtual void UI() override {
 		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
+	}
+	virtual void HandleEvent(const SDL_Event &e) override {
+		if (e.type == SDL_EventType::SDL_KEYDOWN) {
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
+				PF_INFO(" Camera SDL_SCANCODE_W");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
+				PF_INFO(" Camera SDL_SCANCODE_S");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
+				PF_INFO(" Camera SDL_SCANCODE_A");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
+				PF_INFO(" Camera SDL_SCANCODE_D");
+
+			}
+		}
 	}
 };
 
@@ -1021,7 +1055,10 @@ public:
 
 class MeshRenderer : public Renderer {
 public:
-	Mesh & mesh;
+	Mesh &mesh;
+
+
+
 };
 
 
@@ -1065,7 +1102,7 @@ public:
 			nk_combo_end(ctx);
 		}
 	}
-
+	virtual void HandleEvent(const SDL_Event &e) override {}
 	virtual void ShadowPass() {}
 
 protected:
@@ -1085,7 +1122,7 @@ public:
 	}
 	// Inherited via Light
 	virtual void Update() override {
-		PF_INFO("PointLight running");
+		//PF_INFO("PointLight running");
 	}
 
 	virtual void Bind() override {
@@ -1109,7 +1146,7 @@ public:
 	}
 	// Inherited via Light
 	virtual void Update() override {
-		PF_INFO("SpotLight running");
+		//PF_INFO("SpotLight running");
 
 	}
 
@@ -1133,7 +1170,7 @@ public:
 	}
 	// Inherited via Light
 	virtual void Update() override {
-		PF_INFO("DirectionalLight running");
+		//PF_INFO("DirectionalLight running");
 
 
 	}
