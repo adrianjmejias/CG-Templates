@@ -104,9 +104,16 @@ void InitScene() {
 		objects.push_back(go);
 	}
 
-	renderer.reset(new SystemRenderer());
+	{
+		//Mesh * mesh = loadObj("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.obj");
+		Material::ReadMTLLIB("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.mtl");
 
-	renderer->Steal(objects);
+	}
+
+
+	sRenderer = new SystemRenderer();
+
+	sRenderer->Steal(objects);
 }
 
 
@@ -184,12 +191,15 @@ int main(void)
 			nk_sdl_handle_event(&evt);
 		} nk_input_end(ctx);
 
+		PF_INFO("UPDATE GO");
 
 		for each (auto go in objects)
 		{
 			go->Update();
 		}
 
+
+		PF_INFO("UPDATE UI");
 		if (nk_begin(ctx, "Demo", nk_rect(500, 50, 230, 250),
 			NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 			NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
@@ -200,6 +210,9 @@ int main(void)
 			}
 		}
 		nk_end(ctx);
+
+		PF_INFO("UPDATE RENDER");
+		sRenderer->Render();
 
 //#define INCLUDE_OVERVIEW 
 

@@ -109,9 +109,7 @@
 
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
-#define PF_NK(a) a ? NK_MAXIMIZED: NK_MINIMIZED
 
-std::unique_ptr<SystemRenderer> renderer;
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
@@ -156,6 +154,21 @@ struct nk_colorf bg;
 #pragma endregion Types
 
 
+	class AssetManager {
+	public:
+		std::list<Asset> assets;
+	};
+
+	class Asset {
+	public:
+
+		Asset(const std::string n) : name(n)
+		{
+		}
+		std::string path;
+		std::string name;
+
+	};
 
 #include "Loaders.h"
 
@@ -163,17 +176,6 @@ struct nk_colorf bg;
 
 std::vector<GameObject*> objects;
 
-class AssetManager {
-public:
-	std::list<Asset> assets;
-};
-
-class Asset {
-public:
-	std::string path;
-	std::string name;
-	
-};
 
 class Component {
 public:
@@ -267,6 +269,97 @@ public:
 	}
 };
 
+#ifndef GLCALL
+#define GLCALL(x) x
+#endif
+enum class FBAttachment {
+	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
+	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
+	COLOR_ATTACHMENT2 = GL_COLOR_ATTACHMENT2,
+	COLOR_ATTACHMENT3 = GL_COLOR_ATTACHMENT3,
+	COLOR_ATTACHMENT4 = GL_COLOR_ATTACHMENT4,
+	COLOR_ATTACHMENT5 = GL_COLOR_ATTACHMENT5,
+	COLOR_ATTACHMENT6 = GL_COLOR_ATTACHMENT6,
+	COLOR_ATTACHMENT7 = GL_COLOR_ATTACHMENT7,
+	COLOR_ATTACHMENT8 = GL_COLOR_ATTACHMENT8,
+	COLOR_ATTACHMENT9 = GL_COLOR_ATTACHMENT9,
+	COLOR_ATTACHMENT10 = GL_COLOR_ATTACHMENT10,
+	COLOR_ATTACHMENT11 = GL_COLOR_ATTACHMENT11,
+	COLOR_ATTACHMENT12 = GL_COLOR_ATTACHMENT12,
+	COLOR_ATTACHMENT13 = GL_COLOR_ATTACHMENT13,
+	COLOR_ATTACHMENT14 = GL_COLOR_ATTACHMENT14,
+	COLOR_ATTACHMENT15 = GL_COLOR_ATTACHMENT15,
+	COLOR_ATTACHMENT16 = GL_COLOR_ATTACHMENT16,
+	COLOR_ATTACHMENT17 = GL_COLOR_ATTACHMENT17,
+	COLOR_ATTACHMENT18 = GL_COLOR_ATTACHMENT18,
+	COLOR_ATTACHMENT19 = GL_COLOR_ATTACHMENT19,
+	COLOR_ATTACHMENT20 = GL_COLOR_ATTACHMENT20,
+	COLOR_ATTACHMENT21 = GL_COLOR_ATTACHMENT21,
+	COLOR_ATTACHMENT22 = GL_COLOR_ATTACHMENT22,
+	COLOR_ATTACHMENT23 = GL_COLOR_ATTACHMENT23,
+	COLOR_ATTACHMENT24 = GL_COLOR_ATTACHMENT24,
+	COLOR_ATTACHMENT25 = GL_COLOR_ATTACHMENT25,
+	COLOR_ATTACHMENT26 = GL_COLOR_ATTACHMENT26,
+	COLOR_ATTACHMENT27 = GL_COLOR_ATTACHMENT27,
+	COLOR_ATTACHMENT28 = GL_COLOR_ATTACHMENT28,
+	COLOR_ATTACHMENT29 = GL_COLOR_ATTACHMENT29,
+	COLOR_ATTACHMENT30 = GL_COLOR_ATTACHMENT30,
+	COLOR_ATTACHMENT31 = GL_COLOR_ATTACHMENT31,
+	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
+	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
+};
+
+
+class FrameBuffer {
+
+	//For a framebuffer to be complete the following requirements have to be satisfied :
+
+	// We have to attach at least one buffer(color, depth or stencil buffer).
+	// There should be at least one color attachment.
+	// All attachments should be complete as well(reserved memory).
+	// Each buffer should have the same number of samples.
+	unsigned int fbo;
+
+	public:
+
+	FrameBuffer() {
+		GLCALL(glGenFramebuffers(1, &fbo));
+
+
+
+		if (!glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
+			__debugbreak();
+		}
+	}
+
+	~FrameBuffer() {
+		GLCALL(glDeleteFramebuffers(1, &fbo));
+	}
+	void AttachTexture(const Texture &tex, FBAttachment attchType) {
+		Bind();
+		glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<int>(attchType), GL_TEXTURE_2D, tex.id, 0);
+		UnBind();
+
+	}
+
+	void Bind() {
+		// By binding to the GL_FRAMEBUFFER target all the next read and write 
+		// framebuffer operations will affect the currently bound framebuffer.
+		// It is also possible to bind a framebuffer to a read or write target 
+		// specifically by binding to GL_READ_FRAMEBUFFER or GL_DRAW_FRAMEBUFFER respectively.
+		// The framebuffer bound to GL_READ_FRAMEBUFFER is then used for all read operations like 
+		// glReadPixels and the framebuffer bound to GL_DRAW_FRAMEBUFFER is used as the destination for rendering,
+		// clearing and other write operations.Most of the times you won't need to make this distinction though and 
+		// you generally bind to both with GL_FRAMEBUFFER.
+
+
+		GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
+	}
+
+	void UnBind() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+};
 
 
 
@@ -355,6 +448,8 @@ public:
 			}
 		}
 
+		virtual void ShadowPass(){}
+
 	protected:
 		Light(COMP_PARAMS, std::string n) INIT_COMP(n)
 		{
@@ -366,7 +461,7 @@ public:
 	public:
 		Vec3 attenuation;
 
-		PointLight(LIGHT_PARAMS) INIT_LIGHT("PointLight")
+		PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
 		{
 			this->type = LightType::POINT;
 		}
@@ -388,7 +483,7 @@ public:
 		Vec3 attenuation;
 		float innerAngle = 15.f;
 		float outterAngle = 20.f;
-		SpotLight(LIGHT_PARAMS)  INIT_LIGHT("SpotLight")
+		SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
 		{
 			this->type = LightType::SPOTLIGHT;
 
@@ -412,7 +507,7 @@ public:
 	
 	class DirectionalLight : public Light {
 	public:
-		DirectionalLight(LIGHT_PARAMS)  INIT_LIGHT("DirectionalLight")
+		DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
 		{
 			this->type = LightType::DIRECTIONAL;
 
@@ -449,20 +544,28 @@ public:
 	std::list<Renderer*> renderers;
 	std::unique_ptr<CubeMap> cubemap;
 public:
-	void Steal(std::vector<GameObject> gos) {
+	void Steal(std::vector<GameObject*> gos) {
 
-		for each (GameObject go in gos)
+		for each (GameObject* go in gos)
 		{
-			for (auto ii = go.components.begin(); ii != go.components.end(); ii++)
+			auto &comps = go->components;
+
+			for (auto ii = comps.begin(); ii != comps.end(); )
 			{
-				
 				if (Light *light = dynamic_cast<Light*>((*ii))) {
 					lights.push_back(light);
-					go.components.erase(ii);
+					comps.erase(ii++);
 					continue;
 				}
+
+				ii++;
 			}
 		}
 
 	}
+
+	void Render() {
+		//lights
+	}
 };
+SystemRenderer *sRenderer;

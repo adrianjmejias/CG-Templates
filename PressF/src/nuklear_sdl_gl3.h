@@ -244,7 +244,7 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
 			{ NK_VERTEX_LAYOUT_END }
 			};
 
-#define NK_MEMSET(...) memset(__VA_ARGS__)
+//#define NK_MEMSET(...) memset(__VA_ARGS__)
 
 			NK_MEMSET(&config, 0, sizeof(config));
 			config.vertex_layout = vertex_layout;
