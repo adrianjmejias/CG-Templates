@@ -242,7 +242,8 @@ int main(void)
 
 		SDL_Event evt;
 		nk_input_begin(ctx);
-		while (SDL_PollEvent(&evt)) {
+		while (SDL_PollEvent(&evt)) 
+		{
 			if (evt.type == SDL_QUIT) goto cleanup;
 
 			for each (auto go in objects)
@@ -250,17 +251,31 @@ int main(void)
 				go->HandleEvent(evt);
 			}
 
-
 			nk_sdl_handle_event(&evt);
 		} 
 		nk_input_end(ctx);
 		//PF_INFO("UPDATE GO");
 
-		for each (auto go in objects)
+		std::queue<GameObject*> callOrder; //bfs
+
+		for (int ii = objects.size() - 1; ii >= 0; ii--)
 		{
-			go->Update();
+			PF_ASSERT(objects[ii] != nullptr); // asumo que no es null
+			callOrder.push(objects[ii]);
 		}
 
+		while (!callOrder.empty())
+		{
+			GameObject *ent = callOrder.front();
+			callOrder.pop();
+
+			ent->Update();
+
+			for (Transform *child : ent->transform.children)
+			{
+				callOrder.push(&child->gameobject);
+			}
+		}
 
 		//PF_INFO("UPDATE UI");
 		if (nk_begin(ctx, "Hierarchy", nk_rect(500, 50, 230, 250),

@@ -147,6 +147,7 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #include <vector>
 #include <list>
 #include <map>
+#include <queue>
 #include <iostream>
 #include <sstream>
 #include <initializer_list>
@@ -820,6 +821,19 @@ public:
 	virtual void HandleEvent(const SDL_Event &e) = 0;
 };
 
+/*
+	This is important to know how se are updating the accumulated matrix
+	Dirty::Acum -> if my parent model changed, I just have to update my accumulated and pass the change to my children.
+	Dirty::Model -> if my model changed, I have to update my model, update the accumulated and pass the change to my children.
+
+	they are ordered according to dirtyness. don't move future Adrian.
+*/
+enum class Dirty {
+	None,
+	Acum,
+	Model,
+};
+
 class Transform {
 public:
 	Transform(GameObject& go) :
@@ -827,19 +841,119 @@ public:
 	{
 
 	}
+	Transform *parent = nullptr;
+	std::vector<Transform *> children;
+
 	GameObject &gameobject;
 	Vec3 position{ 0, 0, 0 };
 	Vec3 rotation{ 0, 0, 0 };
 	Vec3 scale{ 1, 1, 1 };
 	Mat4 model;
-	bool isDirty = true;
+	Mat4 acum;
+	Dirty dirty = Dirty::None;
 
-	Mat4& GetModel() {
-		model = Mat4(1);
-		model = glm::rotate(model, rotation.x, { 1,0,0 });
-		model = glm::rotate(model, rotation.y, { 0,1,0 });
-		model = glm::rotate(model, rotation.z, { 0,0,1 });
+#pragma region mutators
+
+	Vec3 GetRotation() { return rotation; }
+	Vec3 GetScale() { return scale; }
+	Vec3 GetPosition() { return position; }
+	Transform* SetRotation(const Vec3& val) { SetDirty(Dirty::Model);  rotation = val; return this; }
+	Transform* SetScale(const Vec3& val) { SetDirty(Dirty::Model); scale = val; return this; }
+	Transform* SetPosition(const Vec3& val) { SetDirty(Dirty::Model); position = val; return this; }
+	Transform* SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
+	Transform* SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
+	Transform* SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
+	Transform* Translate(const Vec3& val) { return SetPosition(position + val); }
+	Transform* Rotate(const Vec3& val) { return SetRotation(rotation + val); }
+	Transform* Scale(const Vec3& val) { return SetScale(scale + val); }
+	Transform* Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
+	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
+	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
+#pragma endregion mutators
+
+	/*
+	we only update if we are getting dirtier ;)
+	*/
+	Transform* SetDirty(Dirty newVal) {
+		if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
+			dirty = newVal;
+		}
+		return this;
+	}
+
+
+	/*
+	Returs true if it was dirty.
+	Cleans accumulated matrix
+	*/
+	bool TryGetClean() {
+		if (dirty == Dirty::None) return false;
+
+		if (dirty == Dirty::Model) {
+			model = Transform::GenModel(scale, position, rotation);
+			dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
+		}
+
+		if (dirty == Dirty::Acum) {
+			if (parent == nullptr) {
+				acum = model;
+			}
+			else
+			{
+				acum = parent->GetAccumulated() * model;
+			}
+
+			for (auto child : children) {
+				child->SetDirty(Dirty::Acum);
+			}
+		}
+
+		dirty = Dirty::None;
+		return true;
+	}
+	
+	Transform* SetParent(Transform *other) {
+		if (!other) {
+			// poner como root node porque estoy es quitando el padre
+			throw std::exception("Not implemented yet");
+			return this;
+		}
+
+		if (parent == other) {
+			return this; // it is done already
+		}
+
+		if (other->parent == this) {
+			throw std::exception("CICLO INFINITO POR GAFO EN LA JERARQUíA\n");
+		}
+
+		//ponerme a mi de padre
+		SetDirty(Dirty::Acum);
+
+		parent = other; // el es mi padre
+
+		other->children.push_back(this);// yo soy su hijo
+
+		return this;
+	}
+	Mat4& GetAccumulated() {
+		TryGetClean();
+		return acum;
+	}
+	Mat4& GetModel () {
+		TryGetClean();
+		return model;
+	}
+	
+
+
+	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
+		Mat4 model = Mat4(1);
+		model = glm::scale(model, scale);
 		model = glm::translate(model, position);
+		model = glm::rotate(model, glm::radians(rotation.x), Vec3(1, 0, 0));
+		model = glm::rotate(model, glm::radians(rotation.y), Vec3(0, 1, 0));
+		model = glm::rotate(model, glm::radians(rotation.z), Vec3(0, 0, 1));
 		return model;
 	}
 
@@ -1001,10 +1115,24 @@ public:
 
 #pragma region Components
 class Camera : public Component {
-
 	friend class GameObject;
-	float fov = 45;
+	const float YAW = -90.0f;
+	const float PITCH = 0.0f;
+	const float SPEED = 5.f;
+	const float SENSITIVITY = 1.f;
+	const float ZOOM = 45.0f;
+
 	unsigned int power = 10000;
+	bool isPerspective = true;
+	float fov = 45;
+	float nearClippingPlane = 0.1f;
+	float farClippingPlane = 200.0f;
+
+
+	Mat4 projection;
+	Mat4 view;
+	
+
 	Camera(COMP_PARAMS) INIT_COMP("Camera")
 	{
 
@@ -1020,6 +1148,7 @@ class Camera : public Component {
 	virtual void UI() override {
 		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
 	}
+	
 	virtual void HandleEvent(const SDL_Event &e) override {
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
@@ -1040,6 +1169,21 @@ class Camera : public Component {
 			}
 		}
 	}
+
+	virtual Mat4& GetView() {
+
+
+
+
+		return view;
+	}
+	virtual Mat4& GetProjection() {
+
+
+		return view;
+	}
+
+
 };
 
 class Mover : public Component {

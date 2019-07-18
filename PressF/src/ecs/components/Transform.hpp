@@ -81,32 +81,6 @@ public:
 	}
 
 	unsigned int twId = -1;
-	//void DebugUI(TwBar *tw, unsigned int id) {
-	//	
-
-
-
-	//	char *buff = (char*)alloca(sizeof(char) * 10);
-	//	_itoa_s((int)id, buff, 10, 10);
-	//	twId = id;
-	//	std::string idStr(buff);
-
-	//	std::string name = "Transform "+ idStr;
-	//	TwAddSeparator(tw, NULL, (" group='"+name+"' ").data());
-	//	TwAddVarRW(tw, ("Rotation " + idStr).data(), TW_TYPE_DIR3F, &rotation, ("group='" + name+"'").data());
-
-	//	TwAddVarRW(tw, ("Position x " + idStr).data(), TW_TYPE_FLOAT, &position.x, ("group='" + name+"'").data());
-	//	TwAddVarRW(tw, ("Position y " + idStr).data(), TW_TYPE_FLOAT, &position.y, ("group='" + name+"'").data());
-	//	TwAddVarRW(tw, ("Position z " + idStr).data(), TW_TYPE_FLOAT, &position.z, ("group='" + name+"'").data());
-
-	//	TwAddVarRW(tw, ("Scale x " + idStr).data(), TW_TYPE_FLOAT, &scale.x, ("group='" + name+"'").data());
-	//	TwAddVarRW(tw, ("Scale y " + idStr).data(), TW_TYPE_FLOAT, &scale.y, ("group='" + name+"'").data());
-	//	TwAddVarRW(tw, ("Scale z " + idStr).data(), TW_TYPE_FLOAT, &scale.z, ("group='" + name+"'").data());
-
-
-	//	//TwAddVarRW(tw, name.data(), TW_TYPE_BOOL16, NULL, NULL);
-	//	// Add elem to bar
-	//}
 
 };
 
