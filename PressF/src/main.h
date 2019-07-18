@@ -150,6 +150,7 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #include <queue>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <initializer_list>
 
 //#include <filesystem>
@@ -193,155 +194,15 @@ std::istream& operator>> (std::istream& is, iVec3& v)
 }
 using Mat4 = glm::mat4;
 
+enum class IllumModel {
+	CUBEMAP = 11,
+	REFLECTION,
+	REFRACTION,
+	SHADOW,
+	COOK,
+	BLINN_PHONG
+};
 
-//The illumination models are :
-//
-//0  This is a constant color illumination model.The color is the
-//specified Kd for the material.The formula is :
-//
-//color = Kd
-//
-//1  This is a diffuse illumination model using Lambertian shading.The
-//color includes an ambient constant term and a diffuse shading term for
-//each light source.The formula is
-//
-//color = KaIa + Kd{ SUM j = 1..ls, (N * Lj)Ij }
-//
-//2  This is a diffuse and specular illumination model using Lambertian
-//shading and Blinn's interpretation of Phong's specular illumination
-//model(BLIN77).The color includes an ambient constant term, and a
-//diffuse and specular shading term for each light source.The formula
-//is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks{ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij }
-//
-//3  This is a diffuse and specular illumination model with reflection
-//using Lambertian shading, Blinn's interpretation of Phong's specular
-//illumination model(BLIN77), and a reflection term similar to that in
-//Whitted's illumination model (WHIT80).  The color includes an ambient 
-//constant term and a diffuse and specular shading term for each light
-//source.The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
-//
-//Ir = (intensity of reflection map) + (ray trace)
-//
-//4  The diffuse and specular illumination model used to simulate glass
-//is the same as illumination model 3.  When using a very low dissolve
-//(approximately 0.1), specular highlights from lights or reflections
-//become imperceptible.
-//
-//Simulating glass requires an almost transparent object that still
-//reflects strong highlights.The maximum of the average intensity of
-//highlights and reflected lights is used to adjust the dissolve factor.
-//The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
-//
-//5  This is a diffuse and specular shading models similar to
-//illumination model 3, except that reflection due to Fresnel effects is
-//introduced into the equation.Fresnel reflection results from light
-//striking a diffuse surface at a grazing or glancing angle.When light
-//reflects at a grazing angle, the Ks value approaches 1.0 for all color
-//samples.The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij Fr(Lj*Hj,Ks,Ns)Ij } +
-//	Fr(N*V, Ks, Ns)Ir})
-//
-//
-//	6  This is a diffuse and specular illumination model similar to that
-//	used by Whitted(WHIT80) that allows rays to refract through a surface.
-//	The amount of refraction is based on optical density(Ni).The
-//	intensity of light that refracts is equal to 1.0 minus the value of Ks,
-//	and the resulting light is filtered by Tf(transmission filter) as it
-//	passes through the object.The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
-//+ (1.0 - Ks) TfIt
-//
-//7  This illumination model is similar to illumination model 6, except
-//that reflection and transmission due to Fresnel effects has been
-//introduced to the equation.At grazing angles, more light is reflected
-//and less light is refracted through the object.The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij Fr(Lj*Hj,Ks,Ns)Ij } +
-//	Fr(N*V, Ks, Ns)Ir})
-//
-//	+ (1.0 - Kx)Ft(N*V, (1.0 - Ks), Ns)TfIt
-//
-//	8  This illumination model is similar to illumination model 3 without
-//	ray tracing.The formula is :
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
-//
-//Ir = (intensity of reflection map)
-//
-//9  This illumination model is similar to illumination model 4without
-//ray tracing.The formula is :
-//
-//
-//color = KaIa
-//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
-//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
-//
-//Ir = (intensity of reflection map)
-//
-//10  This illumination model is used to cast shadows onto an invisible
-//surface.This is most useful when compositing computer - generated
-//imagery onto live action, since it allows shadows from rendered objects
-//to be composited directly on top of video - grabbed images.The equation
-//for computation of a shadowmatte is formulated as follows.
-//
-//color = Pixel color.The pixel color of a shadowmatte material is
-//always black.
-//
-//color = black
-//
-//M = Matte channel value.This is the image channel which typically
-//represents the opacity of the point on the surface.To store the shadow
-//in the matte channel of the image, it is calculated as :
-//
-//M = 1 - W / P
-//
-//where :
-//
-//	P = Unweighted sum.This is the sum of all S values for each light :
-//
-//	P = S1 + S2 + S3 + .....
-//
-//	W = Weighted sum.This is the sum of all S values, each weighted by
-//	the visibility factor(Q) for the light :
-//
-//W = (S1 * Q1) + (S2 * Q2) + .....
-//
-//Q = Visibility factor.This is the amount of light from a particular
-//light source that reaches the point to be shaded, after traveling
-//through all shadow objects between the light and the point on the
-//surface.Q = 0 means no light reached the point to be shaded; it was
-//blocked by shadow objects, thus casting a shadow.Q = 1 means that
-//nothing blocked the light, and no shadow was cast.  0 < Q < 1 means that
-//	the light was partially blocked by objects that were partially
-//	dissolved.
-//
-//	S = Summed brightness.This is the sum of the spectral sample
-//	intensities for a particular light.The samples are variable, but the
-//default is 3:
-//
-//S = samp1 + samp2 + samp3.
 
 class SystemRenderer;
 class GameObject;
@@ -378,7 +239,6 @@ public:
 
 };
 
-#include "Loaders.h"
 
 #pragma region Shading
 
@@ -386,7 +246,7 @@ class Shader : public Asset {
 	std::string src;
 	unsigned int id = 0;
 	int type;
-	Shader(): Asset("Shader"){}
+	Shader() : Asset("Shader") {}
 public:
 	unsigned int Get() { return id; }
 
@@ -401,7 +261,7 @@ public:
 		s->SetFromFile(path, type);
 		return s;
 	}
-	
+
 	void ReCompile();
 	void Compile() {
 		SetFromString(src, type);
@@ -441,8 +301,48 @@ private:
 public:
 
 
-	//ShaderProgram GetDefault(IllumModel model) {
-	//}
+	static ShaderProgram* GetDefault(IllumModel model) {
+
+		switch (model) {
+		case IllumModel::CUBEMAP:
+			return new ShaderProgram({
+				Shader::FromPath("../../assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("../../assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
+				});
+
+		case IllumModel::REFLECTION:
+			return new ShaderProgram({
+				Shader::FromPath("REFLECTION.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("REFLECTION.frag", GL_FRAGMENT_SHADER),
+				});
+		case IllumModel::REFRACTION:
+			return new ShaderProgram({
+				Shader::FromPath("REFRACTION.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("REFRACTION.frag", GL_FRAGMENT_SHADER),
+				});
+		case IllumModel::SHADOW:
+			return new ShaderProgram({
+				Shader::FromPath("SHADOW.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("SHADOW.frag", GL_FRAGMENT_SHADER),
+				});
+		case IllumModel::COOK:
+			return new ShaderProgram({
+				Shader::FromPath("COOK.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("COOK.frag", GL_FRAGMENT_SHADER),
+				});
+		case IllumModel::BLINN_PHONG:
+			return new ShaderProgram({
+				Shader::FromPath("BLINN_PHONG.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("BLINN_PHONG.frag", GL_FRAGMENT_SHADER),
+				});
+		}
+
+
+
+
+		__debugbreak();
+		throw std::exception("NOT RECOGNIZED SHADER");
+	}
 
 
 
@@ -459,7 +359,7 @@ public:
 	void ReCompile();
 	void AddShader(Shader* shader);
 	void Compile();
-
+public:
 	/**
 	* Enables the shader to be use
 	*/
@@ -800,6 +700,766 @@ void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
 
 #pragma endregion Shading
 
+#pragma region Models
+//#define DEBUG_OBJ_LOADER
+#ifdef DEBUG_OBJ_LOADER
+#define DEBUG_PRINT(x) 
+#else
+#define DEBUG_PRINT(x) 
+#endif // DEBUG
+
+using Face = iVec3;
+
+class Vertex {
+public:
+	Vec3 pos;
+	Vec3 uv;
+	Vec3 normal;
+	Vec3 tangent;
+	Vec3 bitangent;
+};
+
+#pragma region Texture
+
+enum class ClampType {
+	REPEAT = GL_REPEAT,
+	MIRROR_REPEAT = GL_MIRRORED_REPEAT,
+	EDGE = GL_CLAMP_TO_EDGE,
+	BORDER = GL_CLAMP_TO_BORDER,
+};
+
+enum class TexInterpolation {
+	NEAREST = GL_NEAREST,
+	LINEAR = GL_LINEAR,
+};
+
+enum class MapType {
+	AMBIENT,
+	DIFFUSE,
+	SPECULAR,
+	SHINY,
+	DISPLACEMENT,
+	DECAL,
+	BUMP,
+	REFLECTION,
+	DISSOLVE,
+	CUBEMAP,
+};
+
+class Texture {
+	//int width, height, nrChannels;
+	//unsigned char *data;
+	//for (GLuint i = 0; i < textures_faces.size(); i++)
+	//{
+	//	data = stbi_load(textures_faces[i].c_str(), &width, &height, &nrChannels, 0);
+	//	glTexImage2D(
+	//		GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+	//		0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+	//	);
+	//}
+public:
+
+	Texture() {
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_2D, id);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+	}
+
+	~Texture() {
+		glDeleteTextures(1, &id);
+	}
+
+	unsigned int id;
+
+
+	int width;
+	int height;
+	int nChannels;
+	ClampType clamp = ClampType::REPEAT;
+	TexInterpolation texInterpolation = TexInterpolation::LINEAR;
+	MapType type = MapType::AMBIENT;
+	float borderColor[4] = { 1,1,1,1 };
+	Texture(const std::string path, MapType t)
+		: type(t)
+	{
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_2D, id);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+
+		// Creates the texture on GPU
+		glGenTextures(1, &id);
+		// Loads the texture
+		// Flips the texture when loads it because in opengl the texture coordinates are flipped
+		stbi_set_flip_vertically_on_load(true);
+		// Loads the texture file data
+		unsigned char *data = stbi_load(path.data(), &width, &height, &nChannels, 0);
+		if (data)
+		{
+			// Gets the texture channel format
+			GLenum format;
+			switch (nChannels)
+			{
+			case 1:
+				format = GL_RED;
+				break;
+			case 3:
+				format = GL_RGB;
+				break;
+			case 4:
+				format = GL_RGBA;
+				break;
+			}
+
+			// Binds the texture
+			glBindTexture(GL_TEXTURE_2D, id);
+			// Creates the texture
+			glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			// Creates the texture mipmaps
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+			// Set the filtering parameters
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<int>(clamp));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<int>(clamp));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<int>(texInterpolation));
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<int>(texInterpolation));
+
+		}
+		else
+		{
+			PF_ERROR("ERROR:: Unable to load texture ", path);
+			glDeleteTextures(1, &id);
+		}
+		// We dont need the data texture anymore because is loaded on the GPU
+		stbi_image_free(data);
+		PF_INFO("texture loaded {0}", path);
+	}
+
+	Texture(const std::vector<std::string> faces) {
+		type = MapType::CUBEMAP;
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+		int width, height, nrChannels;
+		for (unsigned int i = 0; i < faces.size(); i++)
+		{
+			unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+			if (data)
+			{
+				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+				stbi_image_free(data);
+			}
+			else
+			{
+				std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+				stbi_image_free(data);
+			}
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	}
+
+
+};
+
+class CubeMap {
+public:
+	Texture *tex;
+	ShaderProgram *shader;
+	std::vector<float> skyboxVertices{
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f, -1.0f,
+		1.0f,  1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,
+		1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f
+	};
+	unsigned int skyboxVAO, skyboxVBO;
+
+	CubeMap(const std::vector<std::string> faces) {
+		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP);
+		tex = new Texture(faces);
+
+
+		// skybox VAO
+		glGenVertexArrays(1, &skyboxVAO);
+		glGenBuffers(1, &skyboxVBO);
+		glBindVertexArray(skyboxVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) *skyboxVertices.size(), &skyboxVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	}
+
+	void Render() {
+
+		shader->use();
+
+		shader->setInt("skybox", 0);
+
+		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+		
+		//view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+		//skyboxShader.setMat4("view", view);
+		//skyboxShader.setMat4("projection", projection);
+		//// skybox cube
+		//glBindVertexArray(skyboxVAO);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glBindVertexArray(0);
+		//glDepthFunc(GL_LESS); // set depth function back to default
+
+
+	}
+
+};
+
+#pragma endregion Texture
+
+class SubMesh : public Asset {
+public:
+	Mesh & group;
+	SubMesh(Mesh& g, std::string n)
+		: group(g), Asset(n)
+	{
+	}
+};
+
+std::istream& operator>> (std::istream& file, SubMesh& mesh) {
+	Vec3 v;
+	Vec3 vt;
+	Vec3 vn;
+
+	iVec3 f;
+	iVec3 ft;
+	iVec3 fn;
+	std::string tofData;
+
+
+	while (!file.eof() && file.good() && file.peek() != 'o')
+	{
+		std::string buffer;
+		std::getline(file, buffer);
+		std::stringstream stream(buffer);
+
+		stream >> tofData;
+
+		std::cout << buffer << std::endl;
+		if (tofData[0] == 'v')
+		{
+
+			if (tofData.size() > 1) {
+				switch (tofData[1])
+				{
+				case 'n':
+				{
+					stream >> vn;
+					//mesh->vertexNormal.push_back(vn);
+					//vertexData.push_back(vn);
+					DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
+
+				}
+
+				break;
+
+				case 't':
+					// while(!stream.eof()) // por ahora no triangula
+				{
+					stream >> vt[0] >> vt[1];
+					v[2] = 0;
+					//mesh->vertex.push_back(vt);
+					//vertexData.push_back(Vec3(vt[0], vt[1], 0.f));
+					DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
+				}
+
+
+				break;
+
+				default:
+					break;
+				}
+			}
+			else
+			{
+				// Position
+				// while(!stream.eof()) //por ahora no triangula
+				{
+					DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
+				}
+			}
+		}
+		else if (tofData == "f")
+		{
+			auto posInit = stream.tellg();
+			stream >> buffer;
+			stream.seekg(posInit); // hago como si no hubiera leido nada del stream
+
+								   //x case f v1 v2 v3 ....
+								   //x case f v1/vt1 v2/vt2 v3/vt3 ...
+								   // case f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
+								   // case f v1//vn1 v2//vn2 v3//vn3 ...
+
+			bool hasDoubleSlash = false;
+			unsigned int countDeSlash = 0;
+			{
+				unsigned int slashPos = buffer.find_first_of("/");
+				hasDoubleSlash = (buffer[slashPos + 1]) == '/';
+			}
+			countDeSlash = std::count(buffer.begin(), buffer.end(), '/');
+
+			DEBUG_PRINT(std::cout << hasDoubleSlash << " " << countDeSlash << std::endl);
+
+			//std::vector<std::string> tokens;
+
+
+
+
+			switch (countDeSlash)
+			{
+			case 0: // solo caras
+			{
+
+				stream >> f;
+
+				//mesh->face.push_back(f);
+				DEBUG_PRINT(std::cout << "(" << f[0] << ", " << f[1] << ", " << f[2] << ")" << std::endl);
+			}
+			break;
+			case 1: // caras y texturas
+			{
+				for (int ii = 0; ii < 3; ii++)
+				{
+					stream >> buffer;
+					sscanf_s(buffer.c_str(), "%d/%d", &f[ii], &ft[ii]);
+
+					DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ")" << std::endl);
+				}
+
+				//mesh->face.push_back(f);
+				//mesh->faceTex.push_back(ft);
+			}
+			break;
+			case 2:
+			{
+				if (hasDoubleSlash)
+				{ // caras y normales
+
+					for (int ii = 0; ii < 3; ii++)
+					{
+						stream >> buffer;
+						sscanf_s(buffer.c_str(), "%d//%d", &f[ii], &fn[ii]);
+						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << fn[ii] << ")" << std::endl);
+					}
+
+					//mesh->face.push_back(f);
+					//mesh->faceNorm.push_back(fn);
+
+				}
+				else
+				{ //caras texturas y normales
+					for (int ii = 0; ii < 3; ii++)
+					{
+						stream >> buffer;
+						sscanf_s(buffer.c_str(), "%d/%d/%d", &f[ii], &ft[ii], &fn[ii]);
+						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ", " << fn[ii] << ")" << std::endl);
+					}
+
+					//mesh->face.push_back(f);
+					//mesh->faceNorm.push_back(fn);
+					//mesh->faceTex.push_back(ft);
+				}
+			}
+
+			break;
+			}
+		}
+		else if (tofData == "usemtl")
+		{
+			stream >> buffer;// pongo el nombre del material
+							 //mesh->materials.push_back(materials[buffer]);
+		}
+	}
+	return file;
+}
+
+class Material;
+class ShaderProgram;
+std::istream& operator>> (std::istream& file, Material& material);
+
+class Material : public Asset {
+public:
+	ShaderProgram * shader = nullptr;
+
+
+	void Bind() {
+		//shader.setFloat("shininess", shiny);
+		//////shader.setFloat("roughness", mat.rough);
+		////shader.setFloat("covariance", mat.covariance);
+		////shader.setFloat("reflectance", mat.reflectance);
+		//shader.setVec3("kD", kD);
+		//shader.setVec3("kS", kS);
+		//shader.setVec3("kE", kE);
+		//shader.setVec3("kA", kA);
+	}
+
+
+	std::map<std::string, Texture*> maps;
+	Material(std::string n) : Asset(n) {
+
+	}
+	Vec3 kA;
+	Vec3 kD;
+	Vec3 kS;
+	Vec3 kE{ 0,0,0 };
+	float shiny = 0;
+	float refractionIndex = 1;
+	float dissolve = 1;
+
+	//http://paulbourke.net/dataformats/mtl/
+	static std::vector<Material*> ReadMTLLIB(std::string matPath) {
+
+		std::vector<Material*> materials;
+		std::ifstream file(matPath, std::ios::in);
+
+		if (!file.is_open())
+		{
+			DEBUG_PRINT(std::cout << "Couldn't open material file" << matPath << std::endl);
+			__debugbreak();
+
+			return materials;
+		}
+
+		std::string buffer;
+		while (!file.eof() && file.good())
+		{
+			std::string tofData;
+			std::getline(file, buffer);
+
+			std::stringstream stream(buffer);
+
+			stream >> tofData;
+			DEBUG_PRINT(std::cout << buffer << std::endl);
+			if (tofData == "newmtl") {
+				std::cout << buffer << std::endl;
+				stream >> tofData;
+				Material *mat(new Material(tofData));
+				file >> *mat;
+				materials.push_back(mat);
+			}
+		}
+		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
+		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
+
+		return materials;
+	}
+
+};
+
+std::istream& operator>> (std::istream& file, Material& material)
+{
+	std::string buffer;
+	while (!file.eof() && file.good())
+	{
+		std::string tofData;
+
+		if (file.peek() == 'n') {
+			return file;
+		}
+
+		std::getline(file, buffer);
+
+		std::stringstream stream(buffer);
+
+		stream >> tofData;
+		std::cout << buffer << std::endl;
+		{
+
+
+			// para los K falta espectral y xyz
+			if (tofData == "Ka") {
+				stream >> material.kA;
+			}
+			else if (tofData == "Kd") {
+				stream >> material.kD;
+			}
+			else if (tofData == "Ks") {
+				stream >> material.kS;
+			}
+			else if (tofData == "Ns") {
+				stream >> material.shiny;
+			}
+			else if (tofData == "Ni") {
+				stream >> material.refractionIndex;
+			}
+			else if (tofData == "d") {
+				stream >> material.dissolve;
+			}
+			else if (tofData == "Tf") {
+
+			}
+			else if (tofData == "illum") {
+				int type;
+				stream >> type;
+				material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
+			}
+			else if (tofData == "map_Ka") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::AMBIENT);
+				}
+
+			}
+			else if (tofData == "map_Kd") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::DIFFUSE);
+
+				}
+
+			}
+			else if (tofData == "map_Ks") {
+
+
+			}
+			else if (tofData == "map_Ns") {
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::SHINY);
+
+				}
+
+
+			}
+			else if (tofData == "map_d") {
+
+			}
+			else if (tofData == "disp") {
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::DISPLACEMENT);
+
+				}
+
+			}
+			else if (tofData == "decal") {
+
+
+			}
+			else if (tofData == "bump") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::BUMP);
+
+				}
+			}
+		}
+	}
+
+	return file;
+}
+
+//http://paulbourke.net/dataformats/obj/
+class Mesh : public Asset {
+public:
+	unsigned int VBO;
+	unsigned int VAO;
+	unsigned int EBO;
+	std::vector<Vertex> vertex;
+	std::vector<Material*> materials;
+	std::vector<SubMesh*> submesh;
+
+	SubMesh& AddSubMesh(std::string n) {
+		SubMesh * m = new SubMesh(*this, n);
+		submesh.push_back(m);
+		return *m;
+	}
+
+	Mesh(const std::string path)
+		: Asset(path)
+	{
+		std::ifstream file(path, std::ios::in);
+		std::string buffer;
+		if (!file.is_open())
+		{
+			DEBUG_PRINT(std::cout << "Couldn't open file" << path << std::endl);
+			__debugbreak();
+			std::cin.ignore();
+			exit(-1);
+		}
+
+
+		while (!file.eof() && file.good())
+		{
+			std::getline(file, buffer);
+			std::stringstream stream(buffer);
+			DEBUG_PRINT(std::cout << buffer << std::endl);
+			{
+				std::string tofData;
+				stream >> tofData;
+
+				if (tofData[0] == '#')
+				{
+					continue;
+				}
+
+				if (tofData == "o") {
+					stream >> tofData;
+					SubMesh &m = AddSubMesh(tofData);
+					file >> m;
+				}
+				else if (tofData == "mtllib") {
+					std::cout << buffer << std::endl;
+
+					stream >> tofData;
+					std::string matPath = path.substr(0, path.find_last_of("/"));
+					matPath.append("/" + tofData);
+
+					materials = Material::ReadMTLLIB(matPath);
+
+				}
+				else if (tofData == "s")
+				{
+					stream >> buffer;
+
+					// if
+				}
+			}
+			DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
+			DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
+		}
+
+		////for (auto mesh : meshes)
+		////{
+
+		////	mesh->face.pop_back();
+		////}
+
+		////for (auto mesh : meshes)
+		////{
+
+		////	size_t numVertex = mesh->face.size();
+
+		////	std::vector<std::vector<iVec3>*> arrs({ &mesh->face, &mesh->faceNorm, &mesh->faceTex });
+		////	std::vector<std::vector<Vec3>*> arrsTarg({ &mesh->vertex, &mesh->vertexNormal, &mesh->uv });
+		////	std::vector<Vec3> aux;
+
+		////	for (unsigned int ii = 0; ii < arrs.size(); ii++) {
+		////		auto &arr = *arrs[ii];
+		////		auto &arrTarget = *arrsTarg[ii];
+
+		////		for (auto &f : arr) {
+		////			//std::cout << f.x << " " << f.y << " " << f.z << std::endl;
+
+		////			for (int ii = 0; ii < 3; ii++) {
+		////				glm::u32& index = f[ii];
+		////				if (index > 0) {
+		////					index--;
+		////				}
+		////				else {
+		////					index = (unsigned int)(numVertex + index);
+		////				}
+
+
+		////			}
+		////			aux.push_back(arrTarget[f[0]]);
+		////			aux.push_back(arrTarget[f[1]]);
+		////			aux.push_back(arrTarget[f[2]]);
+
+		////		}
+		////		arrTarget = std::move(aux);
+
+
+		////	}
+
+
+		////}
+
+
+	}
+
+	void GLCreate() {
+
+		glBindVertexArray(VAO);
+		// 2. copy our vertices array in a vertex buffer for OpenGL to use
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
+		// 3. copy our index array in a element buffer for OpenGL to use
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		// 4. then set the vertex attributes pointers
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+	}
+
+};
+#pragma endregion Models
+
+
+
+
+
 std::vector<GameObject*> objects;
 
 
@@ -875,7 +1535,7 @@ public:
 	we only update if we are getting dirtier ;)
 	*/
 private:
-	Transform* SetDirty(Dirty newVal) {
+	Transform * SetDirty(Dirty newVal) {
 		if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
 			dirty = newVal;
 		}
@@ -914,7 +1574,7 @@ private:
 	}
 
 public:
-	Transform* SetParent(Transform *other) {
+	Transform * SetParent(Transform *other) {
 		if (!other) {
 			// poner como root node porque estoy es quitando el padre
 			throw std::exception("Not implemented yet");
@@ -942,11 +1602,11 @@ public:
 		TryGetClean();
 		return acum;
 	}
-	Mat4& GetModel () {
+	Mat4& GetModel() {
 		TryGetClean();
 		return model;
 	}
-	
+
 
 
 	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
@@ -1114,8 +1774,19 @@ public:
 	}
 };
 
+template <typename TT>
+class Singleton{
+private:
+	Singleton();
+inline static TT* instance = nullptr;
+public:
+	static TT* GetInstance() {
+		if (!instance)
+			instance = new TT();
 
-
+		return instance;
+	}
+};
 
 #pragma region Components
 class Camera : public Component {
@@ -1135,7 +1806,7 @@ class Camera : public Component {
 
 	Mat4 projection;
 	Mat4 view;
-	
+
 
 	Camera(COMP_PARAMS) INIT_COMP("Camera")
 	{
@@ -1152,7 +1823,7 @@ class Camera : public Component {
 	virtual void UI() override {
 		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
 	}
-	
+
 	virtual void HandleEvent(const SDL_Event &e) override {
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
@@ -1203,7 +1874,7 @@ public:
 
 class MeshRenderer : public Renderer {
 public:
-	Mesh &mesh;
+	Mesh & mesh;
 
 
 
@@ -1335,12 +2006,13 @@ public:
 
 #pragma endregion Components
 
-class SystemRenderer {
+class SystemRenderer{
+private:
 public:
 	std::list<Light*> lights;
 	std::list<Camera*> camera;
 	std::list<Renderer*> renderers;
-	CubeMap cubemap;
+	CubeMap *cubemap = nullptr;
 public:
 	void Steal(std::vector<GameObject*> gos) {
 
@@ -1383,12 +2055,17 @@ public:
 
 		for each (Renderer* ren in renderers)
 		{
-			ren->Render();
+
+			//SystemRenderer::get
+
+			////material->bind();
+			//	//light->bind();
+			//ren->Render();
 		}
 
 
 
-		cubemap.Render();
+		//cubemap->Render();
 	}
 };
 

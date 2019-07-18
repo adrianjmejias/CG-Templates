@@ -16,7 +16,7 @@ inline void InitLog() {
 
 inline void InitGlad() {
 	// Load GL extensions using glad
-	if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 		std::cerr << "Failed to initialize the OpenGL context." << std::endl;
 		exit(1);
 	}
@@ -76,34 +76,31 @@ void clear() {
 	SDL_Quit();
 }
 ShaderProgram *basic;
+
 void InitScene() {
 
-	
-		GameObject *go1(new GameObject("Camara"));
-		Camera& cam = go1->AddComponent<Camera>();
-		objects.push_back(go1);
-	
 
-	
-		GameObject *go2(new GameObject("PointLight"));
-		Light& light1 = go2->AddComponent<PointLight>();
-		go2->transform.SetParent(&go1->transform);
-
-	
-		GameObject *go3(new GameObject("DirectionalLight"));
-		Light& light2 = go3->AddComponent<DirectionalLight>();
-		//objects.push_back(go3);
-		go3->transform.SetParent(&go1->transform);
+	GameObject *go1(new GameObject("Camara"));
+	Camera& cam = go1->AddComponent<Camera>();
+	objects.push_back(go1);
 
 
-	
-		GameObject *go4(new GameObject("SpotLight"));
-		Light& light3 = go4->AddComponent<SpotLight>();
-		go4->transform.SetParent(&go1->transform);
 
-	
-	
+	GameObject *go2(new GameObject("PointLight"));
+	Light& light1 = go2->AddComponent<PointLight>();
+	go2->transform.SetParent(&go1->transform);
 
+
+	GameObject *go3(new GameObject("DirectionalLight"));
+	Light& light2 = go3->AddComponent<DirectionalLight>();
+	//objects.push_back(go3);
+	go3->transform.SetParent(&go1->transform);
+
+
+
+	GameObject *go4(new GameObject("SpotLight"));
+	Light& light3 = go4->AddComponent<SpotLight>();
+	go4->transform.SetParent(&go1->transform);
 
 	basic = new ShaderProgram({
 		Shader::FromString("#version 330 core\n"
@@ -121,12 +118,12 @@ void InitScene() {
 		});
 
 	{
-		//Mesh * mesh(new Mesh("C:/Users/ccg/Desktop/Premake_CCG/assets/models/fullcube/fullCube.obj"));
+		//Mesh * mesh(new Mesh("assets/models/fullcube/fullCube.obj"));
 		//Material::ReadMTLLIB("C:/Users/ccg/Desktop/Premake_CCG/assets/models/parenting/normal.mtl");
 
 	}
 
-	
+
 
 
 
@@ -134,7 +131,14 @@ void InitScene() {
 
 
 	sRenderer = new SystemRenderer();
-
+	sRenderer->cubemap = new CubeMap({
+		"assets/textures/mp_northlight/right.tga",
+		"assets/textures/mp_northlight/left.tga",
+		"assets/textures/mp_northlight/top.tga",
+		"assets/textures/mp_northlight/bottom.tga",
+		"assets/textures/mp_northlight/front.tga",
+		"assets/textures/mp_northlight/back.tga",
+	});
 	sRenderer->Steal(objects);
 
 }
@@ -246,7 +250,7 @@ int main(void)
 		{
 			GameObject *ent = bfs.front();
 			bfs.pop();
-			
+
 			callOrder.push_back(ent);
 
 			for (Transform *child : ent->transform.children)
@@ -266,7 +270,7 @@ int main(void)
 
 		SDL_Event evt;
 		nk_input_begin(ctx);
-		while (SDL_PollEvent(&evt)) 
+		while (SDL_PollEvent(&evt))
 		{
 			if (evt.type == SDL_QUIT) goto cleanup;
 
@@ -276,7 +280,7 @@ int main(void)
 			}
 
 			nk_sdl_handle_event(&evt);
-		} 
+		}
 		nk_input_end(ctx);
 		//PF_INFO("UPDATE GO");
 
@@ -293,8 +297,8 @@ int main(void)
 			for each (auto go in objects)
 			{
 				go->UI();
-			}
 		}
+	}
 		nk_end(ctx);
 
 
@@ -306,9 +310,9 @@ int main(void)
 		//PF_INFO("UPDATE RENDER");
 		sRenderer->Render();
 
-//#define INCLUDE_OVERVIEW 
+		//#define INCLUDE_OVERVIEW 
 
-		/* -------------- EXAMPLES ---------------- */
+				/* -------------- EXAMPLES ---------------- */
 #ifdef INCLUDE_CALCULATOR
 		calculator(ctx);
 #endif
@@ -318,7 +322,7 @@ int main(void)
 #ifdef INCLUDE_NODE_EDITOR
 		node_editor(ctx);
 #endif
-		
+
 
 		/* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
 		* with blending, scissor, face culling, depth test and viewport and
@@ -330,8 +334,8 @@ int main(void)
 
 		NOW = SDL_GetPerformanceCounter();
 
-		deltaTime = (double)((NOW - LAST)/ (double)SDL_GetPerformanceFrequency());
-	}
+		deltaTime = (double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency());
+}
 
 
 

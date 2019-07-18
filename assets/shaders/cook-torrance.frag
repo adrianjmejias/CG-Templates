@@ -1,6 +1,6 @@
 #version 330 core
-#define M_PI 3.14
 #define NUM_POINT 1
+#define M_PI 3.14
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 
 struct LightColor{
@@ -32,6 +32,14 @@ struct Spot{
 	LightColor color;
 };
 
+struct Material{
+	float shininess;
+	float roughness;
+	vec3 kD;
+	vec3 kS;
+	vec3 kA;
+};
+
 in vec3 o_pos;
 in vec2 o_uv;
 in vec3 v_norm;
@@ -46,13 +54,13 @@ out vec4 color;
 
 uniform vec3 cameraPos;
 
-uniform float shininess;
-uniform float roughness;
-uniform float reflectance;
-uniform float covariance;
-uniform vec3 kD;
-uniform vec3 kS;
-uniform vec3 kA;
+
+
+
+
+
+
+
 
 float r2 = roughness*roughness;
 

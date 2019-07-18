@@ -12,16 +12,16 @@
 
 //#define DEBUG_OBJ_LOADER
 
+
+
+
+#pragma region Models
 //#define DEBUG_OBJ_LOADER
 #ifdef DEBUG_OBJ_LOADER
 #define DEBUG_PRINT(x) 
 #else
 #define DEBUG_PRINT(x) 
 #endif // DEBUG
-
-
-
-#pragma region Models
 
 using Face = iVec3;
 
@@ -60,9 +60,6 @@ enum class MapType {
 	DISSOLVE
 };
 
-
-
-
 class Texture {
 	//int width, height, nrChannels;
 	//unsigned char *data;
@@ -100,7 +97,7 @@ public:
 	TexInterpolation texInterpolation = TexInterpolation::LINEAR;
 	MapType type = MapType::AMBIENT;
 	float borderColor[4] = { 1,1,1,1 };
-	Texture(const std::string path, MapType t ) 
+	Texture(const std::string path, MapType t) 
 		: type(t)
 	{
 		glGenTextures(1, &id);
@@ -162,31 +159,143 @@ public:
 
 class CubeMap {
 public:
-	//std::array<Texture, 6> texs;
-
-	void Render() {
+	CubeMap(const std::vector<std::string> paths) {
 
 	}
+	//std::array<Texture, 6> texs;
+	//float cubeVertices[] = {
+	//	// positions          // texture Coords
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	//	0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	//	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	//	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	//	0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	//	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	//	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	//};
+	//float skyboxVertices[] = {
+	//	// positions          
+	//	-1.0f,  1.0f, -1.0f,
+	//	-1.0f, -1.0f, -1.0f,
+	//	1.0f, -1.0f, -1.0f,
+	//	1.0f, -1.0f, -1.0f,
+	//	1.0f,  1.0f, -1.0f,
+	//	-1.0f,  1.0f, -1.0f,
+
+	//	-1.0f, -1.0f,  1.0f,
+	//	-1.0f, -1.0f, -1.0f,
+	//	-1.0f,  1.0f, -1.0f,
+	//	-1.0f,  1.0f, -1.0f,
+	//	-1.0f,  1.0f,  1.0f,
+	//	-1.0f, -1.0f,  1.0f,
+
+	//	1.0f, -1.0f, -1.0f,
+	//	1.0f, -1.0f,  1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	1.0f,  1.0f, -1.0f,
+	//	1.0f, -1.0f, -1.0f,
+
+	//	-1.0f, -1.0f,  1.0f,
+	//	-1.0f,  1.0f,  1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	1.0f, -1.0f,  1.0f,
+	//	-1.0f, -1.0f,  1.0f,
+
+	//	-1.0f,  1.0f, -1.0f,
+	//	1.0f,  1.0f, -1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	1.0f,  1.0f,  1.0f,
+	//	-1.0f,  1.0f,  1.0f,
+	//	-1.0f,  1.0f, -1.0f,
+
+	//	-1.0f, -1.0f, -1.0f,
+	//	-1.0f, -1.0f,  1.0f,
+	//	1.0f, -1.0f, -1.0f,
+	//	1.0f, -1.0f, -1.0f,
+	//	-1.0f, -1.0f,  1.0f,
+	//	1.0f, -1.0f,  1.0f
+	//};
+	//
+
+
+	//	unsigned int cubeVAO, cubeVBO;
+	//	unsigned int skyboxVAO, skyboxVBO;
+	//
+	//void Render() {
+
+	//	// cube VAO
+	//	glGenVertexArrays(1, &cubeVAO);
+	//	glGenBuffers(1, &cubeVBO);
+	//	glBindVertexArray(cubeVAO);
+	//	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	//	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+	//	glEnableVertexAttribArray(0);
+	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	//	glEnableVertexAttribArray(1);
+	//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	//	// skybox VAO
+	//	glGenVertexArrays(1, &skyboxVAO);
+	//	glGenBuffers(1, &skyboxVBO);
+	//	glBindVertexArray(skyboxVAO);
+	//	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	//	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	//	glEnableVertexAttribArray(0);
+	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+
+
+	//}
 
 };
 
 #pragma endregion Texture
 
-
-class SubMesh {
+class SubMesh : public Asset{
 public:
 	Mesh & group;
-	SubMesh(Mesh& g)
-		: group(g)
+	SubMesh(Mesh& g, std::string n)
+		: group(g), Asset(n)
 	{
 	}
 };
 
 std::istream& operator>> (std::istream& file, SubMesh& mesh) {
-	//static SubMesh* readO(std::ifstream &file, std::string name, std::string path, std::vector<Vec3> &vertexData, std::unordered_map<std::string, std::shared_ptr<Material>>& materials) {
-	//	SubMesh *mesh(new SubMesh("asd"));
-	//	mesh->path = path;
-	//	mesh->name = name;
 	Vec3 v;
 	Vec3 vt;
 	Vec3 vn;
@@ -206,37 +315,47 @@ std::istream& operator>> (std::istream& file, SubMesh& mesh) {
 		stream >> tofData;
 
 		std::cout << buffer << std::endl;
-		if (tofData == "v")
+		if (tofData[0] == 'v')
 		{
-			// while(!stream.eof()) //por ahora no triangula
-			{
-				stream >> v;
 
-				//mesh->vertex.push_back(v);
-				//vertexData.push_back(v);
-				DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
-			}
-		}
-		else if (tofData == "vn")
-		{
-			// while(!stream.eof()) // por ahora no triangula
-			{
-				stream >> vn;
-				//mesh->vertexNormal.push_back(vn);
-				//vertexData.push_back(vn);
-				DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
+			if (tofData.size() > 1) {
+				switch (tofData[1])
+				{
+				case 'n':
+				{
+					stream >> vn;
+					//mesh->vertexNormal.push_back(vn);
+					//vertexData.push_back(vn);
+					DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
 
+				}
+
+					break;
+
+				case 't':
+					// while(!stream.eof()) // por ahora no triangula
+				{
+					stream >> vt[0] >> vt[1];
+					v[2] = 0;
+					//mesh->vertex.push_back(vt);
+					//vertexData.push_back(Vec3(vt[0], vt[1], 0.f));
+					DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
+				}
+
+
+					break;
+
+				default:
+					break;
+				}
 			}
-		}
-		else if (tofData == "vt")
-		{
-			// while(!stream.eof()) // por ahora no triangula
+			else
 			{
-				stream >> vt[0] >> vt[1];
-				v[2] = 0;
-				//mesh->vertex.push_back(vt);
-				//vertexData.push_back(Vec3(vt[0], vt[1], 0.f));
-				DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
+				// Position
+				// while(!stream.eof()) //por ahora no triangula
+				{
+					DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
+				}
 			}
 		}
 		else if (tofData == "f")
@@ -333,13 +452,27 @@ std::istream& operator>> (std::istream& file, SubMesh& mesh) {
 	return file;
 }
 
-
 class Material;
-
+class ShaderProgram;
 std::istream& operator>> (std::istream& file, Material& material);
 
 class Material : public Asset {
 public:
+	ShaderProgram *shader = nullptr;
+	
+	
+	void Bind() {
+		//shader.setFloat("shininess", shiny);
+		//////shader.setFloat("roughness", mat.rough);
+		////shader.setFloat("covariance", mat.covariance);
+		////shader.setFloat("reflectance", mat.reflectance);
+		//shader.setVec3("kD", kD);
+		//shader.setVec3("kS", kS);
+		//shader.setVec3("kE", kE);
+		//shader.setVec3("kA", kA);
+	}
+
+
 	std::map<std::string, Texture*> maps;
 	Material(std::string n) : Asset(n) {
 
@@ -437,13 +570,7 @@ std::istream& operator>> (std::istream& file, Material& material)
 			else if (tofData == "illum") {
 				int type;
 				stream >> type;
-
-				//switch (type)
-				//{
-				//	//del 0 al 10 creo XD
-				//default:
-				//	break;
-				//}
+				material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
 			}
 			else if (tofData == "map_Ka") {
 
@@ -514,17 +641,18 @@ std::istream& operator>> (std::istream& file, Material& material)
 	return file;
 }
 
-
-
+//http://paulbourke.net/dataformats/obj/
 class Mesh : public Asset {
 public:
+	unsigned int VBO;
+	unsigned int VAO;
+	unsigned int EBO;
 	std::vector<Vertex> vertex;
-	std::vector<iVec3> face;
 	std::vector<Material*> materials;
 	std::vector<SubMesh*> submesh;
 
-	SubMesh& AddSubMesh() {
-		SubMesh * m = new SubMesh(*this);
+	SubMesh& AddSubMesh(std::string n) {
+		SubMesh * m = new SubMesh(*this, n);
 		submesh.push_back(m);
 		return *m;
 	}
@@ -559,7 +687,7 @@ public:
 
 				if (tofData == "o") {
 					stream >> tofData;
-					SubMesh &m = AddSubMesh();
+					SubMesh &m = AddSubMesh(tofData);
 					file >> m;
 				}
 				else if (tofData == "mtllib") {
@@ -631,23 +759,24 @@ public:
 
 
 	}
+
+	void GLCreate() {
+
+		glBindVertexArray(VAO);
+		// 2. copy our vertices array in a vertex buffer for OpenGL to use
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data() , GL_STATIC_DRAW);
+		// 3. copy our index array in a element buffer for OpenGL to use
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		// 4. then set the vertex attributes pointers
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+
+	}
+
 };
 #pragma endregion Models
 
 
 
-//http://paulbourke.net/dataformats/obj/
-
-
-
-
-
-
-
-
-
-
-
-
-
-//void readRFL(); // esto es para el espectral de los K
