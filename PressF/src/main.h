@@ -1,5 +1,7 @@
 #pragma once
 
+#pragma region Includes
+
 #include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
@@ -150,6 +152,9 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #include <initializer_list>
 
 //#include <filesystem>
+
+#pragma endregion Includes
+
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 
@@ -182,7 +187,157 @@ std::istream& operator>> (std::istream& is, iVec3& v)
 	return is;
 }
 using Mat4 = glm::mat4;
-//template <typename TT> using uptr<TT> = std::unique_ptr<TT>;
+
+
+//The illumination models are :
+//
+//0  This is a constant color illumination model.The color is the
+//specified Kd for the material.The formula is :
+//
+//color = Kd
+//
+//1  This is a diffuse illumination model using Lambertian shading.The
+//color includes an ambient constant term and a diffuse shading term for
+//each light source.The formula is
+//
+//color = KaIa + Kd{ SUM j = 1..ls, (N * Lj)Ij }
+//
+//2  This is a diffuse and specular illumination model using Lambertian
+//shading and Blinn's interpretation of Phong's specular illumination
+//model(BLIN77).The color includes an ambient constant term, and a
+//diffuse and specular shading term for each light source.The formula
+//is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks{ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij }
+//
+//3  This is a diffuse and specular illumination model with reflection
+//using Lambertian shading, Blinn's interpretation of Phong's specular
+//illumination model(BLIN77), and a reflection term similar to that in
+//Whitted's illumination model (WHIT80).  The color includes an ambient 
+//constant term and a diffuse and specular shading term for each light
+//source.The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
+//
+//Ir = (intensity of reflection map) + (ray trace)
+//
+//4  The diffuse and specular illumination model used to simulate glass
+//is the same as illumination model 3.  When using a very low dissolve
+//(approximately 0.1), specular highlights from lights or reflections
+//become imperceptible.
+//
+//Simulating glass requires an almost transparent object that still
+//reflects strong highlights.The maximum of the average intensity of
+//highlights and reflected lights is used to adjust the dissolve factor.
+//The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
+//
+//5  This is a diffuse and specular shading models similar to
+//illumination model 3, except that reflection due to Fresnel effects is
+//introduced into the equation.Fresnel reflection results from light
+//striking a diffuse surface at a grazing or glancing angle.When light
+//reflects at a grazing angle, the Ks value approaches 1.0 for all color
+//samples.The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij Fr(Lj*Hj,Ks,Ns)Ij } +
+//	Fr(N*V, Ks, Ns)Ir})
+//
+//
+//	6  This is a diffuse and specular illumination model similar to that
+//	used by Whitted(WHIT80) that allows rays to refract through a surface.
+//	The amount of refraction is based on optical density(Ni).The
+//	intensity of light that refracts is equal to 1.0 minus the value of Ks,
+//	and the resulting light is filtered by Tf(transmission filter) as it
+//	passes through the object.The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
+//+ (1.0 - Ks) TfIt
+//
+//7  This illumination model is similar to illumination model 6, except
+//that reflection and transmission due to Fresnel effects has been
+//introduced to the equation.At grazing angles, more light is reflected
+//and less light is refracted through the object.The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij Fr(Lj*Hj,Ks,Ns)Ij } +
+//	Fr(N*V, Ks, Ns)Ir})
+//
+//	+ (1.0 - Kx)Ft(N*V, (1.0 - Ks), Ns)TfIt
+//
+//	8  This illumination model is similar to illumination model 3 without
+//	ray tracing.The formula is :
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
+//
+//Ir = (intensity of reflection map)
+//
+//9  This illumination model is similar to illumination model 4without
+//ray tracing.The formula is :
+//
+//
+//color = KaIa
+//+ Kd{ SUM j = 1..ls, (N*Lj)Ij }
+//+Ks({ SUM j = 1..ls, ((H*Hj) ^ Ns)Ij } +Ir)
+//
+//Ir = (intensity of reflection map)
+//
+//10  This illumination model is used to cast shadows onto an invisible
+//surface.This is most useful when compositing computer - generated
+//imagery onto live action, since it allows shadows from rendered objects
+//to be composited directly on top of video - grabbed images.The equation
+//for computation of a shadowmatte is formulated as follows.
+//
+//color = Pixel color.The pixel color of a shadowmatte material is
+//always black.
+//
+//color = black
+//
+//M = Matte channel value.This is the image channel which typically
+//represents the opacity of the point on the surface.To store the shadow
+//in the matte channel of the image, it is calculated as :
+//
+//M = 1 - W / P
+//
+//where :
+//
+//	P = Unweighted sum.This is the sum of all S values for each light :
+//
+//	P = S1 + S2 + S3 + .....
+//
+//	W = Weighted sum.This is the sum of all S values, each weighted by
+//	the visibility factor(Q) for the light :
+//
+//W = (S1 * Q1) + (S2 * Q2) + .....
+//
+//Q = Visibility factor.This is the amount of light from a particular
+//light source that reaches the point to be shaded, after traveling
+//through all shadow objects between the light and the point on the
+//surface.Q = 0 means no light reached the point to be shaded; it was
+//blocked by shadow objects, thus casting a shadow.Q = 1 means that
+//nothing blocked the light, and no shadow was cast.  0 < Q < 1 means that
+//	the light was partially blocked by objects that were partially
+//	dissolved.
+//
+//	S = Summed brightness.This is the sum of the spectral sample
+//	intensities for a particular light.The samples are variable, but the
+//default is 3:
+//
+//S = samp1 + samp2 + samp3.
+
 class SystemRenderer;
 class GameObject;
 class Component;
@@ -226,17 +381,29 @@ class Shader : public Asset {
 	std::string src;
 	unsigned int id = 0;
 	int type;
+	Shader(): Asset("Shader"){}
 public:
 	unsigned int Get() { return id; }
 
-	Shader(const std::string path, unsigned int type);
 
+	static Shader* FromString(const std::string str, unsigned int type) {
+		auto s = new Shader();
+		s->SetFromString(str, type);
+		return s;
+	}
+	static Shader* FromPath(const std::string path, unsigned int type) {
+		auto s = new Shader();
+		s->SetFromFile(path, type);
+		return s;
+	}
+	
 	void ReCompile();
-
+private:
 	void SetFromString(const std::string salsa, unsigned int type);
 
 	void SetFromFile(std::string path, unsigned int type);
 
+public:
 	~Shader();
 private:
 	static std::string GetShaderName(const unsigned int type) {
@@ -259,13 +426,19 @@ private:
 };
 
 class ShaderProgram :
-	protected std::vector< std::shared_ptr<Shader> >
+	protected std::vector< Shader *>
 {
 private:
 	unsigned int id;
 public:
 
-	ShaderProgram(std::initializer_list<std::shared_ptr<Shader> > li) : std::vector< std::shared_ptr<Shader> >(li)
+
+	//ShaderProgram GetDefault(IllumModel model) {
+	//}
+
+
+
+	ShaderProgram(std::vector<Shader* > li) : std::vector<Shader* >(std::move(li))
 	{
 		Compile();
 	};
@@ -276,7 +449,7 @@ public:
 	};
 	unsigned int Get();
 	void ReCompile();
-	void AddShader(std::shared_ptr<Shader> shader);
+	void AddShader(Shader* shader);
 	void Compile();
 
 	/**
@@ -375,13 +548,6 @@ public:
 	void  setMat4(const std::string &name, const glm::mat4 &mat) const;
 };
 
-
-
-Shader::Shader(const std::string path, unsigned int type) : Asset(path){
-	name = "no name";
-	this->type = type;
-}
-
 void Shader::ReCompile() {
 	SetFromFile(path, type);
 }
@@ -475,7 +641,7 @@ void ShaderProgram::Compile() {
 
 	for (size_t ii = 0; ii < size(); ii++)
 	{
-		Shader &shader = *(at(ii));
+		Shader &shader = *at(ii);
 		shader.ReCompile();
 		GLCALL(glAttachShader(id, shader.Get()));
 
@@ -530,7 +696,7 @@ void ShaderProgram::Compile() {
 }
 
 
-void ShaderProgram::AddShader(std::shared_ptr<Shader> shader) {
+void ShaderProgram::AddShader(Shader* shader) {
 	push_back(shader);
 }
 
@@ -722,7 +888,6 @@ public:
 	}
 };
 
-
 enum class FBAttachment {
 	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
 	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
@@ -759,7 +924,6 @@ enum class FBAttachment {
 	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
 	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
 };
-
 
 class FrameBuffer {
 
@@ -811,9 +975,6 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 };
-
-
-
 
 
 
@@ -981,20 +1142,14 @@ public:
 #pragma endregion Light
 
 
-
-
 #pragma endregion Components
-
-//#define STEAL(TT, stolenCollection, ii) if (TT *___tt = dynamic_cast<TT*>(stolenCollection[ii])) {
-//
-//	}
 
 class SystemRenderer {
 public:
 	std::list<Light*> lights;
 	std::list<Camera*> camera;
 	std::list<Renderer*> renderers;
-	std::unique_ptr<CubeMap> cubemap;
+	CubeMap cubemap;
 public:
 	void Steal(std::vector<GameObject*> gos) {
 
@@ -1042,9 +1197,10 @@ public:
 
 
 
-		cubemap->Render();
+		cubemap.Render();
 	}
 };
+
 SystemRenderer *sRenderer;
 
 
