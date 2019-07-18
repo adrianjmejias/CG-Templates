@@ -244,9 +244,12 @@ int main(void)
 	
 
 
-
 	while (running)
 	{
+		LAST = NOW;
+
+		PF_INFO("deltaTime {0}", deltaTime);
+
 		/* Input */
 		SDL_GetWindowSize(win, &win_width, &win_height);
 		glViewport(0, 0, win_width, win_height);
@@ -310,6 +313,10 @@ int main(void)
 		* rendering the UI. */
 		nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 		SDL_GL_SwapWindow(win);
+
+		NOW = SDL_GetPerformanceCounter();
+
+		deltaTime = (double)((NOW - LAST) * 1000 / (double)SDL_GetPerformanceFrequency());
 	}
 
 

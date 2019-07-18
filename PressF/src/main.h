@@ -169,6 +169,10 @@ int running = 1;
 struct nk_context *ctx;
 struct nk_colorf bg;
 
+Uint64 NOW = SDL_GetPerformanceCounter();
+Uint64 LAST = 0;
+double deltaTime = 0;
+
 #pragma region Types
 
 using Color = nk_colorf;
