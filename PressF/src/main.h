@@ -398,6 +398,9 @@ public:
 	}
 	
 	void ReCompile();
+	void Compile() {
+		SetFromString(src, type);
+	}
 private:
 	void SetFromString(const std::string salsa, unsigned int type);
 
@@ -642,9 +645,8 @@ void ShaderProgram::Compile() {
 	for (size_t ii = 0; ii < size(); ii++)
 	{
 		Shader &shader = *at(ii);
-		shader.ReCompile();
+		shader.Compile();
 		GLCALL(glAttachShader(id, shader.Get()));
-
 	}
 
 	GLCALL(glLinkProgram(id));

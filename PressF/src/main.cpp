@@ -75,7 +75,7 @@ void clear() {
 
 	SDL_Quit();
 }
-
+ShaderProgram *basic;
 void InitScene() {
 
 	{
@@ -105,8 +105,24 @@ void InitScene() {
 	{
 	}
 
+
+	basic = new ShaderProgram({
+		Shader::FromString("#version 330 core\n"
+		"layout (location = 0) in vec3 aPos;\n"
+			"void main()\n"
+			"{\n"
+			"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+			"}\0", GL_VERTEX_SHADER),
+		Shader::FromString("#version 330 core\n"
+			"out vec4 FragColor;\n"
+			"void main()\n"
+			"{\n"
+			"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+			"}\n\0", GL_FRAGMENT_SHADER)
+		});
+
 	{
-		Mesh * mesh(new Mesh("C:/Users/ccg/Desktop/Premake_CCG/assets/models/fullcube/fullCube.obj"));
+		//Mesh * mesh(new Mesh("C:/Users/ccg/Desktop/Premake_CCG/assets/models/fullcube/fullCube.obj"));
 		//Material::ReadMTLLIB("C:/Users/ccg/Desktop/Premake_CCG/assets/models/parenting/normal.mtl");
 
 	}
@@ -182,21 +198,8 @@ int main(void)
 	bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
 	InitScene();
 
+	//basic->Compile();
 
-	ShaderProgram basic({
-		Shader::FromString("#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-		"}\0", GL_VERTEX_SHADER),
-		Shader::FromString("#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-			"}\n\0", GL_FRAGMENT_SHADER)
-		});
 
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
@@ -245,6 +248,11 @@ int main(void)
 	while (running)
 	{
 		/* Input */
+		SDL_GetWindowSize(win, &win_width, &win_height);
+		glViewport(0, 0, win_width, win_height);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(bg.r, bg.g, bg.b, bg.a);
+
 		SDL_Event evt;
 		nk_input_begin(ctx);
 		while (SDL_PollEvent(&evt)) {
@@ -272,6 +280,12 @@ int main(void)
 		}
 		nk_end(ctx);
 
+
+		basic->use();
+		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+								//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		PF_INFO("UPDATE RENDER");
 		sRenderer->Render();
 
@@ -288,10 +302,7 @@ int main(void)
 		node_editor(ctx);
 #endif
 		
-		SDL_GetWindowSize(win, &win_width, &win_height);
-		glViewport(0, 0, win_width, win_height);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(bg.r, bg.g, bg.b, bg.a);
+
 		/* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
 		* with blending, scissor, face culling, depth test and viewport and
 		* defaults everything back into a default state.
