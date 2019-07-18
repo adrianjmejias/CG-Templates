@@ -10,11 +10,11 @@
 #include <memory>
 #include <algorithm>
 
-#define DEBUG_OBJ_LOADER
+//#define DEBUG_OBJ_LOADER
 
 //#define DEBUG_OBJ_LOADER
 #ifdef DEBUG_OBJ_LOADER
-#define DEBUG_PRINT(x) (x)
+#define DEBUG_PRINT(x) 
 #else
 #define DEBUG_PRINT(x) 
 #endif // DEBUG
@@ -48,6 +48,19 @@ enum class TexInterpolation {
 	LINEAR = GL_LINEAR,
 };
 
+enum class MapType {
+	AMBIENT,
+	DIFFUSE,
+	SPECULAR,
+	SHINY,
+	DISPLACEMENT,
+	DECAL,
+	BUMP,
+	REFLECTION,
+	DISSOLVE
+};
+
+
 
 
 class Texture {
@@ -62,11 +75,6 @@ class Texture {
 	//	);
 	//}
 public:
-
-	Texture(const std::string path) {
-		//this->path = path;
-		LoadTexture(path);
-	}
 
 	Texture() {
 		glGenTextures(1, &id);
@@ -90,9 +98,19 @@ public:
 	int nChannels;
 	ClampType clamp = ClampType::REPEAT;
 	TexInterpolation texInterpolation = TexInterpolation::LINEAR;
-
+	MapType type = MapType::AMBIENT;
 	float borderColor[4] = { 1,1,1,1 };
-	unsigned int LoadTexture(const std::string path) {
+	Texture(const std::string path, MapType t ) 
+		: type(t)
+	{
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_2D, id);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+		glTexParameteri(GL_TEXTURE_2D, static_cast<int>(clamp), static_cast<int>(texInterpolation));
+
 		// Creates the texture on GPU
 		glGenTextures(1, &id);
 		// Loads the texture
@@ -139,7 +157,6 @@ public:
 		// We dont need the data texture anymore because is loaded on the GPU
 		stbi_image_free(data);
 		PF_INFO("texture loaded {0}", path);
-		return id;
 	}
 };
 
@@ -158,18 +175,18 @@ public:
 
 class SubMesh {
 public:
-	Mesh &group;
-	SubMesh(Mesh& g) 
+	Mesh & group;
+	SubMesh(Mesh& g)
 		: group(g)
 	{
 	}
 };
 
-std::istream& operator>> (std::istream& file, SubMesh& mesh){
-//static SubMesh* readO(std::ifstream &file, std::string name, std::string path, std::vector<Vec3> &vertexData, std::unordered_map<std::string, std::shared_ptr<Material>>& materials) {
-//	SubMesh *mesh(new SubMesh("asd"));
-//	mesh->path = path;
-//	mesh->name = name;
+std::istream& operator>> (std::istream& file, SubMesh& mesh) {
+	//static SubMesh* readO(std::ifstream &file, std::string name, std::string path, std::vector<Vec3> &vertexData, std::unordered_map<std::string, std::shared_ptr<Material>>& materials) {
+	//	SubMesh *mesh(new SubMesh("asd"));
+	//	mesh->path = path;
+	//	mesh->name = name;
 	Vec3 v;
 	Vec3 vt;
 	Vec3 vn;
@@ -313,7 +330,7 @@ std::istream& operator>> (std::istream& file, SubMesh& mesh){
 			//mesh->materials.push_back(materials[buffer]);
 		}
 	}
-return file;
+	return file;
 }
 
 
@@ -323,7 +340,7 @@ std::istream& operator>> (std::istream& file, Material& material);
 
 class Material : public Asset {
 public:
-
+	std::map<std::string, Texture*> maps;
 	Material(std::string n) : Asset(n) {
 
 	}
@@ -391,7 +408,7 @@ std::istream& operator>> (std::istream& file, Material& material)
 		std::stringstream stream(buffer);
 
 		stream >> tofData;
-		DEBUG_PRINT(std::cout << buffer << std::endl);
+		std::cout << buffer << std::endl;
 		{
 
 
@@ -414,9 +431,6 @@ std::istream& operator>> (std::istream& file, Material& material)
 			else if (tofData == "d") {
 				stream >> material.dissolve;
 			}
-			else if (tofData == "bump") {
-
-			}
 			else if (tofData == "Tf") {
 
 			}
@@ -430,6 +444,69 @@ std::istream& operator>> (std::istream& file, Material& material)
 				//default:
 				//	break;
 				//}
+			}
+			else if (tofData == "map_Ka") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::AMBIENT);
+				}
+
+			}
+			else if (tofData == "map_Kd") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::DIFFUSE);
+
+				}
+
+			}
+			else if (tofData == "map_Ks") {
+
+
+			}
+			else if (tofData == "map_Ns") {
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::SHINY);
+
+				}
+
+
+			}
+			else if (tofData == "map_d") {
+
+			}
+			else if (tofData == "disp") {
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::DISPLACEMENT);
+
+				}
+
+			}
+			else if (tofData == "decal") {
+
+
+			}
+			else if (tofData == "bump") {
+
+				stream >> tofData;
+
+				if (material.maps.find(tofData) == material.maps.end())
+				{
+					material.maps[tofData] = new Texture(tofData, MapType::BUMP);
+
+				}
 			}
 		}
 	}
@@ -465,9 +542,6 @@ public:
 			exit(-1);
 		}
 
-		//std::vector<Vec3> vertexData;
-		//std::unordered_map<std::string, std::shared_ptr<Material>> materials;
-
 
 		while (!file.eof() && file.good())
 		{
@@ -495,11 +569,8 @@ public:
 					std::string matPath = path.substr(0, path.find_last_of("/"));
 					matPath.append("/" + tofData);
 
-					std::vector<Material*> mats = Material::ReadMTLLIB(matPath);
+					materials = Material::ReadMTLLIB(matPath);
 
-					//for (auto mat : mats) {
-					//	materials[mat->name].reset(mat);
-					//}
 				}
 				else if (tofData == "s")
 				{
@@ -561,10 +632,6 @@ public:
 
 	}
 };
-
-
-
-
 #pragma endregion Models
 
 

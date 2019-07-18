@@ -1,12 +1,12 @@
 #pragma once
 
-#include <glad\glad.h>
+#include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <spdlog\spdlog.h>
-#include <spdlog\sinks\basic_file_sink.h>
-#include <spdlog\sinks\stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 
 #define PF_INFO(...)      //spdlog::info(__VA_ARGS__)
@@ -106,7 +106,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
-#include <filesystem>
+//#include <filesystem>
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 
@@ -171,7 +171,7 @@ struct nk_colorf bg;
 		//	path = p;
 		//}
 		std::string name;
-		std::filesystem::path path;
+		std::string path;
 
 	};
 

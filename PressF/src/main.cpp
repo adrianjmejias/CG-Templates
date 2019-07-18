@@ -16,7 +16,7 @@ inline void InitLog() {
 
 inline void InitGlad() {
 	// Load GL extensions using glad
-	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc) SDL_GL_GetProcAddress)) {
 		std::cerr << "Failed to initialize the OpenGL context." << std::endl;
 		exit(1);
 	}
@@ -24,7 +24,6 @@ inline void InitGlad() {
 	// Loaded OpenGL successfully.
 	std::cout << "OpenGL version lo3saded: " << GLVersion.major << "."
 		<< GLVersion.minor << std::endl;
-
 }
 
 inline void InitSDL() {
@@ -105,8 +104,8 @@ void InitScene() {
 	}
 
 	{
-		Mesh * mesh(new Mesh("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.obj"));
-		Material::ReadMTLLIB("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.mtl");
+		Mesh * mesh(new Mesh("C:/Users/ccg/Desktop/Premake_CCG/assets/models/fullcube/fullCube.obj"));
+		//Material::ReadMTLLIB("C:/Users/ccg/Desktop/Premake_CCG/assets/models/parenting/normal.mtl");
 
 	}
 
