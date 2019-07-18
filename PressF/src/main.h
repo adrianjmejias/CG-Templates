@@ -398,7 +398,7 @@ class FrameBuffer {
 	class Renderer : public Component{
 
 	public:
-		virtual void Bind() = 0;
+		virtual void Render() = 0;
 	};
 
 	class MeshRenderer : public Renderer {
@@ -471,6 +471,7 @@ class FrameBuffer {
 		}
 
 		virtual void Bind() override {
+			PF_INFO("Bind PointLight");
 
 		}
 		virtual void UI() override {
@@ -495,7 +496,7 @@ class FrameBuffer {
 		}
 
 		virtual void Bind() override {
-
+			PF_INFO("Bind SpotLight");
 		}
 
 		virtual void UI() override{
@@ -519,7 +520,7 @@ class FrameBuffer {
 
 		}
 		virtual void Bind() override {
-
+			PF_INFO("Bind DirectionalLight");
 		}
 		virtual void UI() override {
 			Light::UI();
@@ -550,15 +551,24 @@ public:
 		{
 			auto &comps = go->components;
 
-			for (auto ii = comps.begin(); ii != comps.end(); )
+			for (auto ii = comps.begin(); ii != comps.end(); ii++)
 			{
 				if (Light *light = dynamic_cast<Light*>((*ii))) {
 					lights.push_back(light);
-					comps.erase(ii++);
 					continue;
 				}
 
-				ii++;
+				if (Camera *cam = dynamic_cast<Camera*>((*ii))) {
+					camera.push_back(cam);
+					continue;
+				}
+
+				if (Renderer *ren = dynamic_cast<Renderer*>((*ii))) {
+					renderers.push_back(ren);
+					continue;
+				}
+
+				
 			}
 		}
 
@@ -566,6 +576,22 @@ public:
 
 	void Render() {
 		//lights
+
+		for each (Light* light in lights)
+		{
+			light->ShadowPass();
+		}
+
+
+
+		for each (Renderer* ren in renderers)
+		{
+			ren->Render();
+		}
+
+
+
+		cubemap->Render();
 	}
 };
 SystemRenderer *sRenderer;

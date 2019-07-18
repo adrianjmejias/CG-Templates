@@ -143,9 +143,12 @@ class Texture {
 };
 
 class CubeMap {
+public:
 	//std::array<Texture, 6> texs;
 
+	void Render() {
 
+	}
 
 };
 
