@@ -29,6 +29,47 @@
 #endif //  DEBUG
 
 
+bool GLLogCall(const char* function, const char* file, int line);
+
+
+#define GLASSERT(x) if (!(x)) __debugbreak();
+#define GLCALL(x) GLClearError();\
+	x;\
+	GLASSERT(GLLogCall(#x, __FILE__, __LINE__))\
+
+static void GLClearError() {
+	while (glGetError() != GL_NO_ERROR);
+}
+static bool GLLogCall(const char* function, const char* file, int line) {
+	while (GLenum error = glGetError()) {
+		std::string errName = "";
+		switch (error)
+		{
+		case(0x0500):
+			errName = "GL_INVALID_ENUM";
+			break;
+		case(0x0501):
+			errName = "GL_INVALID_VALUE";
+			break;
+		case(0x0502):
+			errName = "GL_INVALID_OPERATION";
+			break;
+		case(0x0505):
+			errName = "GL_OUT_OF_MEMORY";
+			break;
+		default:break;
+		}
+
+
+
+		PF_ERROR("[OpenGL Error {0} | {1}  \nCall {2}  \nError : {3}]", file, line, function, errName);
+		return false;
+	}
+
+	return true;
+}
+
+
 /* nuklear - 1.32.0 - public domain */
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,6 +147,8 @@
 #include <map>
 #include <iostream>
 #include <sstream>
+#include <initializer_list>
+
 //#include <filesystem>
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
@@ -123,61 +166,466 @@ struct nk_colorf bg;
 
 #pragma region Types
 
-	using Color = nk_colorf;
-	using Vec3 = glm::vec3;
-	using Vec4 = glm::vec4;
-	using iVec3 = glm::ivec3;
+using Color = nk_colorf;
+using Vec3 = glm::vec3;
+using Vec4 = glm::vec4;
+using iVec3 = glm::ivec3;
 
-	std::istream& operator>> (std::istream& is, Vec3& v)
-	{
-		is >> v.x >> v.y >> v.z;
-		return is;
-	}
-	std::istream& operator>> (std::istream& is, iVec3& v)
-	{
-		is >> v.x >> v.y >> v.z;
-		return is;
-	}
-	using Mat4 = glm::mat4;
-	//template <typename TT> using uptr<TT> = std::unique_ptr<TT>;
-	class SystemRenderer;
-	class GameObject;
-	class Component;
-	class Texture;
-	class Camera;
-	class Asset;
-	class Transform;
-	class GameObject;
-	class Mesh;
+std::istream& operator>> (std::istream& is, Vec3& v)
+{
+	is >> v.x >> v.y >> v.z;
+	return is;
+}
+std::istream& operator>> (std::istream& is, iVec3& v)
+{
+	is >> v.x >> v.y >> v.z;
+	return is;
+}
+using Mat4 = glm::mat4;
+//template <typename TT> using uptr<TT> = std::unique_ptr<TT>;
+class SystemRenderer;
+class GameObject;
+class Component;
+class Texture;
+class Camera;
+class Asset;
+class Transform;
+class GameObject;
+class Mesh;
 
 
 #pragma endregion Types
 
 
-	class AssetManager {
-	public:
-		std::list<Asset> assets;
-	};
+class AssetManager {
+public:
+	std::list<Asset> assets;
+};
 
-	class Asset {
-	public:
+class Asset {
+public:
 
-		Asset(const std::string n) : name(n)
-		{
-		}
-		//Asset(const std::filesystem::path p): name(p.filename)
-		//{
+	Asset(const std::string n) : name(n)
+	{
+	}
+	//Asset(const std::filesystem::path p): name(p.filename)
+	//{
 
-		//	path = p;
-		//}
-		std::string name;
-		std::string path;
+	//	path = p;
+	//}
+	std::string name;
+	std::string path;
 
-	};
+};
 
 #include "Loaders.h"
 
+#pragma region Shading
 
+class Shader : public Asset {
+	std::string src;
+	unsigned int id = 0;
+	int type;
+public:
+	unsigned int Get() { return id; }
+
+	Shader(const std::string path, unsigned int type);
+
+	void ReCompile();
+
+	void SetFromString(const std::string salsa, unsigned int type);
+
+	void SetFromFile(std::string path, unsigned int type);
+
+	~Shader();
+private:
+	static std::string GetShaderName(const unsigned int type) {
+
+		switch (type)
+		{
+		case GL_VERTEX_SHADER:
+			return "vertex";
+			break;
+		case GL_FRAGMENT_SHADER:
+			return "fragment";
+			break;
+		case GL_GEOMETRY_SHADER:
+			return "geometry";
+			break;
+		}
+		return "not defined";
+	}
+
+};
+
+class ShaderProgram :
+	protected std::vector< std::shared_ptr<Shader> >
+{
+private:
+	unsigned int id;
+public:
+
+	ShaderProgram(std::initializer_list<std::shared_ptr<Shader> > li) : std::vector< std::shared_ptr<Shader> >(li)
+	{
+		Compile();
+	};
+
+	~ShaderProgram() {
+		std::cout << "Die ShaderProgram" << std::endl;
+		GLCALL(glDeleteProgram(id));
+	};
+	unsigned int Get();
+	void ReCompile();
+	void AddShader(std::shared_ptr<Shader> shader);
+	void Compile();
+
+	/**
+	* Enables the shader to be use
+	*/
+	void  use();
+
+	/**
+	* Sets a bool uniform
+	* @param{std::string &} uniform name
+	* @param{bool} value to be set
+	*/
+	void  setBool(const std::string &name, bool value) const;
+
+	/**
+	* Sets an int uniform
+	* @param{std::string &} uniform name
+	* @param{int} value to be set
+	*/
+	void  setInt(const std::string &name, int value) const;
+
+	/**
+	* Sets an int uniform
+	* @param{std::string &} uniform name
+	* @param{float} value to be set
+	*/
+	void  setFloat(const std::string &name, float value) const;
+
+	/**
+	* Sets an vec2 uniform
+	* @param{std::string &} uniform name
+	* @param{vec2} value to be set
+	*/
+	void  setVec2(const std::string &name, const glm::vec2 &value) const;
+
+	/**
+	* Sets an vec2 uniform
+	* @param{std::string &} uniform name
+	* @param{float} vec2 x value
+	* @param{float} vec2 y value
+	*/
+	void  setVec2(const std::string &name, float x, float y) const;
+
+	/**
+	* Sets an vec3 uniform
+	* @param{std::string &} uniform name
+	* @param{vec3} vector value
+	*/
+	void  setVec3(const std::string &name, const glm::vec3 &value) const;
+
+	/**
+	* Sets an vec3 uniform
+	* @param{std::string &} uniform name
+	* @param{float} vec3 x value
+	* @param{float} vec3 y value
+	* @param{float} vec3 z value
+	*/
+	void  setVec3(const std::string &name, float x, float y, float z) const;
+
+	/**
+	* Sets an vec4 uniform
+	* @param{std::string &} uniform name
+	* @param{vec4} vec4 value
+	*/
+	void  setVec4(const std::string &name, const glm::vec4 &value) const;
+
+	/**
+	* Sets an vec4 uniform
+	* @param{std::string &} uniform name
+	* @param{float} vec4 x value
+	* @param{float} vec4 y value
+	* @param{float} vec4 z value
+	* @param{float} vec4 w value
+	*/
+	void  setVec4(const std::string &name, float x, float y, float z, float w);
+
+	/**
+	* Sets an mat2 uniform
+	* @param{std::string &} uniform name
+	* @param{mat2} mat2 value
+	*/
+	void  setMat2(const std::string &name, const glm::mat2 &mat) const;
+
+	/**
+	* Sets an mat3 uniform
+	* @param{std::string &} uniform name
+	* @param{mat3} mat3 value
+	*/
+	void  setMat3(const std::string &name, const glm::mat3 &mat) const;
+
+	/**
+	* Sets an mat4 uniform
+	* @param{std::string &} uniform name
+	* @param{mat4} mat4 value
+	*/
+	void  setMat4(const std::string &name, const glm::mat4 &mat) const;
+};
+
+
+
+Shader::Shader(const std::string path, unsigned int type) : Asset(path){
+	name = "no name";
+	this->type = type;
+}
+
+void Shader::ReCompile() {
+	SetFromFile(path, type);
+}
+
+void Shader::SetFromString(const std::string salsa, unsigned int type) {
+	src = std::move(salsa);
+	this->type = type;
+
+	const char* c_str = src.data();
+
+	if (id)
+		GLCALL(glDeleteShader(id));
+
+	GLCALL(id = glCreateShader(type));
+
+	GLCALL(glShaderSource(id, 1, &c_str, 0));
+
+	GLCALL(glCompileShader(id));
+
+	int success;
+
+	GLCALL(glGetShaderiv(id, GL_COMPILE_STATUS, &success));
+
+	if (!success)
+	{
+		int length;
+
+		GLCALL(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
+
+		char* message = static_cast<char*>(alloca(length * sizeof(char)));
+
+		GLCALL(glGetShaderInfoLog(id, length, &length, message));
+
+		std::cout << "Failed to compile shader" << Shader::GetShaderName(type) << std::endl;
+		std::cout << message;
+
+	}
+	std::cout << "shader compiled: " << name << std::endl;
+}
+
+
+void Shader::SetFromFile(std::string path, unsigned int type) {
+	name = path;
+	this->path = path;
+	std::string shaderCode;
+	std::ifstream shaderFile;
+
+	// Set exceptions for ifstream object
+
+	try
+	{
+		shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		// Open the file
+		shaderFile.open(path);
+		std::stringstream shaderStream;
+		// Reads the buffer content into streams
+		shaderStream << shaderFile.rdbuf();
+		// Close the file handler
+		shaderFile.close();
+		// Convert the stream into a string
+		shaderCode = shaderStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "ERROR::SHADER Error reading file: " << path << std::endl;
+		std::cout << e.what() << std::endl;
+		return;
+	}
+	SetFromString(shaderCode, type);
+}
+
+Shader::~Shader() {
+	GLCALL(glDeleteShader(id));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+void ShaderProgram::Compile() {
+
+	GLCALL(id = glCreateProgram());
+	std::cout << "Loading Program with --------------------------------------------------------" << std::endl;
+
+	for (size_t ii = 0; ii < size(); ii++)
+	{
+		Shader &shader = *(at(ii));
+		shader.ReCompile();
+		GLCALL(glAttachShader(id, shader.Get()));
+
+	}
+
+	GLCALL(glLinkProgram(id));
+	int success;
+
+	//GLCALL(glValidateProgram(id));
+
+	//glGetProgramiv(id, GL_VALIDATE_STATUS, &success);
+
+	//if(!success){
+	//	// lo dejo asi pa ver si es necesario implementar esto y sacar un mensaje serio
+	//	std::cout<< "Error validating"<<std::endl; 
+
+	//	int length;
+
+	//	GLCALL(glGetProgramiv(id, GL_validate_, &length));
+
+	//	char* message = static_cast<char*>(alloca(length * sizeof(char)));
+
+	//	GLCALL(glGetProgramInfoLog(id, length, &length, message));
+
+	//	std::cout << "Failed to validate program :(" << std::endl;
+	//	std::cout << message;
+
+
+	//	__debugbreak();
+	//}
+
+
+	GLCALL(glGetProgramiv(id, GL_LINK_STATUS, &success));
+
+	if (!success)
+	{
+		int length;
+
+		GLCALL(glGetProgramiv(id, GL_INFO_LOG_LENGTH, &length));
+
+		char* message = static_cast<char*>(alloca(length * sizeof(char)));
+
+		GLCALL(glGetProgramInfoLog(id, length, &length, message));
+
+		std::cout << "Failed to compile program :(" << std::endl;
+		std::cout << message;
+
+	}
+
+
+	std::cout << "Program loaded --------------------------------------------------------" << std::endl;
+}
+
+
+void ShaderProgram::AddShader(std::shared_ptr<Shader> shader) {
+	push_back(shader);
+}
+
+void ShaderProgram::ReCompile() {
+	for (size_t ii = 0; ii < size(); ii++)
+	{
+		Shader &shader = *at(ii);
+		shader.ReCompile();
+
+	}
+	Compile();
+}
+
+unsigned int ShaderProgram::Get() {
+	return id;
+}
+
+void ShaderProgram::use()
+{
+	GLCALL(glUseProgram(id));
+}
+
+void ShaderProgram::setBool(const std::string &name, bool value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform1i(loc, (int)value));
+}
+
+void ShaderProgram::setInt(const std::string &name, int value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform1i(loc, value));
+}
+
+void ShaderProgram::setFloat(const std::string &name, float value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform1f(loc, value));
+}
+
+void ShaderProgram::setVec2(const std::string &name, const glm::vec2 &value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform2fv(loc, 1, &value[0]));
+}
+
+void ShaderProgram::setVec2(const std::string &name, float x, float y) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform2f(loc, x, y));
+}
+
+void ShaderProgram::setVec3(const std::string &name, const glm::vec3 &value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform3fv(loc, 1, &value[0]));
+}
+
+void ShaderProgram::setVec3(const std::string &name, float x, float y, float z) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform3f(loc, x, y, z));
+}
+
+void ShaderProgram::setVec4(const std::string &name, const glm::vec4 &value) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform4fv(loc, 1, &value[0]));
+}
+
+void ShaderProgram::setVec4(const std::string &name, float x, float y, float z, float w)
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniform4f(loc, x, y, z, w));
+}
+
+void ShaderProgram::setMat2(const std::string &name, const glm::mat2 &mat) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniformMatrix2fv(loc, 1, GL_FALSE, &mat[0][0]));
+}
+
+void ShaderProgram::setMat3(const std::string &name, const glm::mat3 &mat) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniformMatrix3fv(loc, 1, GL_FALSE, &mat[0][0]));
+}
+
+void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
+{
+	GLCALL(unsigned int loc = glGetUniformLocation(id, name.c_str()));
+	GLCALL(glUniformMatrix4fv(loc, 1, GL_FALSE, &mat[0][0]));
+}
+
+#pragma endregion Shading
 
 std::vector<GameObject*> objects;
 
@@ -201,15 +649,15 @@ public:
 
 class Transform {
 public:
-	Transform(GameObject& go) : 
+	Transform(GameObject& go) :
 		gameobject(go)
 	{
 
 	}
 	GameObject &gameobject;
-	Vec3 position{0, 0, 0};
-	Vec3 rotation{0, 0, 0 };
-	Vec3 scale{1, 1, 1};
+	Vec3 position{ 0, 0, 0 };
+	Vec3 rotation{ 0, 0, 0 };
+	Vec3 scale{ 1, 1, 1 };
 	Mat4 model;
 	bool isDirty = true;
 
@@ -227,12 +675,12 @@ public:
 class GameObject {
 	friend class SystemRenderer;
 	std::list<Component*> components;
-	
+
 public:
 	int openUI = false;
 	Transform transform;
 	std::string name;
-	GameObject(std::string n): transform(*this) {
+	GameObject(std::string n) : transform(*this) {
 		name = n;
 	}
 	void Update() {
@@ -251,32 +699,30 @@ public:
 			{
 				PF_ASSERT(comp && "component is null");
 
-				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))){
+				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) {
 
 					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
 
 					comp->UI();
-					
+
 					nk_tree_pop(ctx);
 				}
 
 			}
-			
+
 			nk_tree_pop(ctx);
 		}
 	}
 
 	template <typename TT, typename ...Args>
 	TT& AddComponent(Args&&... params) {
-		TT* comp= new TT(*this, transform, std::forward<Args>(params)...);
+		TT* comp = new TT(*this, transform, std::forward<Args>(params)...);
 		components.push_back(comp);
 		return *comp;
 	}
 };
 
-#ifndef GLCALL
-#define GLCALL(x) x
-#endif
+
 enum class FBAttachment {
 	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
 	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
@@ -325,7 +771,7 @@ class FrameBuffer {
 	// Each buffer should have the same number of samples.
 	unsigned int fbo;
 
-	public:
+public:
 
 	FrameBuffer() {
 		GLCALL(glGenFramebuffers(1, &fbo));
@@ -373,164 +819,164 @@ class FrameBuffer {
 
 
 #pragma region Components
-	class Camera : public Component {
+class Camera : public Component {
 
-		friend class GameObject;
-		float fov = 45;
-		unsigned int power = 10000;
-		Camera(COMP_PARAMS) INIT_COMP("Camera")
-		{
+	friend class GameObject;
+	float fov = 45;
+	unsigned int power = 10000;
+	Camera(COMP_PARAMS) INIT_COMP("Camera")
+	{
 
-		}
+	}
 
-		// Inherited via Component
-		virtual void Update() override {
-			PF_INFO("Camera running");
-		}
-
-
-		// Inherited via Component
-		virtual void UI() override {
-			fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
-		}
-	};
-
-	class Mover : public Component {
-
-	};
+	// Inherited via Component
+	virtual void Update() override {
+		PF_INFO("Camera running");
+	}
 
 
-	class Renderer : public Component{
+	// Inherited via Component
+	virtual void UI() override {
+		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
+	}
+};
 
-	public:
-		virtual void Render() = 0;
-	};
+class Mover : public Component {
 
-	class MeshRenderer : public Renderer {
-	public:
-		Mesh& mesh;
-	};
+};
+
+
+class Renderer : public Component {
+
+public:
+	virtual void Render() = 0;
+};
+
+class MeshRenderer : public Renderer {
+public:
+	Mesh & mesh;
+};
 
 
 
 #pragma region Light
-	enum class LightType {
-		POINT,
-		DIRECTIONAL,
-		SPOTLIGHT
-	};
+enum class LightType {
+	POINT,
+	DIRECTIONAL,
+	SPOTLIGHT
+};
 
-	#define LIGHT_PARAMS COMP_PARAMS
-	#define INIT_LIGHT(n) : Light(o,t,n)
+#define LIGHT_PARAMS COMP_PARAMS
+#define INIT_LIGHT(n) : Light(o,t,n)
 
-	class Light : public Component {
-	public:
-		LightType type;
-		Color kA{1,1,1,1};
-		Vec3 kD{0,0,1};
-		Vec3 kS{1,0,0};
-		Vec3 kE{0,0,0};
-
-
-		virtual void Bind() = 0;
-		
-
-		virtual void UI() override {
+class Light : public Component {
+public:
+	LightType type;
+	Color kA{ 1,1,1,1 };
+	Vec3 kD{ 0,0,1 };
+	Vec3 kS{ 1,0,0 };
+	Vec3 kE{ 0,0,0 };
 
 
-			if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
+	virtual void Bind() = 0;
 
-				nk_layout_row_dynamic(ctx, 120, 1);
-				kA = nk_color_picker(ctx, kA, NK_RGBA);
-				nk_layout_row_dynamic(ctx, 25, 2);
-				nk_layout_row_dynamic(ctx, 25, 1);
 
-				kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
-				kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
-				kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
-				kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
-				nk_combo_end(ctx);
-			}
+	virtual void UI() override {
+
+
+		if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
+
+			nk_layout_row_dynamic(ctx, 120, 1);
+			kA = nk_color_picker(ctx, kA, NK_RGBA);
+			nk_layout_row_dynamic(ctx, 25, 2);
+			nk_layout_row_dynamic(ctx, 25, 1);
+
+			kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
+			kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
+			kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
+			kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
+			nk_combo_end(ctx);
 		}
+	}
 
-		virtual void ShadowPass(){}
+	virtual void ShadowPass() {}
 
-	protected:
-		Light(COMP_PARAMS, std::string n) INIT_COMP(n)
-		{
+protected:
+	Light(COMP_PARAMS, std::string n) INIT_COMP(n)
+	{
 
-		}
-	};
+	}
+};
 
-	class PointLight : public Light {
-	public:
-		Vec3 attenuation;
+class PointLight : public Light {
+public:
+	Vec3 attenuation;
 
-		PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
-		{
-			this->type = LightType::POINT;
-		}
-		// Inherited via Light
-		virtual void Update() override {
-			PF_INFO("PointLight running");
-		}
+	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
+	{
+		this->type = LightType::POINT;
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		PF_INFO("PointLight running");
+	}
 
-		virtual void Bind() override {
-			PF_INFO("Bind PointLight");
+	virtual void Bind() override {
+		PF_INFO("Bind PointLight");
 
-		}
-		virtual void UI() override {
-			Light::UI();
-		}
-	};
+	}
+	virtual void UI() override {
+		Light::UI();
+	}
+};
 
-	class SpotLight : public Light {
-	public:
-		Vec3 attenuation;
-		float innerAngle = 15.f;
-		float outterAngle = 20.f;
-		SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
-		{
-			this->type = LightType::SPOTLIGHT;
+class SpotLight : public Light {
+public:
+	Vec3 attenuation;
+	float innerAngle = 15.f;
+	float outterAngle = 20.f;
+	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
+	{
+		this->type = LightType::SPOTLIGHT;
 
-		}
-		// Inherited via Light
-		virtual void Update() override {
-			PF_INFO("SpotLight running");
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		PF_INFO("SpotLight running");
 
-		}
+	}
 
-		virtual void Bind() override {
-			PF_INFO("Bind SpotLight");
-		}
+	virtual void Bind() override {
+		PF_INFO("Bind SpotLight");
+	}
 
-		virtual void UI() override{
-			Light::UI();
-			innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
-			outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
-		}
-	};
-	
-	class DirectionalLight : public Light {
-	public:
-		DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
-		{
-			this->type = LightType::DIRECTIONAL;
+	virtual void UI() override {
+		Light::UI();
+		innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
+		outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
+	}
+};
 
-		}
-		// Inherited via Light
-		virtual void Update() override {
-			PF_INFO("DirectionalLight running");
+class DirectionalLight : public Light {
+public:
+	DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
+	{
+		this->type = LightType::DIRECTIONAL;
+
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		PF_INFO("DirectionalLight running");
 
 
-		}
-		virtual void Bind() override {
-			PF_INFO("Bind DirectionalLight");
-		}
-		virtual void UI() override {
-			Light::UI();
-		}
-	};
+	}
+	virtual void Bind() override {
+		PF_INFO("Bind DirectionalLight");
+	}
+	virtual void UI() override {
+		Light::UI();
+	}
+};
 
 #pragma endregion Light
 
@@ -573,7 +1019,7 @@ public:
 					continue;
 				}
 
-				
+
 			}
 		}
 
@@ -600,3 +1046,9 @@ public:
 	}
 };
 SystemRenderer *sRenderer;
+
+
+
+
+
+
