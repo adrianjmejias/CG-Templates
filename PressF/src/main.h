@@ -700,6 +700,492 @@ void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
 
 #pragma endregion Shading
 
+
+
+
+std::vector<GameObject*> objects;
+
+
+class Component {
+public:
+	std::string name;
+	int openUI = true;
+	int enabled = true;
+	Transform &transform;
+	GameObject &gameobject;
+
+	Component(GameObject &o, Transform &t, const std::string n) : transform(t), gameobject(o)
+	{
+		name = n;
+	}
+
+	virtual void UI() = 0;
+	virtual void Update() = 0;
+	virtual void HandleEvent(const SDL_Event &e) = 0;
+};
+
+/*
+	This is important to know how se are updating the accumulated matrix
+	Dirty::Acum -> if my parent model changed, I just have to update my accumulated and pass the change to my children.
+	Dirty::Model -> if my model changed, I have to update my model, update the accumulated and pass the change to my children.
+
+	they are ordered according to dirtyness. don't move future Adrian.
+*/
+enum class Dirty {
+	None,
+	Acum,
+	Model,
+};
+
+class Transform {
+public:
+	Transform(GameObject& go) :
+		gameobject(go)
+	{
+
+	}
+	Transform *parent = nullptr;
+	std::vector<Transform *> children;
+
+	GameObject &gameobject;
+	Vec3 position{ 0, 0, 0 };
+	Vec3 rotation{ 0, 0, 0 };
+	Vec3 scale{ 1, 1, 1 };
+	Mat4 model;
+	Mat4 acum;
+	Dirty dirty = Dirty::None;
+
+#pragma region mutators
+
+	Vec3 GetRotation() { return rotation; }
+	Vec3 GetScale() { return scale; }
+	Vec3 GetPosition() { return position; }
+	Transform* SetRotation(const Vec3& val) { SetDirty(Dirty::Model);  rotation = val; return this; }
+	Transform* SetScale(const Vec3& val) { SetDirty(Dirty::Model); scale = val; return this; }
+	Transform* SetPosition(const Vec3& val) { SetDirty(Dirty::Model); position = val; return this; }
+	Transform* SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
+	Transform* SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
+	Transform* SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
+	Transform* Translate(const Vec3& val) { return SetPosition(position + val); }
+	Transform* Rotate(const Vec3& val) { return SetRotation(rotation + val); }
+	Transform* Scale(const Vec3& val) { return SetScale(scale + val); }
+	Transform* Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
+	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
+	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
+#pragma endregion mutators
+
+	/*
+	we only update if we are getting dirtier ;)
+	*/
+private:
+	Transform * SetDirty(Dirty newVal) {
+		if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
+			dirty = newVal;
+		}
+		return this;
+	}
+
+
+	/*
+	Returs true if it was dirty.
+	Cleans accumulated matrix
+	*/
+	bool TryGetClean() {
+		if (dirty == Dirty::None) return false;
+
+		if (dirty == Dirty::Model) {
+			model = Transform::GenModel(scale, position, rotation);
+			dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
+		}
+
+		if (dirty == Dirty::Acum) {
+			if (parent == nullptr) {
+				acum = model;
+			}
+			else
+			{
+				acum = parent->GetAccumulated() * model;
+			}
+
+			for (auto child : children) {
+				child->SetDirty(Dirty::Acum);
+			}
+		}
+
+		dirty = Dirty::None;
+		return true;
+	}
+
+public:
+	Transform * SetParent(Transform *other) {
+		if (!other) {
+			// poner como root node porque estoy es quitando el padre
+			throw std::exception("Not implemented yet");
+			return this;
+		}
+
+		if (parent == other) {
+			return this; // it is done already
+		}
+
+		if (other->parent == this) {
+			throw std::exception("CICLO INFINITO POR GAFO EN LA JERARQUíA\n");
+		}
+
+		//ponerme a mi de padre
+		SetDirty(Dirty::Acum);
+
+		parent = other; // el es mi padre
+
+		other->children.push_back(this);// yo soy su hijo
+
+		return this;
+	}
+	Mat4& GetAccumulated() {
+		TryGetClean();
+		return acum;
+	}
+	Mat4& GetModel() {
+		TryGetClean();
+		return model;
+	}
+
+
+
+	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
+		Mat4 model = Mat4(1);
+		model = glm::scale(model, scale);
+		model = glm::translate(model, position);
+		model = glm::rotate(model, glm::radians(rotation.x), Vec3(1, 0, 0));
+		model = glm::rotate(model, glm::radians(rotation.y), Vec3(0, 1, 0));
+		model = glm::rotate(model, glm::radians(rotation.z), Vec3(0, 0, 1));
+		return model;
+	}
+
+};
+
+class GameObject {
+	friend class SystemRenderer;
+	std::list<Component*> components;
+
+public:
+	int openUI = false;
+	Transform transform;
+	std::string name;
+	GameObject(std::string n) : transform(*this) {
+		name = n;
+	}
+	void Update() {
+		for each (auto comp in components)
+		{
+			PF_ASSERT(comp && "COMPONENT IS NULL");
+
+			PF_INFO("Object {0}", name);
+			if (comp->enabled) {
+				comp->Update();
+			}
+		}
+	}
+
+
+	void HandleEvent(const SDL_Event &e) {
+		for each (auto comp in components)
+		{
+			PF_ASSERT(comp && "COMPONENT IS NULL");
+			if (comp->enabled) {
+
+				//PF_INFO("HANDLE EVENT ,{0}", this->name);
+				comp->HandleEvent(e);
+			}
+		}
+	}
+	void UI() {
+		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI))) {
+
+			for each (auto comp in components)
+			{
+				PF_ASSERT(comp && "component is null");
+
+				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) {
+
+					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
+
+					comp->UI();
+
+					nk_tree_pop(ctx);
+				}
+
+			}
+
+			nk_tree_pop(ctx);
+		}
+	}
+
+	template <typename TT, typename ...Args>
+	TT& AddComponent(Args&&... params) {
+		TT* comp = new TT(*this, transform, std::forward<Args>(params)...);
+		components.push_back(comp);
+		return *comp;
+	}
+};
+
+enum class FBAttachment {
+	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
+	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
+	COLOR_ATTACHMENT2 = GL_COLOR_ATTACHMENT2,
+	COLOR_ATTACHMENT3 = GL_COLOR_ATTACHMENT3,
+	COLOR_ATTACHMENT4 = GL_COLOR_ATTACHMENT4,
+	COLOR_ATTACHMENT5 = GL_COLOR_ATTACHMENT5,
+	COLOR_ATTACHMENT6 = GL_COLOR_ATTACHMENT6,
+	COLOR_ATTACHMENT7 = GL_COLOR_ATTACHMENT7,
+	COLOR_ATTACHMENT8 = GL_COLOR_ATTACHMENT8,
+	COLOR_ATTACHMENT9 = GL_COLOR_ATTACHMENT9,
+	COLOR_ATTACHMENT10 = GL_COLOR_ATTACHMENT10,
+	COLOR_ATTACHMENT11 = GL_COLOR_ATTACHMENT11,
+	COLOR_ATTACHMENT12 = GL_COLOR_ATTACHMENT12,
+	COLOR_ATTACHMENT13 = GL_COLOR_ATTACHMENT13,
+	COLOR_ATTACHMENT14 = GL_COLOR_ATTACHMENT14,
+	COLOR_ATTACHMENT15 = GL_COLOR_ATTACHMENT15,
+	COLOR_ATTACHMENT16 = GL_COLOR_ATTACHMENT16,
+	COLOR_ATTACHMENT17 = GL_COLOR_ATTACHMENT17,
+	COLOR_ATTACHMENT18 = GL_COLOR_ATTACHMENT18,
+	COLOR_ATTACHMENT19 = GL_COLOR_ATTACHMENT19,
+	COLOR_ATTACHMENT20 = GL_COLOR_ATTACHMENT20,
+	COLOR_ATTACHMENT21 = GL_COLOR_ATTACHMENT21,
+	COLOR_ATTACHMENT22 = GL_COLOR_ATTACHMENT22,
+	COLOR_ATTACHMENT23 = GL_COLOR_ATTACHMENT23,
+	COLOR_ATTACHMENT24 = GL_COLOR_ATTACHMENT24,
+	COLOR_ATTACHMENT25 = GL_COLOR_ATTACHMENT25,
+	COLOR_ATTACHMENT26 = GL_COLOR_ATTACHMENT26,
+	COLOR_ATTACHMENT27 = GL_COLOR_ATTACHMENT27,
+	COLOR_ATTACHMENT28 = GL_COLOR_ATTACHMENT28,
+	COLOR_ATTACHMENT29 = GL_COLOR_ATTACHMENT29,
+	COLOR_ATTACHMENT30 = GL_COLOR_ATTACHMENT30,
+	COLOR_ATTACHMENT31 = GL_COLOR_ATTACHMENT31,
+	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
+	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
+};
+
+
+#pragma region Components
+class Camera : public Component {
+	friend class GameObject;
+	const float YAW = -90.0f;
+	const float PITCH = 0.0f;
+	const float SPEED = 5.f;
+	const float SENSITIVITY = 1.f;
+	const float ZOOM = 45.0f;
+
+	unsigned int power = 10000;
+	bool isPerspective = true;
+	float fov = 45;
+	float nearClippingPlane = 0.1f;
+	float farClippingPlane = 200.0f;
+
+
+	Mat4 projection;
+	Mat4 view;
+
+
+	Camera(COMP_PARAMS) INIT_COMP("Camera")
+	{
+
+	}
+
+public:
+	// Inherited via Component
+	virtual void Update() override {
+		//PF_INFO("Camera running");
+	}
+
+
+	// Inherited via Component
+	virtual void UI() override {
+		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
+	}
+
+	virtual void HandleEvent(const SDL_Event &e) override {
+		if (e.type == SDL_EventType::SDL_KEYDOWN) {
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
+				PF_INFO(" Camera SDL_SCANCODE_W");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
+				PF_INFO(" Camera SDL_SCANCODE_S");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
+				PF_INFO(" Camera SDL_SCANCODE_A");
+
+			}
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
+				PF_INFO(" Camera SDL_SCANCODE_D");
+
+			}
+		}
+	}
+	virtual Mat4& GetView() {
+
+
+
+
+		return view;
+	}
+	virtual Mat4& GetProjection() {
+
+
+		return view;
+	}
+
+
+};
+
+class Mover : public Component {
+
+};
+
+
+class Renderer : public Component {
+
+public:
+	virtual void Render() = 0;
+};
+
+class MeshRenderer : public Renderer {
+public:
+	Mesh &mesh;
+
+
+
+};
+
+
+
+#pragma region Light
+enum class LightType {
+	POINT,
+	DIRECTIONAL,
+	SPOTLIGHT
+};
+
+#define LIGHT_PARAMS COMP_PARAMS
+#define INIT_LIGHT(n) : Light(o,t,n)
+
+class Light : public Component {
+public:
+	LightType type;
+	Color kA{ 1,1,1,1 };
+	Vec3 kD{ 0,0,1 };
+	Vec3 kS{ 1,0,0 };
+	Vec3 kE{ 0,0,0 };
+
+
+	virtual void Bind() = 0;
+
+
+	virtual void UI() override {
+
+
+		if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
+
+			nk_layout_row_dynamic(ctx, 120, 1);
+			kA = nk_color_picker(ctx, kA, NK_RGBA);
+			nk_layout_row_dynamic(ctx, 25, 2);
+			nk_layout_row_dynamic(ctx, 25, 1);
+
+			kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
+			kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
+			kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
+			kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
+			nk_combo_end(ctx);
+		}
+	}
+	virtual void HandleEvent(const SDL_Event &e) override {}
+	virtual void ShadowPass() {}
+
+protected:
+	Light(COMP_PARAMS, std::string n) INIT_COMP(n)
+	{
+
+	}
+};
+
+class PointLight : public Light {
+public:
+	Vec3 attenuation;
+
+	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
+	{
+		this->type = LightType::POINT;
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		//PF_INFO("PointLight running");
+	}
+
+	virtual void Bind() override {
+		PF_INFO("Bind PointLight");
+
+	}
+	virtual void UI() override {
+		Light::UI();
+	}
+};
+
+class SpotLight : public Light {
+public:
+	Vec3 attenuation;
+	float innerAngle = 15.f;
+	float outterAngle = 20.f;
+	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
+	{
+		this->type = LightType::SPOTLIGHT;
+
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		//PF_INFO("SpotLight running");
+
+	}
+
+	virtual void Bind() override {
+		PF_INFO("Bind SpotLight");
+	}
+
+	virtual void UI() override {
+		Light::UI();
+		innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
+		outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
+	}
+};
+
+class DirectionalLight : public Light {
+public:
+	DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
+	{
+		this->type = LightType::DIRECTIONAL;
+
+	}
+	// Inherited via Light
+	virtual void Update() override {
+		//PF_INFO("DirectionalLight running");
+
+
+	}
+	virtual void Bind() override {
+		PF_INFO("Bind DirectionalLight");
+	}
+	virtual void UI() override {
+		Light::UI();
+	}
+};
+
+#pragma endregion Light
+
+
+#pragma endregion Components
+class CubeMap;
+
 #pragma region Models
 //#define DEBUG_OBJ_LOADER
 #ifdef DEBUG_OBJ_LOADER
@@ -875,7 +1361,7 @@ public:
 
 class CubeMap {
 public:
-	Texture *tex;
+	Texture * tex;
 	ShaderProgram *shader;
 	std::vector<float> skyboxVertices{
 		// positions          
@@ -938,29 +1424,93 @@ public:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	}
 
-	void Render() {
+	void Render(SystemRenderer &renderer) {
 
 		shader->use();
 
 		shader->setInt("skybox", 0);
 
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-		
-		//view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
-		//skyboxShader.setMat4("view", view);
-		//skyboxShader.setMat4("projection", projection);
-		//// skybox cube
-		//glBindVertexArray(skyboxVAO);
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-		//glBindVertexArray(0);
-		//glDepthFunc(GL_LESS); // set depth function back to default
+
+		shader->setMat4("view", renderer.camera.front().GetView());
+		shader->setMat4("projection", renderer.camera.front().GetProjection());
+		// skybox cube
+		glBindVertexArray(skyboxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, tex.id);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glDepthFunc(GL_LESS); // set depth function back to default
 
 
 	}
 
 };
+
+
+class SystemRenderer {
+private:
+public:
+	std::list<Light*> lights;
+	std::list<Camera*> camera;
+	std::list<Renderer*> renderers;
+	CubeMap *cubemap = nullptr;
+public:
+	void Steal(std::vector<GameObject*> gos) {
+
+		for each (GameObject* go in gos)
+		{
+			auto &comps = go->components;
+
+			for (auto ii = comps.begin(); ii != comps.end(); ii++)
+			{
+				if (Light *light = dynamic_cast<Light*>((*ii))) {
+					lights.push_back(light);
+					continue;
+				}
+
+				if (Camera *cam = dynamic_cast<Camera*>((*ii))) {
+					camera.push_back(cam);
+					continue;
+				}
+
+				if (Renderer *ren = dynamic_cast<Renderer*>((*ii))) {
+					renderers.push_back(ren);
+					continue;
+				}
+
+
+			}
+		}
+
+	}
+
+	void Render() {
+		//lights
+
+		for each (Light* light in lights)
+		{
+			light->ShadowPass();
+		}
+
+
+
+		for each (Renderer* ren in renderers)
+		{
+
+			//SystemRenderer::get
+
+			////material->bind();
+			//	//light->bind();
+			//ren->Render();
+		}
+
+
+
+		cubemap->Render(*this);
+	}
+};
+
 
 #pragma endregion Texture
 
@@ -1456,273 +2006,6 @@ public:
 };
 #pragma endregion Models
 
-
-
-
-
-std::vector<GameObject*> objects;
-
-
-class Component {
-public:
-	std::string name;
-	int openUI = true;
-	int enabled = true;
-	Transform &transform;
-	GameObject &gameobject;
-
-	Component(GameObject &o, Transform &t, const std::string n) : transform(t), gameobject(o)
-	{
-		name = n;
-	}
-
-	virtual void UI() = 0;
-	virtual void Update() = 0;
-	virtual void HandleEvent(const SDL_Event &e) = 0;
-};
-
-/*
-	This is important to know how se are updating the accumulated matrix
-	Dirty::Acum -> if my parent model changed, I just have to update my accumulated and pass the change to my children.
-	Dirty::Model -> if my model changed, I have to update my model, update the accumulated and pass the change to my children.
-
-	they are ordered according to dirtyness. don't move future Adrian.
-*/
-enum class Dirty {
-	None,
-	Acum,
-	Model,
-};
-
-class Transform {
-public:
-	Transform(GameObject& go) :
-		gameobject(go)
-	{
-
-	}
-	Transform *parent = nullptr;
-	std::vector<Transform *> children;
-
-	GameObject &gameobject;
-	Vec3 position{ 0, 0, 0 };
-	Vec3 rotation{ 0, 0, 0 };
-	Vec3 scale{ 1, 1, 1 };
-	Mat4 model;
-	Mat4 acum;
-	Dirty dirty = Dirty::None;
-
-#pragma region mutators
-
-	Vec3 GetRotation() { return rotation; }
-	Vec3 GetScale() { return scale; }
-	Vec3 GetPosition() { return position; }
-	Transform* SetRotation(const Vec3& val) { SetDirty(Dirty::Model);  rotation = val; return this; }
-	Transform* SetScale(const Vec3& val) { SetDirty(Dirty::Model); scale = val; return this; }
-	Transform* SetPosition(const Vec3& val) { SetDirty(Dirty::Model); position = val; return this; }
-	Transform* SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
-	Transform* SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
-	Transform* SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
-	Transform* Translate(const Vec3& val) { return SetPosition(position + val); }
-	Transform* Rotate(const Vec3& val) { return SetRotation(rotation + val); }
-	Transform* Scale(const Vec3& val) { return SetScale(scale + val); }
-	Transform* Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
-	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
-	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
-#pragma endregion mutators
-
-	/*
-	we only update if we are getting dirtier ;)
-	*/
-private:
-	Transform * SetDirty(Dirty newVal) {
-		if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
-			dirty = newVal;
-		}
-		return this;
-	}
-
-
-	/*
-	Returs true if it was dirty.
-	Cleans accumulated matrix
-	*/
-	bool TryGetClean() {
-		if (dirty == Dirty::None) return false;
-
-		if (dirty == Dirty::Model) {
-			model = Transform::GenModel(scale, position, rotation);
-			dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
-		}
-
-		if (dirty == Dirty::Acum) {
-			if (parent == nullptr) {
-				acum = model;
-			}
-			else
-			{
-				acum = parent->GetAccumulated() * model;
-			}
-
-			for (auto child : children) {
-				child->SetDirty(Dirty::Acum);
-			}
-		}
-
-		dirty = Dirty::None;
-		return true;
-	}
-
-public:
-	Transform * SetParent(Transform *other) {
-		if (!other) {
-			// poner como root node porque estoy es quitando el padre
-			throw std::exception("Not implemented yet");
-			return this;
-		}
-
-		if (parent == other) {
-			return this; // it is done already
-		}
-
-		if (other->parent == this) {
-			throw std::exception("CICLO INFINITO POR GAFO EN LA JERARQUíA\n");
-		}
-
-		//ponerme a mi de padre
-		SetDirty(Dirty::Acum);
-
-		parent = other; // el es mi padre
-
-		other->children.push_back(this);// yo soy su hijo
-
-		return this;
-	}
-	Mat4& GetAccumulated() {
-		TryGetClean();
-		return acum;
-	}
-	Mat4& GetModel() {
-		TryGetClean();
-		return model;
-	}
-
-
-
-	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
-		Mat4 model = Mat4(1);
-		model = glm::scale(model, scale);
-		model = glm::translate(model, position);
-		model = glm::rotate(model, glm::radians(rotation.x), Vec3(1, 0, 0));
-		model = glm::rotate(model, glm::radians(rotation.y), Vec3(0, 1, 0));
-		model = glm::rotate(model, glm::radians(rotation.z), Vec3(0, 0, 1));
-		return model;
-	}
-
-};
-
-class GameObject {
-	friend class SystemRenderer;
-	std::list<Component*> components;
-
-public:
-	int openUI = false;
-	Transform transform;
-	std::string name;
-	GameObject(std::string n) : transform(*this) {
-		name = n;
-	}
-	void Update() {
-		for each (auto comp in components)
-		{
-			PF_ASSERT(comp && "COMPONENT IS NULL");
-
-			PF_INFO("Object {0}", name);
-			if (comp->enabled) {
-				comp->Update();
-			}
-		}
-	}
-
-
-	void HandleEvent(const SDL_Event &e) {
-		for each (auto comp in components)
-		{
-			PF_ASSERT(comp && "COMPONENT IS NULL");
-			if (comp->enabled) {
-
-				//PF_INFO("HANDLE EVENT ,{0}", this->name);
-				comp->HandleEvent(e);
-			}
-		}
-	}
-	void UI() {
-		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI))) {
-
-			for each (auto comp in components)
-			{
-				PF_ASSERT(comp && "component is null");
-
-				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) {
-
-					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
-
-					comp->UI();
-
-					nk_tree_pop(ctx);
-				}
-
-			}
-
-			nk_tree_pop(ctx);
-		}
-	}
-
-	template <typename TT, typename ...Args>
-	TT& AddComponent(Args&&... params) {
-		TT* comp = new TT(*this, transform, std::forward<Args>(params)...);
-		components.push_back(comp);
-		return *comp;
-	}
-};
-
-enum class FBAttachment {
-	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
-	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
-	COLOR_ATTACHMENT2 = GL_COLOR_ATTACHMENT2,
-	COLOR_ATTACHMENT3 = GL_COLOR_ATTACHMENT3,
-	COLOR_ATTACHMENT4 = GL_COLOR_ATTACHMENT4,
-	COLOR_ATTACHMENT5 = GL_COLOR_ATTACHMENT5,
-	COLOR_ATTACHMENT6 = GL_COLOR_ATTACHMENT6,
-	COLOR_ATTACHMENT7 = GL_COLOR_ATTACHMENT7,
-	COLOR_ATTACHMENT8 = GL_COLOR_ATTACHMENT8,
-	COLOR_ATTACHMENT9 = GL_COLOR_ATTACHMENT9,
-	COLOR_ATTACHMENT10 = GL_COLOR_ATTACHMENT10,
-	COLOR_ATTACHMENT11 = GL_COLOR_ATTACHMENT11,
-	COLOR_ATTACHMENT12 = GL_COLOR_ATTACHMENT12,
-	COLOR_ATTACHMENT13 = GL_COLOR_ATTACHMENT13,
-	COLOR_ATTACHMENT14 = GL_COLOR_ATTACHMENT14,
-	COLOR_ATTACHMENT15 = GL_COLOR_ATTACHMENT15,
-	COLOR_ATTACHMENT16 = GL_COLOR_ATTACHMENT16,
-	COLOR_ATTACHMENT17 = GL_COLOR_ATTACHMENT17,
-	COLOR_ATTACHMENT18 = GL_COLOR_ATTACHMENT18,
-	COLOR_ATTACHMENT19 = GL_COLOR_ATTACHMENT19,
-	COLOR_ATTACHMENT20 = GL_COLOR_ATTACHMENT20,
-	COLOR_ATTACHMENT21 = GL_COLOR_ATTACHMENT21,
-	COLOR_ATTACHMENT22 = GL_COLOR_ATTACHMENT22,
-	COLOR_ATTACHMENT23 = GL_COLOR_ATTACHMENT23,
-	COLOR_ATTACHMENT24 = GL_COLOR_ATTACHMENT24,
-	COLOR_ATTACHMENT25 = GL_COLOR_ATTACHMENT25,
-	COLOR_ATTACHMENT26 = GL_COLOR_ATTACHMENT26,
-	COLOR_ATTACHMENT27 = GL_COLOR_ATTACHMENT27,
-	COLOR_ATTACHMENT28 = GL_COLOR_ATTACHMENT28,
-	COLOR_ATTACHMENT29 = GL_COLOR_ATTACHMENT29,
-	COLOR_ATTACHMENT30 = GL_COLOR_ATTACHMENT30,
-	COLOR_ATTACHMENT31 = GL_COLOR_ATTACHMENT31,
-	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
-	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
-};
-
 class FrameBuffer {
 
 	//For a framebuffer to be complete the following requirements have to be satisfied :
@@ -1774,300 +2057,9 @@ public:
 	}
 };
 
-template <typename TT>
-class Singleton{
-private:
-	Singleton();
-inline static TT* instance = nullptr;
-public:
-	static TT* GetInstance() {
-		if (!instance)
-			instance = new TT();
 
-		return instance;
-	}
-};
 
-#pragma region Components
-class Camera : public Component {
-	friend class GameObject;
-	const float YAW = -90.0f;
-	const float PITCH = 0.0f;
-	const float SPEED = 5.f;
-	const float SENSITIVITY = 1.f;
-	const float ZOOM = 45.0f;
 
-	unsigned int power = 10000;
-	bool isPerspective = true;
-	float fov = 45;
-	float nearClippingPlane = 0.1f;
-	float farClippingPlane = 200.0f;
-
-
-	Mat4 projection;
-	Mat4 view;
-
-
-	Camera(COMP_PARAMS) INIT_COMP("Camera")
-	{
-
-	}
-
-	// Inherited via Component
-	virtual void Update() override {
-		//PF_INFO("Camera running");
-	}
-
-
-	// Inherited via Component
-	virtual void UI() override {
-		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
-	}
-
-	virtual void HandleEvent(const SDL_Event &e) override {
-		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
-				PF_INFO(" Camera SDL_SCANCODE_W");
-
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
-				PF_INFO(" Camera SDL_SCANCODE_S");
-
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
-				PF_INFO(" Camera SDL_SCANCODE_A");
-
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
-				PF_INFO(" Camera SDL_SCANCODE_D");
-
-			}
-		}
-	}
-
-	virtual Mat4& GetView() {
-
-
-
-
-		return view;
-	}
-	virtual Mat4& GetProjection() {
-
-
-		return view;
-	}
-
-
-};
-
-class Mover : public Component {
-
-};
-
-
-class Renderer : public Component {
-
-public:
-	virtual void Render() = 0;
-};
-
-class MeshRenderer : public Renderer {
-public:
-	Mesh & mesh;
-
-
-
-};
-
-
-
-#pragma region Light
-enum class LightType {
-	POINT,
-	DIRECTIONAL,
-	SPOTLIGHT
-};
-
-#define LIGHT_PARAMS COMP_PARAMS
-#define INIT_LIGHT(n) : Light(o,t,n)
-
-class Light : public Component {
-public:
-	LightType type;
-	Color kA{ 1,1,1,1 };
-	Vec3 kD{ 0,0,1 };
-	Vec3 kS{ 1,0,0 };
-	Vec3 kE{ 0,0,0 };
-
-
-	virtual void Bind() = 0;
-
-
-	virtual void UI() override {
-
-
-		if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
-
-			nk_layout_row_dynamic(ctx, 120, 1);
-			kA = nk_color_picker(ctx, kA, NK_RGBA);
-			nk_layout_row_dynamic(ctx, 25, 2);
-			nk_layout_row_dynamic(ctx, 25, 1);
-
-			kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
-			kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
-			kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
-			kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
-			nk_combo_end(ctx);
-		}
-	}
-	virtual void HandleEvent(const SDL_Event &e) override {}
-	virtual void ShadowPass() {}
-
-protected:
-	Light(COMP_PARAMS, std::string n) INIT_COMP(n)
-	{
-
-	}
-};
-
-class PointLight : public Light {
-public:
-	Vec3 attenuation;
-
-	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
-	{
-		this->type = LightType::POINT;
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("PointLight running");
-	}
-
-	virtual void Bind() override {
-		PF_INFO("Bind PointLight");
-
-	}
-	virtual void UI() override {
-		Light::UI();
-	}
-};
-
-class SpotLight : public Light {
-public:
-	Vec3 attenuation;
-	float innerAngle = 15.f;
-	float outterAngle = 20.f;
-	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
-	{
-		this->type = LightType::SPOTLIGHT;
-
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("SpotLight running");
-
-	}
-
-	virtual void Bind() override {
-		PF_INFO("Bind SpotLight");
-	}
-
-	virtual void UI() override {
-		Light::UI();
-		innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
-		outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
-	}
-};
-
-class DirectionalLight : public Light {
-public:
-	DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
-	{
-		this->type = LightType::DIRECTIONAL;
-
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("DirectionalLight running");
-
-
-	}
-	virtual void Bind() override {
-		PF_INFO("Bind DirectionalLight");
-	}
-	virtual void UI() override {
-		Light::UI();
-	}
-};
-
-#pragma endregion Light
-
-
-#pragma endregion Components
-
-class SystemRenderer{
-private:
-public:
-	std::list<Light*> lights;
-	std::list<Camera*> camera;
-	std::list<Renderer*> renderers;
-	CubeMap *cubemap = nullptr;
-public:
-	void Steal(std::vector<GameObject*> gos) {
-
-		for each (GameObject* go in gos)
-		{
-			auto &comps = go->components;
-
-			for (auto ii = comps.begin(); ii != comps.end(); ii++)
-			{
-				if (Light *light = dynamic_cast<Light*>((*ii))) {
-					lights.push_back(light);
-					continue;
-				}
-
-				if (Camera *cam = dynamic_cast<Camera*>((*ii))) {
-					camera.push_back(cam);
-					continue;
-				}
-
-				if (Renderer *ren = dynamic_cast<Renderer*>((*ii))) {
-					renderers.push_back(ren);
-					continue;
-				}
-
-
-			}
-		}
-
-	}
-
-	void Render() {
-		//lights
-
-		for each (Light* light in lights)
-		{
-			light->ShadowPass();
-		}
-
-
-
-		for each (Renderer* ren in renderers)
-		{
-
-			//SystemRenderer::get
-
-			////material->bind();
-			//	//light->bind();
-			//ren->Render();
-		}
-
-
-
-		//cubemap->Render();
-	}
-};
 
 SystemRenderer *sRenderer;
 

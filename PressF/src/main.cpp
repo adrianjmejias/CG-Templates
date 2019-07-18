@@ -131,6 +131,7 @@ void InitScene() {
 
 
 	sRenderer = new SystemRenderer();
+
 	sRenderer->cubemap = new CubeMap({
 		"assets/textures/mp_northlight/right.tga",
 		"assets/textures/mp_northlight/left.tga",
