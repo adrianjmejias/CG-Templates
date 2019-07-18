@@ -874,6 +874,7 @@ public:
 	/*
 	we only update if we are getting dirtier ;)
 	*/
+private:
 	Transform* SetDirty(Dirty newVal) {
 		if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
 			dirty = newVal;
@@ -911,7 +912,8 @@ public:
 		dirty = Dirty::None;
 		return true;
 	}
-	
+
+public:
 	Transform* SetParent(Transform *other) {
 		if (!other) {
 			// poner como root node porque estoy es quitando el padre
@@ -974,6 +976,8 @@ public:
 		for each (auto comp in components)
 		{
 			PF_ASSERT(comp && "COMPONENT IS NULL");
+
+			PF_INFO("Object {0}", name);
 			if (comp->enabled) {
 				comp->Update();
 			}

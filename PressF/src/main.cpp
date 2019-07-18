@@ -78,32 +78,31 @@ void clear() {
 ShaderProgram *basic;
 void InitScene() {
 
-	{
-		GameObject *go(new GameObject("Camara"));
-		Camera& cam = go->AddComponent<Camera>();
-		objects.push_back(go);
-	}
+	
+		GameObject *go1(new GameObject("Camara"));
+		Camera& cam = go1->AddComponent<Camera>();
+		objects.push_back(go1);
+	
 
-	{
-		GameObject *go(new GameObject("PointLight"));
-		Light& light = go->AddComponent<PointLight>();
-		objects.push_back(go);
-	}
+	
+		GameObject *go2(new GameObject("PointLight"));
+		Light& light1 = go2->AddComponent<PointLight>();
+		go2->transform.SetParent(&go1->transform);
 
-	{
-		GameObject *go(new GameObject("DirectionalLight"));
-		Light& light = go->AddComponent<DirectionalLight>();
-		objects.push_back(go);
-	}
+	
+		GameObject *go3(new GameObject("DirectionalLight"));
+		Light& light2 = go3->AddComponent<DirectionalLight>();
+		//objects.push_back(go3);
+		go3->transform.SetParent(&go1->transform);
 
-	{
-		GameObject *go(new GameObject("SpotLight"));
-		Light& light = go->AddComponent<SpotLight>();
-		objects.push_back(go);
-	}
 
-	{
-	}
+	
+		GameObject *go4(new GameObject("SpotLight"));
+		Light& light3 = go4->AddComponent<SpotLight>();
+		go4->transform.SetParent(&go1->transform);
+
+	
+	
 
 
 	basic = new ShaderProgram({
@@ -232,6 +231,31 @@ int main(void)
 	{
 		LAST = NOW;
 
+		std::queue<GameObject*> bfs; //bfs
+		std::list<GameObject* > callOrder;
+
+
+
+		for (int ii = objects.size() - 1; ii >= 0; ii--)
+		{
+			PF_ASSERT(objects[ii] != nullptr); // asumo que no es null
+			bfs.push(objects[ii]);
+		}
+
+		while (!bfs.empty())
+		{
+			GameObject *ent = bfs.front();
+			bfs.pop();
+			
+			callOrder.push_back(ent);
+
+			for (Transform *child : ent->transform.children)
+			{
+				bfs.push(&child->gameobject);
+			}
+		}
+
+
 		//PF_INFO("deltaTime {0}", deltaTime);
 
 		/* Input */
@@ -246,7 +270,7 @@ int main(void)
 		{
 			if (evt.type == SDL_QUIT) goto cleanup;
 
-			for each (auto go in objects)
+			for each (auto go in callOrder)
 			{
 				go->HandleEvent(evt);
 			}
@@ -256,25 +280,9 @@ int main(void)
 		nk_input_end(ctx);
 		//PF_INFO("UPDATE GO");
 
-		std::queue<GameObject*> callOrder; //bfs
-
-		for (int ii = objects.size() - 1; ii >= 0; ii--)
+		for each (auto go in callOrder)
 		{
-			PF_ASSERT(objects[ii] != nullptr); // asumo que no es null
-			callOrder.push(objects[ii]);
-		}
-
-		while (!callOrder.empty())
-		{
-			GameObject *ent = callOrder.front();
-			callOrder.pop();
-
-			ent->Update();
-
-			for (Transform *child : ent->transform.children)
-			{
-				callOrder.push(&child->gameobject);
-			}
+			go->Update();
 		}
 
 		//PF_INFO("UPDATE UI");
