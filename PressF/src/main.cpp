@@ -105,7 +105,7 @@ void InitScene() {
 	}
 
 	{
-		//Mesh * mesh = loadObj("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.obj");
+		Mesh * mesh(new Mesh("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.obj"));
 		Material::ReadMTLLIB("C:/Users/adrianjmejias/Desktop/CG-Templates/assets/models/parenting/normal.mtl");
 
 	}

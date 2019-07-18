@@ -9,7 +9,7 @@
 #include <spdlog\sinks\stdout_color_sinks.h>
 
 
-#define PF_INFO(...)      spdlog::info(__VA_ARGS__)
+#define PF_INFO(...)      //spdlog::info(__VA_ARGS__)
 #define PF_ERROR(...)     spdlog::error(__VA_ARGS__)
 #define PF_DEBUG(...)     spdlog::debug(__VA_ARGS__)
 #define PF_WARN(...)      spdlog::warn(__VA_ARGS__)
@@ -106,7 +106,7 @@
 #include <map>
 #include <iostream>
 #include <sstream>
-
+#include <filesystem>
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 
@@ -165,8 +165,13 @@ struct nk_colorf bg;
 		Asset(const std::string n) : name(n)
 		{
 		}
-		std::string path;
+		//Asset(const std::filesystem::path p): name(p.filename)
+		//{
+
+		//	path = p;
+		//}
 		std::string name;
+		std::filesystem::path path;
 
 	};
 
