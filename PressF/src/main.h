@@ -861,9 +861,6 @@ public:
 	Transform* Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
 	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
 	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
-
-
-
 	Vec3 Front() { return front; }
 	Vec3 Right() { return right; }
 	Vec3 Up()    { return up; }
@@ -879,8 +876,6 @@ public:
 	static Vec3 WorldUp() {
 		return Vec3{ 0,1,0 };
 	}
-
-
 	static Vec3 RotatePoint(Vec3 point, Vec3 rotation) {
 		return  GenRotMat(rotation) * Vec4(point, 1);
 	}
@@ -1119,24 +1114,25 @@ public:
 
 	virtual void HandleEvent(const SDL_Event &e) override {
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT) {
+			//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT) 
+			{
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
 					PF_INFO(" Camera SDL_SCANCODE_W");
-					transform.Translate(Transform::WorldFront() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(transform.Front() * static_cast<float>(deltaTime) * speed);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
 					PF_INFO(" Camera SDL_SCANCODE_S");
-					transform.Translate(-Transform::WorldFront() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(-transform.Front() * static_cast<float>(deltaTime) * speed);
 
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
 					PF_INFO(" Camera SDL_SCANCODE_A");
-					transform.Translate(-Transform::WorldRight() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(-transform.Right() * static_cast<float>(deltaTime) * speed);
 
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
 					PF_INFO(" Camera SDL_SCANCODE_D");
-					transform.Translate(Transform::WorldRight() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(transform.Right() * static_cast<float>(deltaTime) * speed);
 				}
 			}
 		}

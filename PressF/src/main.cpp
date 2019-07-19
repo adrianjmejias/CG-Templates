@@ -128,7 +128,7 @@ void InitScene() {
 	//	meshes.push_back(cajita);
 	//}
 
-	std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
+	//std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
 
 	//GameObject *caja(new GameObject("Cajita"));
 	//caja->AddComponent<MeshRenderer>(*cajita);
