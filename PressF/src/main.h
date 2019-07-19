@@ -185,7 +185,11 @@ using Vec3 = glm::vec3;
 using Vec2 = glm::vec2;
 using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
-
+std::ostream& operator<<(std::ostream& os, const Vec3& v)
+{
+	os << "(" << v.x << ", "<<v.y << ", "<<v.z << ")";
+	return os;
+}
 std::istream& operator>> (std::istream& is, Vec3& v)
 {
 	is >> v.x >> v.y >> v.z;
@@ -285,10 +289,14 @@ class Mesh;
 #pragma endregion Types
 
 class SubMesh;
+class SystemRenderer;
 class Light;
 
 
-#define PARAMS_PREREQ const SubMesh& submesh, const std::vector<const Light*>& lights
+
+
+
+#define PARAMS_PREREQ const SubMesh& submesh, const SystemRenderer& renderer
 using PreReqFunc = std::function<void(PARAMS_PREREQ)>;
 
 class AssetManager {
@@ -381,13 +389,16 @@ public:
 	static ShaderProgram* GetDefault(IllumModel model) {
 
 		switch (model) {
-			case IllumModel::CUBEMAP:
-				return new ShaderProgram({
-					Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
-					Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
-					},
-					[](PARAMS_PREREQ) {
-				});
+		case IllumModel::CUBEMAP:
+			return new ShaderProgram({
+				Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
+				},
+				[](PARAMS_PREREQ) {
+
+
+
+			});
 
 			//case IllumModel::REFLECTION:
 			//	return new ShaderProgram({
@@ -442,6 +453,8 @@ public:
 	void AddShader(Shader* shader);
 	void Compile();
 public:
+
+#pragma region shaderDcl
 	/**
 	* Enables the shader to be use
 	*/
@@ -536,6 +549,7 @@ public:
 	* @param{mat4} mat4 value
 	*/
 	void  setMat4(const std::string &name, const glm::mat4 &mat) const;
+#pragma endregion shaderDcl
 };
 
 void Shader::ReCompile() {
@@ -615,17 +629,6 @@ Shader::~Shader() {
 	GLCALL(glDeleteShader(id));
 }
 
-
-
-
-
-
-
-
-
-
-
-
 void ShaderProgram::Compile() {
 
 	GLCALL(id = glCreateProgram());
@@ -685,7 +688,6 @@ void ShaderProgram::Compile() {
 
 	std::cout << "Program loaded --------------------------------------------------------" << std::endl;
 }
-
 
 void ShaderProgram::AddShader(Shader* shader) {
 	push_back(shader);
@@ -829,11 +831,17 @@ public:
 	std::vector<Transform *> children;
 
 	GameObject &gameobject;
+	Vec3 right = Transform::WorldRight();
+	Vec3 up = Transform::WorldUp();
+	Vec3 front = Transform::WorldFront();
+
 	Vec3 position{ 0, 0, 0 };
 	Vec3 rotation{ 0, 0, 0 };
 	Vec3 scale{ 1, 1, 1 };
 	Mat4 model;
 	Mat4 acum;
+	Mat4 rotMat;
+
 	Dirty dirty = Dirty::None;
 
 #pragma region mutators
@@ -854,15 +862,13 @@ public:
 	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
 	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
 
-	Vec3 Front() {
 
-	}
-	Vec3 Right() {
 
-	}
-	Vec3 Up() {
+	Vec3 Front() { return front; }
+	Vec3 Right() { return right; }
+	Vec3 Up()    { return up; }
 
-	}
+
 
 	static Vec3 WorldFront() {
 		return Vec3{ 0,0,1 };
@@ -874,6 +880,10 @@ public:
 		return Vec3{ 0,1,0 };
 	}
 
+
+	static Vec3 RotatePoint(Vec3 point, Vec3 rotation) {
+		return  GenRotMat(rotation) * Vec4(point, 1);
+	}
 
 
 #pragma endregion mutators
@@ -898,7 +908,14 @@ private:
 		if (dirty == Dirty::None) return false;
 
 		if (dirty == Dirty::Model) {
-			model = Transform::GenModel(scale, position, rotation);
+			rotMat = Transform::GenRotMat(rotation);
+
+			up = glm::normalize(rotMat * Vec4(up, 1));
+			right = glm::normalize(rotMat * Vec4(right, 1));
+			front = glm::normalize(rotMat * Vec4(front, 1));
+
+
+			model = Transform::GenModel(scale, position, rotMat);
 			dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
 		}
 
@@ -953,17 +970,23 @@ public:
 		TryGetClean();
 		return model;
 	}
-
-
-
+	
 	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
+		return Transform::GenModel(scale, position, GenRotMat(rotation));
+	}
+	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Mat4 &rotation) {
 		Mat4 model = Mat4(1);
 		model = glm::scale(model, scale);
 		model = glm::translate(model, position);
-		model = glm::rotate(model, glm::radians(rotation.x), Vec3(1, 0, 0));
-		model = glm::rotate(model, glm::radians(rotation.y), Vec3(0, 1, 0));
-		model = glm::rotate(model, glm::radians(rotation.z), Vec3(0, 0, 1));
+		model = rotation * model;
 		return model;
+	}
+
+	static Mat4 GenRotMat(const Vec3 &rotation) {
+		Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), Vec3(1, 0, 0));
+		rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
+		rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
+		return rot;
 	}
 
 };
@@ -1067,6 +1090,7 @@ class Camera : public Component {
 
 	unsigned int power = 10000;
 	bool isPerspective = true;
+	float speed = 20;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
 	float farClippingPlane = 200.0f;
@@ -1095,50 +1119,61 @@ public:
 
 	virtual void HandleEvent(const SDL_Event &e) override {
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
-				PF_INFO(" Camera SDL_SCANCODE_W");
-				transform.Translate(Transform::WorldFront() * static_cast<float>(deltaTime));
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
-				PF_INFO(" Camera SDL_SCANCODE_S");
-				transform.Translate(-Transform::WorldFront() * static_cast<float>(deltaTime));
+			if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT) {
+				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
+					PF_INFO(" Camera SDL_SCANCODE_W");
+					transform.Translate(Transform::WorldFront() * static_cast<float>(deltaTime) * speed);
+				}
+				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
+					PF_INFO(" Camera SDL_SCANCODE_S");
+					transform.Translate(-Transform::WorldFront() * static_cast<float>(deltaTime) * speed);
 
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
-				PF_INFO(" Camera SDL_SCANCODE_A");
-				transform.Translate(-Transform::WorldRight() * static_cast<float>(deltaTime));
+				}
+				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
+					PF_INFO(" Camera SDL_SCANCODE_A");
+					transform.Translate(-Transform::WorldRight() * static_cast<float>(deltaTime) * speed);
 
-			}
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
-				PF_INFO(" Camera SDL_SCANCODE_D");
-				transform.Translate(Transform::WorldRight() * static_cast<float>(deltaTime));
-
+				}
+				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
+					PF_INFO(" Camera SDL_SCANCODE_D");
+					transform.Translate(Transform::WorldRight() * static_cast<float>(deltaTime) * speed);
+				}
 			}
 		}
-	}
-
-	virtual Mat4& GetView() {
-		Transform &t = transform;
-
-		view = Transform::GenModel(t.GetScale(), -t.GetPosition(), t.GetRotation()); //glm::lookAt(transform->GetPosition(), transform->GetPosition() + front, up);
-
-
-		return transform.GetAccumulated();
-	}
-	virtual Mat4& GetProjection() {
-		int w, h;
-		SDL_GetWindowSize(win, &w, &h);
-
-		if (isPerspective)
-		{
-			projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+	
+	
+		if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
+			//Vec3 target
 		}
-		else {
-			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
-		}
-
-		return projection;
+	
 	}
+
+
+
+
+
+virtual Mat4& GetView() {
+	Transform &t = transform;
+
+	view = Transform::GenModel(t.GetScale(), -t.GetPosition(), t.GetRotation()); //glm::lookAt(transform->GetPosition(), transform->GetPosition() + front, up);
+
+
+	return transform.GetAccumulated();
+}
+virtual Mat4& GetProjection() {
+	int w, h;
+	SDL_GetWindowSize(win, &w, &h);
+
+	if (isPerspective)
+	{
+		projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+	}
+	else {
+		projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
+	}
+
+	return projection;
+}
 
 
 };
@@ -1424,35 +1459,30 @@ public:
 		1.0f, -1.0f, -1.0f,
 		1.0f,  1.0f, -1.0f,
 		-1.0f,  1.0f, -1.0f,
-
 		-1.0f, -1.0f,  1.0f,
 		-1.0f, -1.0f, -1.0f,
 		-1.0f,  1.0f, -1.0f,
 		-1.0f,  1.0f, -1.0f,
 		-1.0f,  1.0f,  1.0f,
 		-1.0f, -1.0f,  1.0f,
-
 		1.0f, -1.0f, -1.0f,
 		1.0f, -1.0f,  1.0f,
 		1.0f,  1.0f,  1.0f,
 		1.0f,  1.0f,  1.0f,
 		1.0f,  1.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,
-
 		-1.0f, -1.0f,  1.0f,
 		-1.0f,  1.0f,  1.0f,
 		1.0f,  1.0f,  1.0f,
 		1.0f,  1.0f,  1.0f,
 		1.0f, -1.0f,  1.0f,
 		-1.0f, -1.0f,  1.0f,
-
 		-1.0f,  1.0f, -1.0f,
 		1.0f,  1.0f, -1.0f,
 		1.0f,  1.0f,  1.0f,
 		1.0f,  1.0f,  1.0f,
 		-1.0f,  1.0f,  1.0f,
 		-1.0f,  1.0f, -1.0f,
-
 		-1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f,  1.0f,
 		1.0f, -1.0f, -1.0f,
@@ -1486,9 +1516,9 @@ public:
 class SystemRenderer {
 private:
 	std::list<Camera*> camera;
-	std::list<Light*> lights;
 	std::list<Renderer*> renderers;
 public:
+	std::list<Light*> lights;
 	Camera & GetCamera() {
 		return *camera.front();
 	}
@@ -1566,8 +1596,8 @@ void CubeMap::Render(SystemRenderer &renderer) {
 	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex->id));
 	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
 	GLCALL(glBindVertexArray(0));
-	GLCALL(glDepthFunc(GL_LESS);)
-		// set depth function back to default
+	GLCALL(glDepthFunc(GL_LESS));
+	// set depth function back to default
 }
 
 

@@ -83,6 +83,7 @@ void InitScene() {
 	GameObject *go1(new GameObject("Camara"));
 	Camera& cam = go1->AddComponent<Camera>();
 	objects.push_back(go1);
+	go1->transform.Translate(0, 0, -10);
 
 
 
@@ -115,11 +116,20 @@ void InitScene() {
 			"}\n\0", GL_FRAGMENT_SHADER)
 		},
 		[](PARAMS_PREREQ) {
+
+
+
+
 	});
-	Mesh * cajita(new Mesh("assets/models/fullcube/fullCube.obj"));
-	{
-		meshes.push_back(cajita);
-	}
+
+
+	//Mesh * cajita(new Mesh("assets/models/fullcube/fullCube.obj"));
+	//{
+	//	meshes.push_back(cajita);
+	//}
+
+	std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
+
 	//GameObject *caja(new GameObject("Cajita"));
 	//caja->AddComponent<MeshRenderer>(*cajita);
 	
