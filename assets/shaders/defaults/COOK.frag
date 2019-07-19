@@ -32,13 +32,14 @@ struct Spot{
 	LightColor color;
 };
 
-struct Material{
-	float shininess;
-	float roughness;
-	vec3 kD;
-	vec3 kS;
-	vec3 kA;
-};
+
+
+uniform float reflectance;
+uniform float shininess;
+uniform float roughness;
+uniform vec3 kD;
+uniform vec3 kS;
+uniform vec3 kA;
 
 in vec3 o_pos;
 in vec2 o_uv;

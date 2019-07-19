@@ -137,7 +137,7 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #ifdef INCLUDE_NODE_EDITOR
 #include "node_editor.c"
 #endif
-
+int UNIVERSALID = 0;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -160,6 +160,9 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 
+
+
+
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
@@ -179,6 +182,7 @@ double deltaTime = 0;
 
 using Color = nk_colorf;
 using Vec3 = glm::vec3;
+using Vec2 = glm::vec2;
 using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
 
@@ -201,6 +205,69 @@ enum class IllumModel {
 	SHADOW,
 	COOK,
 	BLINN_PHONG
+};
+
+
+enum class ClampType {
+	REPEAT = GL_REPEAT,
+	MIRROR_REPEAT = GL_MIRRORED_REPEAT,
+	EDGE = GL_CLAMP_TO_EDGE,
+	BORDER = GL_CLAMP_TO_BORDER,
+};
+
+enum class TexInterpolation {
+	NEAREST = GL_NEAREST,
+	LINEAR = GL_LINEAR,
+};
+
+enum class MapType {
+	AMBIENT,
+	DIFFUSE,
+	SPECULAR,
+	SHINY,
+	DISPLACEMENT,
+	DECAL,
+	BUMP,
+	REFLECTION,
+	DISSOLVE,
+	CUBEMAP,
+};
+
+enum class FBAttachment {
+	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
+	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
+	COLOR_ATTACHMENT2 = GL_COLOR_ATTACHMENT2,
+	COLOR_ATTACHMENT3 = GL_COLOR_ATTACHMENT3,
+	COLOR_ATTACHMENT4 = GL_COLOR_ATTACHMENT4,
+	COLOR_ATTACHMENT5 = GL_COLOR_ATTACHMENT5,
+	COLOR_ATTACHMENT6 = GL_COLOR_ATTACHMENT6,
+	COLOR_ATTACHMENT7 = GL_COLOR_ATTACHMENT7,
+	COLOR_ATTACHMENT8 = GL_COLOR_ATTACHMENT8,
+	COLOR_ATTACHMENT9 = GL_COLOR_ATTACHMENT9,
+	COLOR_ATTACHMENT10 = GL_COLOR_ATTACHMENT10,
+	COLOR_ATTACHMENT11 = GL_COLOR_ATTACHMENT11,
+	COLOR_ATTACHMENT12 = GL_COLOR_ATTACHMENT12,
+	COLOR_ATTACHMENT13 = GL_COLOR_ATTACHMENT13,
+	COLOR_ATTACHMENT14 = GL_COLOR_ATTACHMENT14,
+	COLOR_ATTACHMENT15 = GL_COLOR_ATTACHMENT15,
+	COLOR_ATTACHMENT16 = GL_COLOR_ATTACHMENT16,
+	COLOR_ATTACHMENT17 = GL_COLOR_ATTACHMENT17,
+	COLOR_ATTACHMENT18 = GL_COLOR_ATTACHMENT18,
+	COLOR_ATTACHMENT19 = GL_COLOR_ATTACHMENT19,
+	COLOR_ATTACHMENT20 = GL_COLOR_ATTACHMENT20,
+	COLOR_ATTACHMENT21 = GL_COLOR_ATTACHMENT21,
+	COLOR_ATTACHMENT22 = GL_COLOR_ATTACHMENT22,
+	COLOR_ATTACHMENT23 = GL_COLOR_ATTACHMENT23,
+	COLOR_ATTACHMENT24 = GL_COLOR_ATTACHMENT24,
+	COLOR_ATTACHMENT25 = GL_COLOR_ATTACHMENT25,
+	COLOR_ATTACHMENT26 = GL_COLOR_ATTACHMENT26,
+	COLOR_ATTACHMENT27 = GL_COLOR_ATTACHMENT27,
+	COLOR_ATTACHMENT28 = GL_COLOR_ATTACHMENT28,
+	COLOR_ATTACHMENT29 = GL_COLOR_ATTACHMENT29,
+	COLOR_ATTACHMENT30 = GL_COLOR_ATTACHMENT30,
+	COLOR_ATTACHMENT31 = GL_COLOR_ATTACHMENT31,
+	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
+	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
 };
 
 
@@ -246,18 +313,18 @@ class Shader : public Asset {
 	std::string src;
 	unsigned int id = 0;
 	int type;
-	Shader() : Asset("Shader") {}
+	Shader(std::string n) : Asset(n) {}
 public:
 	unsigned int Get() { return id; }
 
 
 	static Shader* FromString(const std::string str, unsigned int type) {
-		auto s = new Shader();
+		auto s = new Shader(str);
 		s->SetFromString(str, type);
 		return s;
 	}
 	static Shader* FromPath(const std::string path, unsigned int type) {
-		auto s = new Shader();
+		auto s = new Shader(path);
 		s->SetFromFile(path, type);
 		return s;
 	}
@@ -288,7 +355,10 @@ private:
 			return "geometry";
 			break;
 		}
-		return "not defined";
+
+
+		__debugbreak();
+		throw std::exception("Not implemented");
 	}
 
 };
@@ -306,8 +376,8 @@ public:
 		switch (model) {
 		case IllumModel::CUBEMAP:
 			return new ShaderProgram({
-				Shader::FromPath("../../assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("../../assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
+				Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
 				});
 
 		case IllumModel::REFLECTION:
@@ -327,8 +397,8 @@ public:
 				});
 		case IllumModel::COOK:
 			return new ShaderProgram({
-				Shader::FromPath("COOK.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("COOK.frag", GL_FRAGMENT_SHADER),
+				Shader::FromPath("assets/shaders/defaults/COOK.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/COOK.frag", GL_FRAGMENT_SHADER),
 				});
 		case IllumModel::BLINN_PHONG:
 			return new ShaderProgram({
@@ -343,8 +413,6 @@ public:
 		__debugbreak();
 		throw std::exception("NOT RECOGNIZED SHADER");
 	}
-
-
 
 	ShaderProgram(std::vector<Shader* > li) : std::vector<Shader* >(std::move(li))
 	{
@@ -460,14 +528,15 @@ void Shader::ReCompile() {
 	SetFromFile(path, type);
 }
 
-void Shader::SetFromString(const std::string salsa, unsigned int type) {
+void Shader::SetFromString(const std::string salsa, unsigned int t) {
 	src = std::move(salsa);
-	this->type = type;
+	type = t;
 
 	const char* c_str = src.data();
 
-	if (id)
+	if (id > 0) {
 		GLCALL(glDeleteShader(id));
+	}
 
 	GLCALL(id = glCreateShader(type));
 
@@ -491,16 +560,16 @@ void Shader::SetFromString(const std::string salsa, unsigned int type) {
 
 		std::cout << "Failed to compile shader" << Shader::GetShaderName(type) << std::endl;
 		std::cout << message;
-
+		__debugbreak();
 	}
 	std::cout << "shader compiled: " << name << std::endl;
 }
 
 
-void Shader::SetFromFile(std::string path, unsigned int type) {
-	name = path;
-	this->path = path;
-	std::string shaderCode;
+void Shader::SetFromFile(std::string p, unsigned int t) {
+	type = t;
+	path = p;
+
 	std::ifstream shaderFile;
 
 	// Set exceptions for ifstream object
@@ -516,15 +585,16 @@ void Shader::SetFromFile(std::string path, unsigned int type) {
 		// Close the file handler
 		shaderFile.close();
 		// Convert the stream into a string
-		shaderCode = shaderStream.str();
+		src = shaderStream.str();
 	}
 	catch (std::ifstream::failure e)
 	{
 		std::cout << "ERROR::SHADER Error reading file: " << path << std::endl;
 		std::cout << e.what() << std::endl;
+		__debugbreak();
 		return;
 	}
-	SetFromString(shaderCode, type);
+	SetFromString(src, type);
 }
 
 Shader::~Shader() {
@@ -700,9 +770,6 @@ void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
 
 #pragma endregion Shading
 
-
-
-
 std::vector<GameObject*> objects;
 
 
@@ -772,6 +839,29 @@ public:
 	Transform* Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
 	Transform* Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
 	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
+
+	Vec3 Front() {
+
+	}
+	Vec3 Right() {
+
+	}
+	Vec3 Up() {
+
+	}
+
+	static Vec3 WorldFront() {
+		return Vec3{ 0,0,1 };
+	}
+	static Vec3 WorldRight() {
+		return Vec3{ 1,0,0 };
+	}
+	static Vec3 WorldUp() {
+		return Vec3{0,1,0};
+	}
+
+
+
 #pragma endregion mutators
 
 	/*
@@ -880,7 +970,7 @@ public:
 		{
 			PF_ASSERT(comp && "COMPONENT IS NULL");
 
-			PF_INFO("Object {0}", name);
+			//PF_INFO("Object {0}", name);
 			if (comp->enabled) {
 				comp->Update();
 			}
@@ -900,17 +990,29 @@ public:
 		}
 	}
 	void UI() {
-		if (nk_tree_push(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI))) {
+		if (nk_tree_push_hashed(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI), "hash\0", 5, __LINE__)) {
 
 			for each (auto comp in components)
 			{
 				PF_ASSERT(comp && "component is null");
 
-				if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) {
+				//if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) 
+				if (nk_tree_push_hashed(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI), "hashin\0", 7, __LINE__))
+				{
 
 					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
 
+					//nk_group_begin_titled(ctx, "","Transform", 0);
+					//nk_label(ctx, "label test", NK_TEXT_ALIGN_CENTERED);
+
+					//nk_group_end(ctx);
+
 					comp->UI();
+
+					for each (Transform* child in transform.children)
+					{
+						child->gameobject.UI();
+					}
 
 					nk_tree_pop(ctx);
 				}
@@ -927,43 +1029,16 @@ public:
 		components.push_back(comp);
 		return *comp;
 	}
-};
-
-enum class FBAttachment {
-	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
-	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
-	COLOR_ATTACHMENT2 = GL_COLOR_ATTACHMENT2,
-	COLOR_ATTACHMENT3 = GL_COLOR_ATTACHMENT3,
-	COLOR_ATTACHMENT4 = GL_COLOR_ATTACHMENT4,
-	COLOR_ATTACHMENT5 = GL_COLOR_ATTACHMENT5,
-	COLOR_ATTACHMENT6 = GL_COLOR_ATTACHMENT6,
-	COLOR_ATTACHMENT7 = GL_COLOR_ATTACHMENT7,
-	COLOR_ATTACHMENT8 = GL_COLOR_ATTACHMENT8,
-	COLOR_ATTACHMENT9 = GL_COLOR_ATTACHMENT9,
-	COLOR_ATTACHMENT10 = GL_COLOR_ATTACHMENT10,
-	COLOR_ATTACHMENT11 = GL_COLOR_ATTACHMENT11,
-	COLOR_ATTACHMENT12 = GL_COLOR_ATTACHMENT12,
-	COLOR_ATTACHMENT13 = GL_COLOR_ATTACHMENT13,
-	COLOR_ATTACHMENT14 = GL_COLOR_ATTACHMENT14,
-	COLOR_ATTACHMENT15 = GL_COLOR_ATTACHMENT15,
-	COLOR_ATTACHMENT16 = GL_COLOR_ATTACHMENT16,
-	COLOR_ATTACHMENT17 = GL_COLOR_ATTACHMENT17,
-	COLOR_ATTACHMENT18 = GL_COLOR_ATTACHMENT18,
-	COLOR_ATTACHMENT19 = GL_COLOR_ATTACHMENT19,
-	COLOR_ATTACHMENT20 = GL_COLOR_ATTACHMENT20,
-	COLOR_ATTACHMENT21 = GL_COLOR_ATTACHMENT21,
-	COLOR_ATTACHMENT22 = GL_COLOR_ATTACHMENT22,
-	COLOR_ATTACHMENT23 = GL_COLOR_ATTACHMENT23,
-	COLOR_ATTACHMENT24 = GL_COLOR_ATTACHMENT24,
-	COLOR_ATTACHMENT25 = GL_COLOR_ATTACHMENT25,
-	COLOR_ATTACHMENT26 = GL_COLOR_ATTACHMENT26,
-	COLOR_ATTACHMENT27 = GL_COLOR_ATTACHMENT27,
-	COLOR_ATTACHMENT28 = GL_COLOR_ATTACHMENT28,
-	COLOR_ATTACHMENT29 = GL_COLOR_ATTACHMENT29,
-	COLOR_ATTACHMENT30 = GL_COLOR_ATTACHMENT30,
-	COLOR_ATTACHMENT31 = GL_COLOR_ATTACHMENT31,
-	DEPTH_ATTACHMENT = GL_DEPTH_ATTACHMENT,
-	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
+	template <typename TT>
+	TT& GetComponent() {
+		for each (object comp in component)
+		{
+			if (TT* t = dynamic_cast<TT*>(comp)) {
+				return t;
+			}
+		}
+		return nullptr;
+	}
 };
 
 
@@ -1008,33 +1083,47 @@ public:
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
 				PF_INFO(" Camera SDL_SCANCODE_W");
-
+				transform.Translate(Transform::WorldFront() * static_cast<float>(deltaTime));
 			}
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
 				PF_INFO(" Camera SDL_SCANCODE_S");
+				transform.Translate(-Transform::WorldFront() * static_cast<float>(deltaTime));
 
 			}
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
 				PF_INFO(" Camera SDL_SCANCODE_A");
+				transform.Translate(-Transform::WorldRight() * static_cast<float>(deltaTime));
 
 			}
 			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
 				PF_INFO(" Camera SDL_SCANCODE_D");
+				transform.Translate(Transform::WorldRight() * static_cast<float>(deltaTime));
 
 			}
 		}
 	}
+	
 	virtual Mat4& GetView() {
+		Transform &t = transform;
+
+		view = Transform::GenModel(t.GetScale(), -t.GetPosition(), t.GetRotation()); //glm::lookAt(transform->GetPosition(), transform->GetPosition() + front, up);
 
 
-
-
-		return view;
+		return transform.GetAccumulated();
 	}
 	virtual Mat4& GetProjection() {
+		int w, h;
+		SDL_GetWindowSize(win, &w, &h);
 
+		if (isPerspective)
+		{
+			projection = glm::perspective(glm::radians(fov), static_cast<float>(w)/h, nearClippingPlane, farClippingPlane);
+		}
+		else {
+			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
+		}
 
-		return view;
+		return projection;
 	}
 
 
@@ -1045,19 +1134,6 @@ class Mover : public Component {
 };
 
 
-class Renderer : public Component {
-
-public:
-	virtual void Render() = 0;
-};
-
-class MeshRenderer : public Renderer {
-public:
-	Mesh &mesh;
-
-
-
-};
 
 
 
@@ -1184,53 +1260,21 @@ public:
 
 
 #pragma endregion Components
-class CubeMap;
 
-#pragma region Models
-//#define DEBUG_OBJ_LOADER
-#ifdef DEBUG_OBJ_LOADER
-#define DEBUG_PRINT(x) 
-#else
-#define DEBUG_PRINT(x) 
-#endif // DEBUG
+class Renderer : public Component {
 
-using Face = iVec3;
-
-class Vertex {
 public:
-	Vec3 pos;
-	Vec3 uv;
-	Vec3 normal;
-	Vec3 tangent;
-	Vec3 bitangent;
+	virtual void Render() = 0;
 };
 
-#pragma region Texture
+class MeshRenderer : public Renderer {
+public:
+	Mesh &mesh;
 
-enum class ClampType {
-	REPEAT = GL_REPEAT,
-	MIRROR_REPEAT = GL_MIRRORED_REPEAT,
-	EDGE = GL_CLAMP_TO_EDGE,
-	BORDER = GL_CLAMP_TO_BORDER,
+
+
 };
 
-enum class TexInterpolation {
-	NEAREST = GL_NEAREST,
-	LINEAR = GL_LINEAR,
-};
-
-enum class MapType {
-	AMBIENT,
-	DIFFUSE,
-	SPECULAR,
-	SHINY,
-	DISPLACEMENT,
-	DECAL,
-	BUMP,
-	REFLECTION,
-	DISSOLVE,
-	CUBEMAP,
-};
 
 class Texture {
 	//int width, height, nrChannels;
@@ -1359,6 +1403,9 @@ public:
 
 };
 
+
+class SystemRenderer;
+class CubeMap;
 class CubeMap {
 public:
 	Texture * tex;
@@ -1406,54 +1453,39 @@ public:
 		1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f,  1.0f,
 		1.0f, -1.0f,  1.0f
-	};
+};
 	unsigned int skyboxVAO, skyboxVBO;
 
 	CubeMap(const std::vector<std::string> faces) {
-		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP);
 		tex = new Texture(faces);
+		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP);
 
 
 		// skybox VAO
-		glGenVertexArrays(1, &skyboxVAO);
-		glGenBuffers(1, &skyboxVBO);
-		glBindVertexArray(skyboxVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) *skyboxVertices.size(), &skyboxVertices, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		GLCALL(glGenVertexArrays(1, &skyboxVAO));
+		GLCALL(glGenBuffers(1, &skyboxVBO));
+		GLCALL(glBindVertexArray(skyboxVAO));
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO));
+		GLCALL(glBufferData(GL_ARRAY_BUFFER, sizeof(float) *skyboxVertices.size(), &skyboxVertices, GL_STATIC_DRAW));
+		GLCALL(glEnableVertexAttribArray(0));
+		GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0));
 	}
 
-	void Render(SystemRenderer &renderer) {
-
-		shader->use();
-
-		shader->setInt("skybox", 0);
-
-		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-
-		shader->setMat4("view", renderer.camera.front().GetView());
-		shader->setMat4("projection", renderer.camera.front().GetProjection());
-		// skybox cube
-		glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, tex.id);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-		glDepthFunc(GL_LESS); // set depth function back to default
-
-
-	}
+	void Render(SystemRenderer &renderer);
 
 };
 
 
+
 class SystemRenderer {
 private:
-public:
-	std::list<Light*> lights;
 	std::list<Camera*> camera;
+	std::list<Light*> lights;
 	std::list<Renderer*> renderers;
+public:
+	Camera& GetCamera() {
+		return *camera.front();
+	}
 	CubeMap *cubemap = nullptr;
 public:
 	void Steal(std::vector<GameObject*> gos) {
@@ -1512,11 +1544,50 @@ public:
 };
 
 
-#pragma endregion Texture
+void CubeMap::Render(SystemRenderer &renderer) {
+
+	shader->use();
+
+	shader->setInt("skybox", 0);
+
+	GLCALL(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
+	Camera &cam = renderer.GetCamera();
+	shader->setMat4("view", cam.GetView());
+	shader->setMat4("projection", cam.GetProjection());
+	// skybox cube
+	GLCALL(glBindVertexArray(skyboxVAO));
+	GLCALL(glActiveTexture(GL_TEXTURE0));
+	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex->id));
+	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+	GLCALL(glBindVertexArray(0));
+	GLCALL(glDepthFunc(GL_LESS);)
+	// set depth function back to default
+}
+
+
+#pragma region Models
+//#define DEBUG_OBJ_LOADER
+#ifdef DEBUG_OBJ_LOADER
+#define DEBUG_PRINT(x) 
+#else
+#define DEBUG_PRINT(x) 
+#endif // DEBUG
+
+using Face = iVec3;
+
+class Vertex {
+public:
+	Vec3 pos;
+	Vec3 uv;
+	Vec3 normal;
+	Vec3 tangent;
+	Vec3 bitangent;
+};
 
 class SubMesh : public Asset {
 public:
 	Mesh & group;
+	Vec2 AABB;
 	SubMesh(Mesh& g, std::string n)
 		: group(g), Asset(n)
 	{
@@ -2004,6 +2075,7 @@ public:
 	}
 
 };
+
 #pragma endregion Models
 
 class FrameBuffer {
@@ -2056,10 +2128,6 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 };
-
-
-
-
 
 SystemRenderer *sRenderer;
 

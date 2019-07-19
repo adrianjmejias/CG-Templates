@@ -105,9 +105,11 @@ void InitScene() {
 	basic = new ShaderProgram({
 		Shader::FromString("#version 330 core\n"
 		"layout (location = 0) in vec3 aPos;\n"
+		"uniform mat4 view;\n"
+		"uniform mat4 projection;\n"
 			"void main()\n"
 			"{\n"
-			"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+			"   gl_Position = projection*view*vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 			"}\0", GL_VERTEX_SHADER),
 		Shader::FromString("#version 330 core\n"
 			"out vec4 FragColor;\n"
@@ -117,11 +119,9 @@ void InitScene() {
 			"}\n\0", GL_FRAGMENT_SHADER)
 		});
 
-	{
-		//Mesh * mesh(new Mesh("assets/models/fullcube/fullCube.obj"));
-		//Material::ReadMTLLIB("C:/Users/ccg/Desktop/Premake_CCG/assets/models/parenting/normal.mtl");
-
-	}
+	
+		Mesh * mesh(new Mesh("assets/models/fullcube/fullCube.obj"));
+	
 
 
 
@@ -301,9 +301,12 @@ int main(void)
 		}
 	}
 		nk_end(ctx);
-
+		Camera &cam = sRenderer->GetCamera();
 
 		basic->use();
+		basic->setMat4("projection", cam.GetProjection());
+		basic->setMat4("view", cam.GetView());
+
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 								//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

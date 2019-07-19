@@ -9,8 +9,8 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd C:\Users\ccg\Desktop\Premake_CCG\assets\textures\check.png
+illum 15
+map_Kd assets\textures\check.png
 
 newmtl None
 Ns 0
@@ -18,7 +18,7 @@ Ka 0.000000 0.000000 0.000000
 Kd 0.8 0.8 0.8
 Ks 0.8 0.8 0.8
 d 1
-illum 2
+illum 15
 
 newmtl cubeMat
 Ns 96.078431
@@ -28,10 +28,10 @@ Ks 0.330688 0.330688 0.330688
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.170370
-illum 2
-map_Kd C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2.jpg
-disp C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2_disp.jpg
-bump C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2_normal.jpg
+illum 15
+map_Kd assets\textures\cubo\bricks2.jpg
+disp assets\textures\cubo\bricks2_disp.jpg
+bump assets\textures\cubo\bricks2_normal.jpg
 
 newmtl cubeMat.001
 Ns 96.078431
@@ -41,8 +41,8 @@ Ks 0.330688 0.330688 0.330688
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.556614
-illum 2
-map_Kd C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2.jpg
+illum 15
+map_Kd assets\textures\cubo\bricks2.jpg
 
 newmtl cubeMat.002
 Ns 96.078431
@@ -52,8 +52,8 @@ Ks 0.330688 0.330688 0.330688
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.736508
-illum 2
-map_Kd C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2.jpg
+illum 15
+map_Kd assets\textures\cubo\bricks2.jpg
 
 newmtl cubeMat.003
 Ns 96.078431
@@ -63,5 +63,5 @@ Ks 0.330688 0.330688 0.330688
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 0.170370
-illum 2
-map_Kd C:\Users\ccg\Desktop\Premake_CCG\assets\textures\cubo\bricks2.jpg
+illum 15
+map_Kd assets\textures\cubo\bricks2.jpg
