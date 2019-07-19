@@ -284,6 +284,12 @@ class Mesh;
 
 #pragma endregion Types
 
+class SubMesh;
+class Light;
+
+
+#define PARAMS_PREREQ const SubMesh& submesh, const std::vector<const Light*>& lights
+using PreReqFunc = std::function<void(PARAMS_PREREQ)>;
 
 class AssetManager {
 public:
@@ -369,42 +375,48 @@ class ShaderProgram :
 private:
 	unsigned int id;
 public:
+	const PreReqFunc &preReq;
 
 
 	static ShaderProgram* GetDefault(IllumModel model) {
 
 		switch (model) {
-		case IllumModel::CUBEMAP:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
+			case IllumModel::CUBEMAP:
+				return new ShaderProgram({
+					Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
+					Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
+					},
+					[](PARAMS_PREREQ) {
 				});
 
-		case IllumModel::REFLECTION:
-			return new ShaderProgram({
-				Shader::FromPath("REFLECTION.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("REFLECTION.frag", GL_FRAGMENT_SHADER),
-				});
-		case IllumModel::REFRACTION:
-			return new ShaderProgram({
-				Shader::FromPath("REFRACTION.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("REFRACTION.frag", GL_FRAGMENT_SHADER),
-				});
-		case IllumModel::SHADOW:
-			return new ShaderProgram({
-				Shader::FromPath("SHADOW.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("SHADOW.frag", GL_FRAGMENT_SHADER),
-				});
+			//case IllumModel::REFLECTION:
+			//	return new ShaderProgram({
+			//		Shader::FromPath("REFLECTION.vert", GL_VERTEX_SHADER),
+			//		Shader::FromPath("REFLECTION.frag", GL_FRAGMENT_SHADER),
+			//		});
+			//case IllumModel::REFRACTION:
+			//	return new ShaderProgram({
+			//		Shader::FromPath("REFRACTION.vert", GL_VERTEX_SHADER),
+			//		Shader::FromPath("REFRACTION.frag", GL_FRAGMENT_SHADER),
+			//		});
+			//case IllumModel::SHADOW:
+			//	return new ShaderProgram({
+			//		Shader::FromPath("SHADOW.vert", GL_VERTEX_SHADER),
+			//		Shader::FromPath("SHADOW.frag", GL_FRAGMENT_SHADER),
+			//		});
 		case IllumModel::COOK:
 			return new ShaderProgram({
 				Shader::FromPath("assets/shaders/defaults/COOK.vert", GL_VERTEX_SHADER),
 				Shader::FromPath("assets/shaders/defaults/COOK.frag", GL_FRAGMENT_SHADER),
-				});
-		case IllumModel::BLINN_PHONG:
-			return new ShaderProgram({
-				Shader::FromPath("BLINN_PHONG.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("BLINN_PHONG.frag", GL_FRAGMENT_SHADER),
-				});
+				},
+				[](PARAMS_PREREQ) {
+
+			});
+			//case IllumModel::BLINN_PHONG:
+			//	return new ShaderProgram({
+			//		Shader::FromPath("BLINN_PHONG.vert", GL_VERTEX_SHADER),
+			//		Shader::FromPath("BLINN_PHONG.frag", GL_FRAGMENT_SHADER),
+			//		});
 		}
 
 
@@ -414,7 +426,9 @@ public:
 		throw std::exception("NOT RECOGNIZED SHADER");
 	}
 
-	ShaderProgram(std::vector<Shader* > li) : std::vector<Shader* >(std::move(li))
+	ShaderProgram(std::vector<Shader* > li, const PreReqFunc &f)
+		: std::vector<Shader* >(std::move(li)),
+		preReq(f)
 	{
 		Compile();
 	};
@@ -771,7 +785,7 @@ void ShaderProgram::setMat4(const std::string &name, const glm::mat4 &mat) const
 #pragma endregion Shading
 
 std::vector<GameObject*> objects;
-
+std::vector<Mesh*> meshes;
 
 class Component {
 public:
@@ -857,7 +871,7 @@ public:
 		return Vec3{ 1,0,0 };
 	}
 	static Vec3 WorldUp() {
-		return Vec3{0,1,0};
+		return Vec3{ 0,1,0 };
 	}
 
 
@@ -1102,7 +1116,7 @@ public:
 			}
 		}
 	}
-	
+
 	virtual Mat4& GetView() {
 		Transform &t = transform;
 
@@ -1117,7 +1131,7 @@ public:
 
 		if (isPerspective)
 		{
-			projection = glm::perspective(glm::radians(fov), static_cast<float>(w)/h, nearClippingPlane, farClippingPlane);
+			projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
 		}
 		else {
 			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
@@ -1144,6 +1158,7 @@ enum class LightType {
 	SPOTLIGHT
 };
 
+#define RENDERER_PARAMS COMP_PARAMS
 #define LIGHT_PARAMS COMP_PARAMS
 #define INIT_LIGHT(n) : Light(o,t,n)
 
@@ -1262,32 +1277,33 @@ public:
 #pragma endregion Components
 
 class Renderer : public Component {
-
+protected:
+	Renderer(COMP_PARAMS, std::string n) INIT_COMP(n) {}
 public:
 	virtual void Render() = 0;
 };
 
 class MeshRenderer : public Renderer {
 public:
-	Mesh &mesh;
+	SubMesh & subMesh;
+	MeshRenderer(RENDERER_PARAMS, SubMesh &m) : Renderer(o, t, "MeshRenderer"), subMesh(m) {}
 
-
+	virtual void Render() override {}
 
 };
 
 
 class Texture {
-	//int width, height, nrChannels;
-	//unsigned char *data;
-	//for (GLuint i = 0; i < textures_faces.size(); i++)
-	//{
-	//	data = stbi_load(textures_faces[i].c_str(), &width, &height, &nrChannels, 0);
-	//	glTexImage2D(
-	//		GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-	//		0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-	//	);
-	//}
+
 public:
+	unsigned int id;
+	int width;
+	int height;
+	int nChannels;
+	ClampType clamp = ClampType::REPEAT;
+	TexInterpolation texInterpolation = TexInterpolation::LINEAR;
+	MapType type = MapType::AMBIENT;
+	float borderColor[4] = { 1,1,1,1 };
 
 	Texture() {
 		glGenTextures(1, &id);
@@ -1303,16 +1319,6 @@ public:
 		glDeleteTextures(1, &id);
 	}
 
-	unsigned int id;
-
-
-	int width;
-	int height;
-	int nChannels;
-	ClampType clamp = ClampType::REPEAT;
-	TexInterpolation texInterpolation = TexInterpolation::LINEAR;
-	MapType type = MapType::AMBIENT;
-	float borderColor[4] = { 1,1,1,1 };
 	Texture(const std::string path, MapType t)
 		: type(t)
 	{
@@ -1453,7 +1459,7 @@ public:
 		1.0f, -1.0f, -1.0f,
 		-1.0f, -1.0f,  1.0f,
 		1.0f, -1.0f,  1.0f
-};
+	};
 	unsigned int skyboxVAO, skyboxVBO;
 
 	CubeMap(const std::vector<std::string> faces) {
@@ -1483,7 +1489,7 @@ private:
 	std::list<Light*> lights;
 	std::list<Renderer*> renderers;
 public:
-	Camera& GetCamera() {
+	Camera & GetCamera() {
 		return *camera.front();
 	}
 	CubeMap *cubemap = nullptr;
@@ -1561,7 +1567,7 @@ void CubeMap::Render(SystemRenderer &renderer) {
 	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
 	GLCALL(glBindVertexArray(0));
 	GLCALL(glDepthFunc(GL_LESS);)
-	// set depth function back to default
+		// set depth function back to default
 }
 
 
@@ -1761,14 +1767,7 @@ public:
 
 
 	void Bind() {
-		//shader.setFloat("shininess", shiny);
-		//////shader.setFloat("roughness", mat.rough);
-		////shader.setFloat("covariance", mat.covariance);
-		////shader.setFloat("reflectance", mat.reflectance);
-		//shader.setVec3("kD", kD);
-		//shader.setVec3("kS", kS);
-		//shader.setVec3("kE", kE);
-		//shader.setVec3("kA", kA);
+
 	}
 
 
@@ -2071,6 +2070,9 @@ public:
 		// 4. then set the vertex attributes pointers
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
+
+	}
+	void Render() {
 
 	}
 

@@ -88,19 +88,15 @@ void InitScene() {
 
 	GameObject *go2(new GameObject("PointLight"));
 	Light& light1 = go2->AddComponent<PointLight>();
-	go2->transform.SetParent(&go1->transform);
-
+	objects.push_back(go2);
 
 	GameObject *go3(new GameObject("DirectionalLight"));
 	Light& light2 = go3->AddComponent<DirectionalLight>();
-	//objects.push_back(go3);
-	go3->transform.SetParent(&go1->transform);
-
-
+	go3->transform.SetParent(&go2->transform);
 
 	GameObject *go4(new GameObject("SpotLight"));
 	Light& light3 = go4->AddComponent<SpotLight>();
-	go4->transform.SetParent(&go1->transform);
+	go4->transform.SetParent(&go2->transform);
 
 	basic = new ShaderProgram({
 		Shader::FromString("#version 330 core\n"
@@ -117,18 +113,16 @@ void InitScene() {
 			"{\n"
 			"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
 			"}\n\0", GL_FRAGMENT_SHADER)
-		});
-
+		},
+		[](PARAMS_PREREQ) {
+	});
+	Mesh * cajita(new Mesh("assets/models/fullcube/fullCube.obj"));
+	{
+		meshes.push_back(cajita);
+	}
+	//GameObject *caja(new GameObject("Cajita"));
+	//caja->AddComponent<MeshRenderer>(*cajita);
 	
-		Mesh * mesh(new Mesh("assets/models/fullcube/fullCube.obj"));
-	
-
-
-
-
-
-
-
 
 	sRenderer = new SystemRenderer();
 
@@ -141,7 +135,6 @@ void InitScene() {
 		"assets/textures/mp_northlight/back.tga",
 	});
 	sRenderer->Steal(objects);
-
 }
 
 int main(void)
