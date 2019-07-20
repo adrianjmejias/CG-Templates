@@ -214,6 +214,8 @@ using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
 
 
+#define NKE_COLOR2VEC4(c) (Vec4{c.r,c.g,c.b,c.a}) 
+
 std::string to_string(const Vec3& v) {
 	char c[10];
 
@@ -383,13 +385,13 @@ class SubMesh;
 class SystemRenderer;
 class Light;
 
+class Material;
 
 
 
 
-#define PARAMS_PREREQ const SubMesh& submesh, const SystemRenderer& renderer
-using PreReqFunc = std::function<void(PARAMS_PREREQ)>;
-
+using PreReqFunc = std::function<void(const Material&)>;
+#define HEADER_LAMBDA [&](const Material& mat)
 class AssetManager {
 public:
 	std::list<Asset> assets;
@@ -477,74 +479,24 @@ class ShaderProgram :
 private:
 	unsigned int id;
 public:
-	const PreReqFunc &preReq;
-
-
-	static ShaderProgram* GetDefault(IllumModel model) {
+	PreReqFunc preReq;
+	static ShaderProgram* GetDefault(IllumModel model, PreReqFunc f) {
+#define CASE_GEN(TT) case IllumModel::TT:\
+return new ShaderProgram({\
+				Shader::FromPath("assets/shaders/defaults/"#TT".vert", GL_VERTEX_SHADER),\
+				Shader::FromPath("assets/shaders/defaults/"#TT".frag", GL_FRAGMENT_SHADER),\
+	}, f);\
+break;\
 
 		switch (model) {
-		case IllumModel::CUBEMAP:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/CUBEMAP.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/CUBEMAP.frag", GL_FRAGMENT_SHADER),
-				},
-				[](PARAMS_PREREQ) {
-
-
-
-			});
-
-		case IllumModel::REFLECTION:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/REFLECTION.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/REFLECTION.frag", GL_FRAGMENT_SHADER),
-				}, [](PARAMS_PREREQ) {
-
-
-
-			});
-		case IllumModel::TRANSPARENCY:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/TRANSPARENCY.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/TRANSPARENCY.frag", GL_FRAGMENT_SHADER),
-				},
-				[](PARAMS_PREREQ) {
-
-
-
-			});
-		case IllumModel::REFRACTION:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/REFRACTION.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/REFRACTION.frag", GL_FRAGMENT_SHADER),
-				},
-				[](PARAMS_PREREQ) {
-
-
-
-			});
-			//case IllumModel::SHADOW:
-			//	return new ShaderProgram({
-			//		Shader::FromPath("SHADOW.vert", GL_VERTEX_SHADER),
-			//		Shader::FromPath("SHADOW.frag", GL_FRAGMENT_SHADER),
-			//		});
-		case IllumModel::COOK:
-			return new ShaderProgram({
-				Shader::FromPath("assets/shaders/defaults/COOK.vert", GL_VERTEX_SHADER),
-				Shader::FromPath("assets/shaders/defaults/COOK.frag", GL_FRAGMENT_SHADER),
-				},
-				[](PARAMS_PREREQ) {
-
-			});
-			//case IllumModel::BLINN_PHONG:
-			//	return new ShaderProgram({
-			//		Shader::FromPath("BLINN_PHONG.vert", GL_VERTEX_SHADER),
-			//		Shader::FromPath("BLINN_PHONG.frag", GL_FRAGMENT_SHADER),
-			//		});
+			CASE_GEN(CUBEMAP);
+			CASE_GEN(COOK);
+			CASE_GEN(REFLECTION);
+			CASE_GEN(TRANSPARENCY);
+			CASE_GEN(REFRACTION);
+			CASE_GEN(SHADOW_MAPPING);
+			CASE_GEN(BLINN_PHONG);
 		}
-
-
-
 
 		__debugbreak();
 		throw std::exception("NOT RECOGNIZED SHADER");
@@ -699,11 +651,11 @@ void Shader::SetFromString(const std::string salsa, unsigned int t) {
 
 		GLCALL(glGetShaderInfoLog(id, length, &length, message));
 
-		std::cout << "Failed to compile shader" << Shader::GetShaderName(type) << std::endl;
-		std::cout << message;
+		PF_ERROR("Failed to compile shader {0}", Shader::GetShaderName(type));
+		PF_ERROR(message);
 		__debugbreak();
 	}
-	std::cout << "shader compiled: " << name << std::endl;
+	//std::cout << "shader compiled: " << name << std::endl;
 }
 
 
@@ -745,7 +697,7 @@ Shader::~Shader() {
 void ShaderProgram::Compile() {
 
 	GLCALL(id = glCreateProgram());
-	std::cout << "Loading Program with --------------------------------------------------------" << std::endl;
+	//std::cout << "Loading Program with --------------------------------------------------------" << std::endl;
 
 	for (size_t ii = 0; ii < size(); ii++)
 	{
@@ -793,13 +745,15 @@ void ShaderProgram::Compile() {
 
 		GLCALL(glGetProgramInfoLog(id, length, &length, message));
 
-		std::cout << "Failed to compile program :(" << std::endl;
-		std::cout << message;
+		PF_ERROR("Failed to compile program {0} :(", at(0)->name);
+		PF_ERROR(message);
+
+		__debugbreak();
 
 	}
 
 
-	std::cout << "Program loaded --------------------------------------------------------" << std::endl;
+	//std::cout << "Program loaded --------------------------------------------------------" << std::endl;
 }
 
 void ShaderProgram::AddShader(Shader* shader) {
@@ -1164,14 +1118,26 @@ public:
 
 bool Transform::TryGetClean() {
 	if (dirty == Dirty::None) return false;
-	PF_INFO("Cleaned {0}", gameobject.name);
+	PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up", gameobject.name);
+	std::cout << position << " " << rotation << " " << scale << std::endl;
+	std::cout << front << " " << right << " " << up << std::endl;
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 
-		up = glm::normalize(rotMat * Vec4(Transform::WorldUp(), 1));
-		right = glm::normalize(rotMat * Vec4(Transform::WorldRight(), 1));
-		front = glm::normalize(rotMat * Vec4(Transform::WorldFront(), 1));
+		up = rotMat * Vec4(Transform::WorldUp(), 1);
+		right = rotMat * Vec4(Transform::WorldRight(), 1);
+		front = rotMat * Vec4(Transform::WorldFront(), 1);
 
+		if (parent) {
+			const Mat4& parentRot = parent->rotMat;
+			up = parentRot * Vec4(up, 1);
+			right = parentRot * Vec4(right, 1);
+			front = parentRot * Vec4(front, 1);
+		}
+
+		up = glm::normalize(up);
+		right = glm::normalize(right);
+		front = glm::normalize(front);
 
 		model = Transform::GenModel(scale, position, rotMat);
 		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
@@ -1201,7 +1167,7 @@ class Camera : public Component {
 
 	int power = 10000;
 	int isPerspective = true;
-	float speed = 100.f;
+	float speed = 20.f;
 	float sensitivity = 1.f;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
@@ -1246,23 +1212,16 @@ public:
 				float scaledSpeed = static_cast<float>(deltaTime) * speed;
 
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
-					PF_INFO(" Camera SDL_SCANCODE_W");
 					transform.Translate(transform.Front() * scaledSpeed);
-					std::cout << transform.GetPosition() << std::endl;
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
-					PF_INFO(" Camera SDL_SCANCODE_S");
 					transform.Translate(-transform.Front() * scaledSpeed);
-
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
-					PF_INFO(" Camera SDL_SCANCODE_A");
-					transform.Translate(-transform.Right() * scaledSpeed);
-
+					transform.Translate(transform.Right() * scaledSpeed);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
-					PF_INFO(" Camera SDL_SCANCODE_D");
-					transform.Translate(transform.Right() * scaledSpeed);
+					transform.Translate(-transform.Right() * scaledSpeed);
 				}
 			}
 		}
@@ -1270,23 +1229,33 @@ public:
 		if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
 			float movX = sensitivity * e.motion.xrel * deltaTime;
 			float movY = sensitivity * e.motion.yrel* deltaTime;
-
+			
 			transform.Rotate(movY, movX, 0);
+			//Vec3 rot = transform.GetRotation();
+
+			//float pitch = rot.x;
+			////if (constrainPitch)
+			//{
+			//	if (pitch > 89.0f)
+			//		pitch = 89.0f;
+			//	if (pitch < -89.0f)
+			//		pitch = -89.0f;
+			//}
+
+			//Vec3 front{ cos(glm::radians(rot.y)) * cos(glm::radians(pitch)),sin(glm::radians(pitch)),	sin(glm::radians(rot.y)) * cos(glm::radians(pitch)) };
+
+			//transform.SetRotation(glm::degrees(front));
+			//setrotation
 		}
 
 	}
 
-
-
-
-
 	virtual Mat4& GetView() {
-		Transform &t = transform;
-
-		view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.Front(), transform.Up());
-
-
-		return transform.GetAccumulated();
+		//view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.Front(), transform.Up());
+		view = transform.GetAccumulated();
+		//view = Transform::GenModel(-transform.GetPosition(), -transform.GetRotation(), transform.GetScale());
+		//return view;
+		return view;
 	}
 	virtual Mat4& GetProjection() {
 		int w, h;
@@ -1322,127 +1291,105 @@ enum class LightType {
 };
 
 #define RENDERER_PARAMS COMP_PARAMS
-#define LIGHT_PARAMS COMP_PARAMS
-#define INIT_LIGHT(n) : Light(o,t,n)
 
 class Light : public Component {
 public:
+
 	LightType type;
 	Color kA{ 1,1,1,1 };
 	Color kD{ 0,0,1,1 };
 	Color kS{ 1,0,0,1 };
 	Color kE{ 0,0,0,1 };
+	Vec3 attenuation;
+	float innerAngle = 15.f;
+	float outterAngle = 20.f;
+
+	Light(COMP_PARAMS, LightType lt) : Component(o, t, "Light"), type(lt) {}
+
+	void Bind(iVec3& countLights, ShaderProgram &shader) {
+		int& myCount = countLights[static_cast<int>(type)];
+
+		switch (type)
+		{
+		case LightType::DIRECTIONAL:
+			name = "directionals[" + std::to_string(myCount) + "]";
+			break;
+		case LightType::POINT:
+			name = "points[" + std::to_string(myCount) + "]";
+			shader.setVec3(name + ".position", transform.GetPosition());
+			shader.setVec3(name + ".attenuation", attenuation);
+			break;
+		case LightType::SPOTLIGHT:
+			name = "spots[" + std::to_string(myCount) + "]";
+			shader.setVec3(name + ".position", transform.GetPosition());
+			shader.setVec3(name + ".attenuation", attenuation);
+			shader.setFloat(name + ".innerAngle", glm::radians(innerAngle));
+			shader.setFloat(name + ".outerAngle", glm::radians(outterAngle));
+			break;
+		default:
+			__debugbreak(); // this should never happen
+			break;
+		}
+
+		shader.setVec3(name + ".direction", transform.front);
+		shader.setBool(name + ".isOn", enabled);
+
+		name.append(".color");
+		shader.setVec4(name + ".ambient", NKE_COLOR2VEC4(kA));
+		shader.setVec4(name + ".diffuse", NKE_COLOR2VEC4(kD));
+		shader.setVec4(name + ".specular", NKE_COLOR2VEC4(kS));
 
 
-	virtual void Bind() = 0;
+		myCount++;
+	}
+	void Update() override {
+
+	}
+
+	void UI() override {
 
 
-	virtual void UI() override {
-
+		switch (type)
+		{
+		case LightType::POINT:
+			break;
+		case LightType::DIRECTIONAL:
+			break;
+		case LightType::SPOTLIGHT:
+			attenuation = nke_Vec3(attenuation, "Attenuation", 0, 20);
+			innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
+			outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
+			break;
+		default:
+			break;
+		}
 		nke_Color(kA, "kA");
 		nke_Color(kD, "kD");
 		nke_Color(kS, "kS");
 		nke_Color(kE, "kE");
 	}
-	virtual void HandleEvent(const SDL_Event &e) override {}
-	virtual void ShadowPass() {}
-
-protected:
-	Light(COMP_PARAMS, std::string n) INIT_COMP(n)
-	{
-
-	}
+	void HandleEvent(const SDL_Event &e) override {}
+	void ShadowPass() {}
 };
 
-class PointLight : public Light {
-public:
-	Vec3 attenuation;
-
-	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
-	{
-		this->type = LightType::POINT;
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("PointLight running");
-	}
-
-	virtual void Bind() override {
-		PF_INFO("Bind PointLight");
-
-	}
-	virtual void UI() override {
-		Light::UI();
-	}
-};
-
-class SpotLight : public Light {
-public:
-	Vec3 attenuation;
-	float innerAngle = 15.f;
-	float outterAngle = 20.f;
-	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
-	{
-		this->type = LightType::SPOTLIGHT;
-
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("SpotLight running");
-
-	}
-
-	virtual void Bind() override {
-		PF_INFO("Bind SpotLight");
-	}
-
-	virtual void UI() override {
-		Light::UI();
-		attenuation = nke_Vec3(attenuation, "Attenuation", 0, 20);
-		innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
-		outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
-	}
-};
-
-class DirectionalLight : public Light {
-public:
-	DirectionalLight(LIGHT_PARAMS) : Light(o, t, "DirectionalLight")
-	{
-		this->type = LightType::DIRECTIONAL;
-
-	}
-	// Inherited via Light
-	virtual void Update() override {
-		//PF_INFO("DirectionalLight running");
-
-
-	}
-	virtual void Bind() override {
-		PF_INFO("Bind DirectionalLight");
-	}
-	virtual void UI() override {
-		Light::UI();
-	}
-};
-
-#pragma endregion Light
-
-
-#pragma endregion Components
+#pragma endregion  Components
 
 class Renderer : public Component {
 protected:
 	Renderer(COMP_PARAMS, std::string n) INIT_COMP(n) {}
 public:
-	virtual void Render() = 0;
+	virtual void Render(const std::function<void(ShaderProgram&)> &) = 0;
 };
 
 class MeshRenderer : public Renderer {
 public:
-	SubMesh & subMesh;
-	MeshRenderer(RENDERER_PARAMS, SubMesh &m) : Renderer(o, t, "MeshRenderer"), subMesh(m) {}
+	Mesh & mesh;
+	MeshRenderer(RENDERER_PARAMS, Mesh &m) : Renderer(o, t, "MeshRenderer"), mesh(m) {}
 
-	virtual void Render() override {}
+	virtual void Render(const std::function<void(ShaderProgram&)>&) override;
+	virtual void Update() {};
+	virtual void UI() {};
+	void HandleEvent(const SDL_Event &e) override;
 
 };
 
@@ -1529,7 +1476,7 @@ public:
 		}
 		// We dont need the data texture anymore because is loaded on the GPU
 		stbi_image_free(data);
-		PF_INFO("texture loaded {0}", path);
+		//PF_INFO("texture loaded {0}", path);
 	}
 
 	Texture(const std::vector<std::string> faces) {
@@ -1566,6 +1513,7 @@ public:
 
 class SystemRenderer;
 class CubeMap;
+
 class CubeMap {
 public:
 	Texture * tex;
@@ -1613,7 +1561,9 @@ public:
 
 	CubeMap(const std::vector<std::string> faces) {
 		tex = new Texture(faces);
-		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP);
+		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP, HEADER_LAMBDA{
+			PF_INFO("LLAMANDO SHADER DESDE EL CUBEMAP");
+			});
 
 
 		// skybox VAO
@@ -1626,7 +1576,7 @@ public:
 		GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0));
 	}
 
-	void Render(SystemRenderer &renderer);
+	void Render();
 
 };
 
@@ -1674,42 +1624,42 @@ public:
 
 	void Render() {
 		//lights
-
 		for each (Light* light in lights)
 		{
 			light->ShadowPass();
 		}
 
-
-
-		for each (Renderer* ren in renderers)
+		for each (MeshRenderer* ren in renderers)
 		{
+			PF_ASSERT(ren && "Renderer is null");
 
-			//SystemRenderer::get
+			ren->Render(
+				[&](ShaderProgram& shader) {
+				iVec3 lightsPlaced{ 0,0,0 };
 
-			////material->bind();
-			//	//light->bind();
-			//ren->Render();
+				for each (Light* light in lights)
+				{
+					light->Bind(lightsPlaced, shader);
+				}
+			}
+			);
 		}
 
 
 
-		cubemap->Render(*this);
+		cubemap->Render();
 	}
 };
 
-void CubeMap::Render(SystemRenderer &renderer) {
+void CubeMap::Render() {
 
-	shader->use();
 
-	shader->setInt("skybox", 0);
 
 	GLCALL(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
-	Camera &cam = renderer.GetCamera();
-	shader->setMat4("view", cam.GetView());
-	shader->setMat4("projection", cam.GetProjection());
 	// skybox cube
 	GLCALL(glBindVertexArray(skyboxVAO));
+	shader->use();
+	shader->setInt("skybox", 0);
 	GLCALL(glActiveTexture(GL_TEXTURE0));
 	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex->id));
 	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
@@ -1721,13 +1671,12 @@ void CubeMap::Render(SystemRenderer &renderer) {
 #pragma region Models
 //#define DEBUG_OBJ_LOADER
 #ifdef DEBUG_OBJ_LOADER
-#define DEBUG_PRINT(x) 
+#define DEBUG_PRINT(...) 
 #else
-#define DEBUG_PRINT(x) 
+#define DEBUG_PRINT(...) 
 #endif // DEBUG
 
-#define MESH_LOAD_FORMAL_PARAMS std::vector<Vec3>& tempPos, std::vector<Vec2>& tempUV, std::vector<Vec3>& tempNormal
-#define MESH_LOAD_ACT_PARAMS tempPos, tempUV, tempNormal
+
 
 
 class SubMesh : public Asset {
@@ -1743,184 +1692,18 @@ public:
 		: group(g), Asset(n)
 	{
 	}
-	Mesh& Read(std::istream& file, MESH_LOAD_FORMAL_PARAMS) {
-
-		SubMesh& mesh = *this;
-		Vec3 v;
-		Vec3 vt;
-		Vec3 vn;
-
-		iVec3 f;
-		iVec3 ft;
-		iVec3 fn;
-		std::string tofData;
-
-
-		while (!file.eof() && file.good() && file.peek() != 'o')
-		{
-			std::string buffer;
-			std::getline(file, buffer);
-			std::stringstream stream(buffer);
-
-			stream >> tofData;
-
-			std::cout << buffer << std::endl;
-			if (tofData[0] == 'v')
-			{
-				if (tofData.size() > 1) {
-					switch (tofData[1])
-					{
-					case 'n':
-					{
-						nNorm++;
-						stream >> vn;
-						tempNormal.push_back(vn);
-						DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
-
-					}
-
-					break;
-
-					case 't':
-						// while(!stream.eof()) // por ahora no triangula
-					{
-						nUV++;
-						stream >> vt[0] >> vt[1];
-						tempUV.push_back(vt);
-						DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
-					}
-					break;
-
-					default:
-						throw std::exception("not supported, wtf");
-						break;
-					}
-				}
-				else
-				{
-					// Position
-					// while(!stream.eof()) //por ahora no triangula
-					{
-						nPos++;
-						stream >> v;
-						tempPos.push_back(v);
-						DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
-					}
-				}
-			}
-			else if (tofData == "f")
-			{
-				nIndices++;
-
-
-
-				auto posInit = stream.tellg();
-				stream >> buffer;      // EXTRAIGO UN TOKEN PARA VER QUE TIPO DE CARA VIENE ej de buffer 6/1/1
-				stream.seekg(posInit); // luego hago como si no hubiera leido nada del stream
-
-									   //x case f v1 v2 v3 ....
-									   //x case f v1/vt1 v2/vt2 v3/vt3 ...
-									   // case f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
-									   // case f v1//vn1 v2//vn2 v3//vn3 ...
-
-				bool hasDoubleSlash = false;
-				unsigned int countDeSlash = 0;
-				{
-					unsigned int slashPos = buffer.find_first_of("/");
-					hasDoubleSlash = (buffer[slashPos + 1]) == '/';
-				}
-				countDeSlash = std::count(buffer.begin(), buffer.end(), '/');
-
-				DEBUG_PRINT(std::cout << hasDoubleSlash << " " << countDeSlash << std::endl);
-
-				//std::vector<std::string> tokens;
-
-
-
-
-				switch (countDeSlash)
-				{
-				case 0: // solo caras
-				{
-
-					stream >> f;
-
-					//mesh->face.push_back(f);
-					DEBUG_PRINT(std::cout << "(" << f[0] << ", " << f[1] << ", " << f[2] << ")" << std::endl);
-				}
-				break;
-				case 1: // caras y texturas
-				{
-					for (int ii = 0; ii < 3; ii++)
-					{
-						stream >> buffer;
-						sscanf_s(buffer.c_str(), "%d/%d", &f[ii], &ft[ii]);
-
-						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ")" << std::endl);
-					}
-
-					//mesh->face.push_back(f);
-					//mesh->faceTex.push_back(ft);
-				}
-				break;
-				case 2:
-				{
-					if (hasDoubleSlash)
-					{ // caras y normales
-
-						for (int ii = 0; ii < 3; ii++)
-						{
-							stream >> buffer;
-							sscanf_s(buffer.c_str(), "%d//%d", &f[ii], &fn[ii]);
-							DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << fn[ii] << ")" << std::endl);
-						}
-
-						//mesh->face.push_back(f);
-						//mesh->faceNorm.push_back(fn);
-
-					}
-					else
-					{ //caras texturas y normales
-						for (int ii = 0; ii < 3; ii++)
-						{
-							stream >> buffer;
-							sscanf_s(buffer.c_str(), "%d/%d/%d", &f[ii], &ft[ii], &fn[ii]);
-							DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ", " << fn[ii] << ")" << std::endl);
-						}
-
-						//mesh->face.push_back(f);
-						//mesh->faceNorm.push_back(fn);
-						//mesh->faceTex.push_back(ft);
-					}
-				}
-
-				break;
-				}
-			}
-			else if (tofData == "usemtl")
-			{
-				stream >> buffer;// pongo el nombre del material
-								 //mesh->materials.push_back(materials[buffer]);
-
-
-			}
-		}
-	}
+	Mesh& Read(std::istream& file, int&);
 };
 
 
 class Material;
+ShaderProgram *shaders[30];
 class ShaderProgram;
 
 class Material {
 public:
-	size_t nFaces = 0;
 	ShaderProgram *shader = nullptr;
 
-
-	void Bind() {
-
-	}
 
 
 	std::map<std::string, Texture*> maps;
@@ -1951,7 +1734,7 @@ public:
 			std::stringstream stream(buffer);
 
 			stream >> tofData;
-			std::cout << buffer << std::endl;
+			//std::cout << buffer << std::endl;
 			{
 
 
@@ -1980,7 +1763,57 @@ public:
 				else if (tofData == "illum") {
 					int type;
 					stream >> type;
-					material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
+
+
+					PreReqFunc f;
+					switch (static_cast<IllumModel>(type))
+					{
+					case IllumModel::CUBEMAP:
+						f = HEADER_LAMBDA
+						{
+							ShaderProgram &shader = *mat.shader;
+
+
+
+
+						};
+						break;
+					case IllumModel::NORMAL:
+						break;
+					case IllumModel::OCCLUSION_PARALLAX:
+						break;
+					case IllumModel::REFLECTION:
+						break;
+					case IllumModel::REFRACTION:
+						break;
+					case IllumModel::TRANSPARENCY:
+						break;
+					case IllumModel::SHADOW_MAPPING:
+						break;
+					case IllumModel::COOK:
+						f = HEADER_LAMBDA
+						{
+							ShaderProgram &shader = *mat.shader;
+
+
+
+
+
+						};
+						break;
+					case IllumModel::BLINN_PHONG:
+						f = HEADER_LAMBDA
+						{
+
+						};
+						break;
+					case IllumModel::DISPLACEMENT:
+						break;
+					default:
+						break;
+					}
+
+					material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type), f);
 				}
 				else if (tofData == "map_Ka") {
 
@@ -2079,7 +1912,7 @@ public:
 			stream >> tofData;
 			DEBUG_PRINT(std::cout << buffer << std::endl);
 			if (tofData == "newmtl") {
-				std::cout << buffer << std::endl;
+				//std::cout << buffer << std::endl;
 				stream >> tofData;
 				materials[tofData] = new Material(file, matPath);
 			}
@@ -2092,16 +1925,40 @@ public:
 
 };
 
+struct Face {
 
+};
 
+using PolygonGroup = std::vector<Face>;
+
+struct RenderSpec {
+	const Material& mat;
+	size_t quantityFaces = 0;
+	size_t nUV = 0;
+	size_t nPos = 0;
+	size_t nNorm = 0;
+	GLuint VAO;
+
+	RenderSpec(Material& m) : mat(m) {
+
+	}
+};
 
 //http://paulbourke.net/dataformats/obj/
 class Mesh : public Asset {
+private:
 public:
-	unsigned int VBO;
-	unsigned int EBO;
+	std::vector<Vec3> pos;
+	std::vector<iVec3> iPos;
+	std::vector<Vec3> tempNormal;
+	std::vector<Vec3> tempBiTan;
+	std::vector<Vec2> tempUV;
+	std::vector<iVec3> tempiUV;
+	std::vector<iVec3> tempiNormal;
+	unsigned int gl_BufferId;
 
 	MTLLib *mtl;
+	std::vector< RenderSpec > materialOrderForRender;
 	std::vector<SubMesh*> submesh;
 
 	SubMesh& AddSubMesh(std::string n) {
@@ -2113,16 +1970,16 @@ public:
 	Mesh(const std::string path)
 		: Asset(path)
 	{
+		int init = 0;
 
-		std::vector<Vec3> tempPos;
-		std::vector<Vec3> tempNormal;
-		std::vector<Vec2> tempUV;
+
 
 		std::ifstream file(path, std::ios::in);
 		std::string buffer;
+		int actMat = -1;
 		if (!file.is_open())
 		{
-			DEBUG_PRINT(std::cout << "Couldn't open file" << path << std::endl);
+			PF_ERROR("Couldn't open file {0}", path);
 			__debugbreak();
 			std::cin.ignore();
 			exit(-1);
@@ -2130,7 +1987,7 @@ public:
 
 		int slashPos = path.find_last_of("/");
 		std::string matPath = path.substr(0, slashPos);
-		std::string name = path.substr(slashPos, path.find_last_of(".")).append(".mtl");
+		std::string name = path.substr(slashPos + 1, path.find_last_of(".") - (slashPos + 1)).append(".mtl");
 		mtl = new MTLLib(name, matPath);
 
 
@@ -2151,7 +2008,42 @@ public:
 				if (tofData == "o") {
 					stream >> tofData;
 					SubMesh &m = AddSubMesh(tofData);
-					m.Read(file, MESH_LOAD_ACT_PARAMS);
+					m.Read(file, actMat);
+					//std::vector<Vec3> tempNormalFace; tempNormalFace.reserve(m.nIndices);
+
+					//// the vertex ii contributed n triangles
+					//std::vector< std::vector<size_t> > trianglesVertexNContributed(m.nPos, std::vector<size_t>());
+
+
+					//for (size_t ii = init, count = 0; ii < m.nIndices; ii++, count++)
+					//{
+					//	iVec3 &f = tempiPos[ii];
+					//	iVec3 &ft = tempiUV[ii];
+
+					//	ProcessIndex(f, m.nIndices);
+					//	ProcessIndex(ft, m.nIndices);
+					//}
+
+					//for (size_t count = 0; count < trianglesVertexNContributed.size(); count++)
+					//{
+					//	const std::vector<size_t>& trianglesContributed = trianglesVertexNContributed[count];
+
+					//	Vec3 avg{ 0,0,0 };
+
+					//	for each (const size_t triangleContributed in trianglesContributed)
+					//	{
+					//		avg += tempNormalFace[triangleContributed];
+					//	}
+					//	avg = glm::normalize(avg / (float)trianglesContributed.size());
+					//	tempNormal.push_back(avg);
+
+					//	//tempBiTan.push_back(CalcBitangentOfTriangle(tempvertex));
+
+
+
+
+					//}
+					init += m.nIndices;
 				}
 				else if (tofData == "s")
 				{
@@ -2161,132 +2053,380 @@ public:
 				}
 				//else if (tofData == "mtllib") {} already reading it at the beggining
 			}
-			DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
+			//DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 		}
 
-
-		////for (auto mesh : meshes)
-		////{
-
-		////	size_t numVertex = mesh->face.size();
-
-		////	std::vector<std::vector<iVec3>*> arrs({ &mesh->face, &mesh->faceNorm, &mesh->faceTex });
-		////	std::vector<std::vector<Vec3>*> arrsTarg({ &mesh->vertex, &mesh->vertexNormal, &mesh->uv });
-		////	std::vector<Vec3> aux;
-
-		////	for (unsigned int ii = 0; ii < arrs.size(); ii++) {
-		////		auto &arr = *arrs[ii];
-		////		auto &arrTarget = *arrsTarg[ii];
-
-		////		for (auto &f : arr) {
-		////			//std::cout << f.x << " " << f.y << " " << f.z << std::endl;
-
-		////			for (int ii = 0; ii < 3; ii++) {
-		////				glm::u32& index = f[ii];
-		////				if (index > 0) {
-		////					index--;
-		////				}
-		////				else {
-		////					index = (unsigned int)(numVertex + index);
-		////				}
-
-
-		////			}
-		////			aux.push_back(arrTarget[f[0]]);
-		////			aux.push_back(arrTarget[f[1]]);
-		////			aux.push_back(arrTarget[f[2]]);
-
-		////		}
-		////		arrTarget = std::move(aux);
-
-
-		////	}
-
-
-		////}
-
-		GLCreate(MESH_LOAD_ACT_PARAMS);
+		GLCreate();
 	}
 
-
-	void PreProcessMeshes(MESH_LOAD_FORMAL_PARAMS) {
-
-
+	void Render(std::function<void(ShaderProgram&)> f) {
 		size_t off = 0;
-
-		for each (SubMesh *s in submesh)
+		//glBindVertexArray(this->gl_BufferId);
+		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
 		{
-			SubMesh& sub = *s;
+			const Material &mat = materialOrderForRender[ii].mat;
+			const size_t nElem = materialOrderForRender[ii].quantityFaces;
+			glBindVertexArray(materialOrderForRender[ii].VAO);
+			mat.shader->use();
+			mat.shader->preReq(mat);
+			f(*mat.shader);
 
-			for (size_t ii = off, iiEnd = off + sub.nIndices; ii < iiEnd; ii++) {
+			//[&](ShaderProgram& shader) {
+			//	for each (Light* light in lights)
+			//	{
+			//		light->Bind(lightsPlaced, shader);
+			//	}
 
+			glDrawElements(GL_TRIANGLES, nElem, GL_INT, (void*)(off += nElem));
+		}
 
+	}
 
+	static void TraverseMesh(const Mesh& m, std::function<void(int, int, int, int)>) {
+		//m.
+	}
 
-
-
+	static void ProcessIndex(iVec3 &f, const size_t numVertex) {
+		for (int ii = 0; ii < 3; ii++) {
+			int& index = f[ii];
+			if (index > 0) {
+				index--;
 			}
-
-
-
+			else {
+				index = (unsigned int)(numVertex + index);
+			}
 		}
-
-
 	}
-	void GLCreate(MESH_LOAD_FORMAL_PARAMS) {
 
-		PreProcessMeshes(MESH_LOAD_ACT_PARAMS);
+	static Vec3 CalcNormalOfTriangle(const Vec3 &v0, const Vec3 &v1, const Vec3 &v2) {
+		return glm::normalize(glm::cross(v1 - v0, v2 - v0));
+	}
 
-		GLCALL(glGenBuffers(1, &VBO));
-		//GLCALL(glBufferData(GL_ARRAY_BUFFER, std::reduce(std::execution::par, begin(vec), end(vec));,0, GL_STATIC_DRAW));
+	/*
+	Retorna una matriz de aparicion de los vertices en los triangulos
+	contribution[vertice] = {tri1, tri2, ...}
+	*/
+	static std::vector<std::vector <size_t> > GetContibution(const std::vector<iVec3>& faces, size_t begin, size_t size) {
 
-	//GLCALL(glBufferSubData(GL_ARRAY_BUFFER, offset, size, pointer));
-		GLCALL(glEnableVertexAttribArray(0));
-		GLCALL(glEnableVertexAttribArray(1));
-		GLCALL(glEnableVertexAttribArray(2));
-		GLCALL(glEnableVertexAttribArray(3));
+		std::vector<std::vector <size_t> > contribution(size, std::vector<size_t>());
 
-
-
-		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
-		size_t off = 0;
-		for each (SubMesh* s in submesh)
+		for (size_t ii = 0; ii < size; ii++)
 		{
-			//PF_ASSERT(s && "you can't have null submeshes");
-			//SubMesh &sub = *s;
+			const int idx = begin + ii;
+			const iVec3& face = faces[idx];
 
-			//GLCALL(glGenVertexArrays(1, &sub.VAO));
-			//GLCALL(glBindVertexArray(sub.VAO));
-
-			//GLCALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
-			//GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, pos))));
-			//GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, normal))));
-			//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, tangent))));
-			//GLCALL(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, uv))));
-
-
-			//// tamaño del bloque de vertices de la submesh
-			//off += sub.nPos * sizeof(Vertex);
+			contribution[ii].push_back(idx);
 		}
 
-
-		//glBindVertexArray(VAO);
-		//// 2. copy our vertices array in a vertex buffer for OpenGL to use
-		//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
-		//// 3. copy our index array in a element buffer for OpenGL to use
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		////glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-		//// 4. then set the vertex attributes pointers
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		//glEnableVertexAttribArray(0);
+		return contribution;
 
 	}
-	void Render() {
+
+	//static Vec3 CalcBitangentOfTriangle(const Vec2& uv1, const Vec2& uv2, const Vec2& uv3, const Vec3& p1, const Vec3& p2, const Vec3& p3)
+	//{
+	//	float u3u1 = (u3 - u1);
+
+
+	//	return ((u3u1*(p2-p1)) - ((u2-u1)*(p3-p1))) / (((v2-v1)*u3u1) - ((u2-u1)*(v3-v1)));
+	//}
+
+
+	void GLCreate() {
+
+
+		GLCALL(glGenBuffers(1, &gl_BufferId));
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
+
+		// guardo todo el objeto y submallados en un solo buffer
+		GLCALL(glBufferData(
+			GL_ARRAY_BUFFER,
+			// Vertex Data
+			pos.size() * sizeof(Vec3) +
+			tempNormal.size() * sizeof(Vec3) +
+			tempUV.size() * sizeof(Vec2) +
+
+			// Index Data
+			iPos.size() * sizeof(iVec3) +
+			tempiNormal.size() * sizeof(iVec3) +
+			tempiUV.size() * sizeof(iVec3),
+			0,
+			GL_STATIC_DRAW
+		));
+		size_t off = 0; //used on macro
+		size_t vecSize; //used on macro
+
+#define PF_SUBDATA(buffType,vec, type)\
+vecSize = vec.size() * sizeof(type);\
+GLCALL(glBufferSubData(\
+		buffType,\
+		off,\
+		vecSize,\
+		vec.data()\
+));\
+off+=vecSize;\
+
+		PF_SUBDATA(GL_ARRAY_BUFFER, pos, Vec3);
+		PF_SUBDATA(GL_ARRAY_BUFFER, tempNormal, Vec3);
+		PF_SUBDATA(GL_ARRAY_BUFFER, tempUV, Vec2);
+
+		PF_SUBDATA(GL_ARRAY_BUFFER, iPos, iVec3);
+		PF_SUBDATA(GL_ARRAY_BUFFER, tempiNormal, iVec3);
+		PF_SUBDATA(GL_ARRAY_BUFFER, tempiUV, iVec3);
+
+
+
+
+
+		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
+		{
+			auto& mat = materialOrderForRender[ii];
+			GLCALL(glGenVertexArrays(1, &mat.VAO));
+			GLCALL(glBindVertexArray(mat.VAO));
+
+			GLCALL(glEnableVertexAttribArray(0));
+			GLCALL(glEnableVertexAttribArray(1));
+			GLCALL(glEnableVertexAttribArray(2));
+
+
+			const int InitIndex = 3;
+			GLCALL(glEnableVertexAttribArray(InitIndex));
+			GLCALL(glEnableVertexAttribArray(InitIndex + 1));
+			GLCALL(glEnableVertexAttribArray(InitIndex + 2));
+
+
+			//#define PF_ATTRIB_POINTER(layout, nElem, vec, type)\
+			//		vecSize = mat. * sizeof(type);											\
+			//
+			//
+			//			PF_ATTRIB_POINTER(0, 3, pos, Vec3);
+			//
+			//
+			//		}
+			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
+
+			size_t off = 0;
+			size_t vecSize = 0;
+
+			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
+			vecSize = pos.size() * sizeof(Vec3);
+			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+			vecSize = tempNormal.size() * sizeof(Vec3);
+			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+			vecSize = tempUV.size() * sizeof(Vec2);
+			GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+
+
+
+			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_BufferId));
+
+			vecSize = iPos.size() * sizeof(iVec3);
+			GLCALL(glVertexAttribPointer(InitIndex, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+			vecSize = tempiNormal.size() * sizeof(iVec3);
+			GLCALL(glVertexAttribPointer(InitIndex + 1, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+			vecSize = tempiUV.size() * sizeof(iVec3);
+			GLCALL(glVertexAttribPointer(InitIndex + 2, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+
+			GLCALL(glBindVertexArray(0));
+
+
+			//glBindVertexArray(VAO);
+			//// 2. copy our vertices array in a vertex buffer for OpenGL to use
+			//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+			//glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
+			//// 3. copy our index array in a element buffer for OpenGL to use
+			//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+			////glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+			//// 4. then set the vertex attributes pointers
+			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+			//glEnableVertexAttribArray(0);
+
+		}
+
 
 	}
 
 };
+
+void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {
+	mesh.Render(f);
+}
+
+Mesh& SubMesh::Read(std::istream& file, int &actMat) {
+
+	SubMesh& mesh = *this;
+	Vec3 v;
+	Vec3 vt;
+	Vec3 vn;
+
+	iVec3 f;
+	iVec3 ft;
+	iVec3 fn;
+	std::string tofData;
+
+
+	while (!file.eof() && file.good() && file.peek() != 'o')
+	{
+		std::string buffer;
+		std::getline(file, buffer);
+		if (buffer.size() < 1) break;
+		std::stringstream stream(buffer);
+
+		stream >> tofData;
+
+		//std::cout << buffer << std::endl;
+		if (tofData[0] == 'v')
+		{
+			if (tofData.size() > 1) {
+				switch (tofData[1])
+				{
+				case 'n':
+				{
+					nNorm++;
+					stream >> vn;
+					group.tempNormal.push_back(vn);
+					//DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
+
+				}
+
+				break;
+
+				case 't':
+					// while(!stream.eof()) // por ahora no triangula
+				{
+
+					nUV++;
+					stream >> vt[0] >> vt[1];
+					group.tempUV.push_back(vt);
+					//DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
+				}
+				break;
+
+				default:
+					throw std::exception("not supported, wtf");
+					break;
+				}
+			}
+			else
+			{
+				// Position
+				// while(!stream.eof()) //por ahora no triangula
+				{
+					//group.materialOrderForRender[actMat].nPos++;
+
+					nPos++;
+					stream >> v;
+					group.pos.push_back(v);
+					//DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
+				}
+			}
+		}
+		else if (tofData == "f")
+		{
+			PF_ASSERT(actMat < group.materialOrderForRender.size());
+			group.materialOrderForRender[actMat].quantityFaces++;
+			nIndices++;
+
+
+
+			auto posInit = stream.tellg();
+			stream >> buffer;      // EXTRAIGO UN TOKEN PARA VER QUE TIPO DE CARA VIENE ej de buffer 6/1/1
+			stream.seekg(posInit); // luego hago como si no hubiera leido nada del stream
+
+								   //x case f v1 v2 v3 ....
+								   //x case f v1/vt1 v2/vt2 v3/vt3 ...
+								   // case f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
+								   // case f v1//vn1 v2//vn2 v3//vn3 ...
+
+			bool hasDoubleSlash = false;
+			unsigned int countDeSlash = 0;
+			{
+				unsigned int slashPos = buffer.find_first_of("/");
+				hasDoubleSlash = (buffer[slashPos + 1]) == '/';
+			}
+			countDeSlash = std::count(buffer.begin(), buffer.end(), '/');
+
+			//DEBUG_PRINT(std::cout << hasDoubleSlash << " " << countDeSlash << std::endl);
+
+			//std::vector<std::string> tokens;
+
+
+
+
+			switch (countDeSlash)
+			{
+			case 0: // solo caras
+			{
+
+				stream >> f;
+
+				group.iPos.push_back(f);
+				//DEBUG_PRINT(std::cout << "(" << f[0] << ", " << f[1] << ", " << f[2] << ")" << std::endl);
+			}
+			break;
+			case 1: // caras y texturas
+			{
+				for (int ii = 0; ii < 3; ii++)
+				{
+					stream >> buffer;
+					sscanf_s(buffer.c_str(), "%d/%d", &f[ii], &ft[ii]);
+
+					//DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ")" << std::endl);
+				}
+
+				group.iPos.push_back(f);
+				group.tempiUV.push_back(ft);
+			}
+			break;
+			case 2:
+			{
+				if (hasDoubleSlash)
+				{ // caras y normales
+
+					for (int ii = 0; ii < 3; ii++)
+					{
+						stream >> buffer;
+						sscanf_s(buffer.c_str(), "%d//%d", &f[ii], &fn[ii]);
+						//DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << fn[ii] << ")" << std::endl);
+					}
+
+					group.iPos.push_back(f);
+					group.tempiNormal.push_back(fn);
+
+				}
+				else
+				{ //caras texturas y normales
+					for (int ii = 0; ii < 3; ii++)
+					{
+						stream >> buffer;
+						sscanf_s(buffer.c_str(), "%d/%d/%d", &f[ii], &ft[ii], &fn[ii]);
+						//DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ", " << fn[ii] << ")" << std::endl);
+					}
+
+					group.iPos.push_back(f);
+					group.tempiNormal.push_back(fn);
+					group.tempiUV.push_back(ft);
+				}
+			}
+
+			break;
+			}
+		}
+		else if (tofData == "usemtl")
+		{
+			stream >> buffer;// pongo el nombre del material
+							 //mesh->materials.push_back(materials[buffer]);
+
+			group.materialOrderForRender.push_back(RenderSpec(*group.mtl->materials[buffer]));
+			actMat++;
+
+		}
+	}
+}
 
 #pragma endregion Models
 
@@ -2344,7 +2484,15 @@ public:
 SystemRenderer *sRenderer;
 
 
+void MeshRenderer::HandleEvent(const SDL_Event &e) {
 
+	if (e.type == SDL_EventType::SDL_KEYDOWN) {
+		if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
+			for each (auto pair in mesh.mtl->materials)
+			{
+				pair.second->shader->ReCompile();
+			}
+		}
+	}
 
-
-
+}

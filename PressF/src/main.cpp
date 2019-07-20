@@ -83,20 +83,15 @@ void InitScene() {
 	Camera& cam = go1->AddComponent<Camera>();
 	objects.push_back(go1);
 	go1->transform.Translate(0, 0, -10);
+	cam.transform.SetRotation(0, 0, 0);
 
 
 
-	GameObject *go2(new GameObject("PointLight"));
-	Light& light1 = go2->AddComponent<PointLight>();
+	GameObject *go2(new GameObject("Lucero del alba"));
+	Light& light1 = go2->AddComponent<Light>(LightType::DIRECTIONAL);
 	objects.push_back(go2);
 
-	GameObject *go3(new GameObject("DirectionalLight"));
-	Light& light2 = go3->AddComponent<DirectionalLight>();
-	go3->transform.SetParent(&go2->transform);
 
-	GameObject *go4(new GameObject("SpotLight"));
-	Light& light3 = go4->AddComponent<SpotLight>();
-	go4->transform.SetParent(&go2->transform);
 
 	basic = new ShaderProgram({
 		Shader::FromString("#version 330 core\n"
@@ -108,30 +103,38 @@ void InitScene() {
 			"   gl_Position = projection*view*vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 			"}\0", GL_VERTEX_SHADER),
 		Shader::FromString("#version 330 core\n"
+			"uniform float dt;\n"
 			"out vec4 FragColor;\n"
 			"void main()\n"
 			"{\n"
-			"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+			"   FragColor = vec4(1.0f*dt, 0.5f, 0.2f, 1.0f);\n"
 			"}\n\0", GL_FRAGMENT_SHADER)
 		},
-		[](PARAMS_PREREQ) {
+		HEADER_LAMBDA
+		{
 
 
 
+		});
 
-	});
+
+
 
 
 	Mesh * cajita(new Mesh("assets/models/cuboPower/cuboPower.obj"));
 	{
 		meshes.push_back(cajita);
 	}
-
+	{
+		GameObject *go(new GameObject("Modelo"));
+		MeshRenderer& m = go->AddComponent<MeshRenderer>(*cajita);
+		objects.push_back(go);
+	}
 	//std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
 
 	//GameObject *caja(new GameObject("Cajita"));
 	//caja->AddComponent<MeshRenderer>(*cajita);
-	
+
 
 	sRenderer = new SystemRenderer();
 
@@ -142,7 +145,7 @@ void InitScene() {
 		"assets/textures/mp_northlight/bottom.tga",
 		"assets/textures/mp_northlight/front.tga",
 		"assets/textures/mp_northlight/back.tga",
-	});
+		});
 	sRenderer->Steal(objects);
 	win_width = 600;
 	win_height = 600;
@@ -238,10 +241,13 @@ int main(void)
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
 	bool capture = false;
-
-		//if (SDL_CaptureMouse(static_cast<SDL_bool>(true)) == -1) {
-		//	__debugbreak();
-		//}
+	capture = !capture;
+	if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
+		__debugbreak();
+	}
+	//if (SDL_CaptureMouse(static_cast<SDL_bool>(true)) == -1) {
+	//	__debugbreak();
+	//}
 	while (running)
 	{
 		//SDL_WarpMouseInWindow(window, win_width/2, win_height/2);
@@ -286,7 +292,7 @@ int main(void)
 		{
 			if (evt.type == SDL_QUIT) goto cleanup;
 
-			if (evt.type == SDL_EventType::SDL_KEYDOWN){
+			if (evt.type == SDL_EventType::SDL_KEYDOWN) {
 				if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
 					if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
 						__debugbreak();
@@ -313,22 +319,22 @@ int main(void)
 		}
 
 		//PF_INFO("UPDATE UI");
-		if (nk_begin(ctx, "Hierarchy", nk_rect(500, 50, 300, 400),
+		if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
 			NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 			NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 		{
 			for each (auto go in objects)
 			{
 				go->UI();
+			}
 		}
-	}
 		nk_end(ctx);
 		Camera &cam = sRenderer->GetCamera();
 
 		basic->use();
 		basic->setMat4("projection", cam.GetProjection());
 		basic->setMat4("view", cam.GetView());
-
+		basic->setFloat("dt", deltaTime);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 								//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -339,6 +345,9 @@ int main(void)
 		//#define INCLUDE_OVERVIEW 
 
 				/* -------------- EXAMPLES ---------------- */
+		 
+#undef INCLUDE_OVERVIEW
+
 #ifdef INCLUDE_CALCULATOR
 		calculator(ctx);
 #endif
@@ -366,11 +375,11 @@ int main(void)
 		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
 
 		mouse_deltaX -= mouse_lastPosX;
-		mouse_deltaY -= mouse_lastPosY; 
+		mouse_deltaY -= mouse_lastPosY;
 		mouse_deltaY *= -1;// estoy sumando por que sdl tiene el 0 arriba
 
 		//PF_INFO("X{0} / Y{1}", mouse_deltaX, mouse_deltaY);
-}
+	}
 
 
 
@@ -382,3 +391,4 @@ cleanup:
 	SDL_Quit();
 	return 0;
 }
+

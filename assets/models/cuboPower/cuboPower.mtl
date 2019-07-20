@@ -1,4 +1,4 @@
-# Blender MTL File: 'None'
+# Blender MTL File: 'cuboPowerblend.blend'
 # Material Count: 4
 
 newmtl albedo_red
@@ -9,7 +9,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 16
+illum 18
 map_Kd bricks2.jpg
 
 newmtl disp_blue
@@ -20,7 +20,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 14
+illum 18
 map_Kd bricks2_disp.jpg
 
 newmtl full
@@ -31,7 +31,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 15
+illum 18
 map_Bump bricks2_normal.jpg
 map_Kd bricks2.jpg
 map_Ks bricks2_disp.jpg
