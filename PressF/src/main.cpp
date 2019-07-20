@@ -145,6 +145,10 @@ void InitScene() {
 		"assets/textures/mp_northlight/back.tga",
 	});
 	sRenderer->Steal(objects);
+	win_width = 600;
+	win_height = 600;
+
+
 }
 
 int main(void)
@@ -234,10 +238,16 @@ int main(void)
 	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
+	bool capture = false;
 
+		//if (SDL_CaptureMouse(static_cast<SDL_bool>(true)) == -1) {
+		//	__debugbreak();
+		//}
 	while (running)
 	{
+		//SDL_WarpMouseInWindow(window, win_width/2, win_height/2);
 		LAST = NOW;
+		SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
 
 		std::queue<GameObject*> bfs; //bfs
 		std::list<GameObject* > callOrder;
@@ -271,12 +281,22 @@ int main(void)
 		glViewport(0, 0, win_width, win_height);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(bg.r, bg.g, bg.b, bg.a);
-
 		SDL_Event evt;
 		nk_input_begin(ctx);
 		while (SDL_PollEvent(&evt))
 		{
 			if (evt.type == SDL_QUIT) goto cleanup;
+
+			if (evt.type == SDL_EventType::SDL_KEYDOWN){
+				if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
+					if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
+						__debugbreak();
+					}
+					capture = !capture;
+
+					PF_INFO("capture {0}", capture);
+				}
+			}
 
 			for each (auto go in callOrder)
 			{
@@ -342,6 +362,15 @@ int main(void)
 		NOW = SDL_GetPerformanceCounter();
 
 		deltaTime = (double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency());
+
+
+		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
+
+		mouse_deltaX -= mouse_lastPosX;
+		mouse_deltaY -= mouse_lastPosY; 
+		mouse_deltaY *= -1;// estoy sumando por que sdl tiene el 0 arriba
+
+		//PF_INFO("X{0} / Y{1}", mouse_deltaX, mouse_deltaY);
 }
 
 

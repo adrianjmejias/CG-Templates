@@ -174,9 +174,35 @@ int running = 1;
 struct nk_context *ctx;
 struct nk_colorf bg;
 
+template <typename TT>
+class Delta {
+	TT last;
+	TT delta;
+public:
+	Delta(const TT &init) {
+		last = init;
+	}
+	TT GetValue() {
+		return delta;
+	}
+	TT Update(const TT &newVal) {
+		delta = newVal - last;
+		last = newVal;
+	}
+};
+
 Uint64 NOW = SDL_GetPerformanceCounter();
 Uint64 LAST = 0;
 double deltaTime = 0;
+
+using MousePosType = int;
+
+
+MousePosType mouse_lastPosX = 0;
+MousePosType mouse_lastPosY = 0;
+MousePosType mouse_deltaX = 0;
+MousePosType mouse_deltaY = 0;
+
 
 #pragma region Types
 
@@ -185,9 +211,69 @@ using Vec3 = glm::vec3;
 using Vec2 = glm::vec2;
 using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
+
+
+std::string to_string(const Vec3& v) {
+	char c[10];
+	
+	std::string s = "(";
+	
+	sprintf(c, "%.3f", v[0]);
+
+	s.append(c);
+	s.append(", ");
+
+	sprintf(c, "%.3f", v[1]);
+
+	s.append(c);
+	s.append(", ");
+
+	sprintf(c, "%.3f", v[2]);
+
+	s.append(c);
+	s.append(" )");
+
+	return s;
+}
+
+Vec3 nke_Vec3(Vec3 v, const std::string &label, const float min, const float max) {
+	//sprintf(buffer, "%.2f, %.2f, %.2f", position[0], position[1], position[2]);
+	if (nk_combo_begin_label(ctx, (label + to_string(v)).data(), nk_vec2(200, 200))) {
+		nk_layout_row_dynamic(ctx, 25, 1);
+
+		v.x = nk_propertyf(ctx, "X:", min, v.x, max, 1, 0.01f);
+		v.y = nk_propertyf(ctx, "Y:", min, v.y, max, 1, 0.01f);
+		v.z = nk_propertyf(ctx, "Z:", min, v.z, max, 1, 0.01f);
+
+		nk_combo_end(ctx);
+	}
+
+	return v;
+}
+
+void nke_Color(Color &c, std::string label) {
+
+
+	nk_label(ctx, label.c_str(), nk_text_align::NK_TEXT_ALIGN_LEFT);
+	if (nk_combo_begin_color(ctx, nk_rgb_cf(c), nk_vec2(200, 400))) {
+
+		nk_layout_row_dynamic(ctx, 120, 1);
+		c = nk_color_picker(ctx, c, NK_RGBA);
+		nk_layout_row_dynamic(ctx, 25, 2);
+		nk_layout_row_dynamic(ctx, 25, 1);
+
+		c.r = nk_propertyf(ctx, "#R:", 0, c.r, 1.0f, 0.01f, 0.005f);
+		c.g = nk_propertyf(ctx, "#G:", 0, c.g, 1.0f, 0.01f, 0.005f);
+		c.b = nk_propertyf(ctx, "#B:", 0, c.b, 1.0f, 0.01f, 0.005f);
+		c.a = nk_propertyf(ctx, "#A:", 0, c.a, 1.0f, 0.01f, 0.005f);
+		nk_combo_end(ctx);
+	}
+
+}
+
 std::ostream& operator<<(std::ostream& os, const Vec3& v)
 {
-	os << "(" << v.x << ", "<<v.y << ", "<<v.z << ")";
+	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
 	return os;
 }
 std::istream& operator>> (std::istream& is, Vec3& v)
@@ -792,7 +878,7 @@ std::vector<Mesh*> meshes;
 class Component {
 public:
 	std::string name;
-	int openUI = true;
+	int openUI = false;
 	int enabled = true;
 	Transform &transform;
 	GameObject &gameobject;
@@ -863,7 +949,7 @@ public:
 	Transform* Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
 	Vec3 Front() { return front; }
 	Vec3 Right() { return right; }
-	Vec3 Up()    { return up; }
+	Vec3 Up() { return up; }
 
 
 
@@ -899,38 +985,7 @@ private:
 	Returs true if it was dirty.
 	Cleans accumulated matrix
 	*/
-	bool TryGetClean() {
-		if (dirty == Dirty::None) return false;
-
-		if (dirty == Dirty::Model) {
-			rotMat = Transform::GenRotMat(rotation);
-
-			up = glm::normalize(rotMat * Vec4(up, 1));
-			right = glm::normalize(rotMat * Vec4(right, 1));
-			front = glm::normalize(rotMat * Vec4(front, 1));
-
-
-			model = Transform::GenModel(scale, position, rotMat);
-			dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
-		}
-
-		if (dirty == Dirty::Acum) {
-			if (parent == nullptr) {
-				acum = model;
-			}
-			else
-			{
-				acum = parent->GetAccumulated() * model;
-			}
-
-			for (auto child : children) {
-				child->SetDirty(Dirty::Acum);
-			}
-		}
-
-		dirty = Dirty::None;
-		return true;
-	}
+	bool TryGetClean();
 
 public:
 	Transform * SetParent(Transform *other) {
@@ -965,7 +1020,7 @@ public:
 		TryGetClean();
 		return model;
 	}
-	
+
 	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation) {
 		return Transform::GenModel(scale, position, GenRotMat(rotation));
 	}
@@ -986,7 +1041,10 @@ public:
 
 };
 
+int GO_ID = 0;
+
 class GameObject {
+	int _id;
 	friend class SystemRenderer;
 	std::list<Component*> components;
 
@@ -994,8 +1052,9 @@ public:
 	int openUI = false;
 	Transform transform;
 	std::string name;
-	GameObject(std::string n) : transform(*this) {
-		name = n;
+	GameObject(const std::string &n) : transform(*this) {
+		_id = GO_ID++;
+		name = std::to_string(_id).append(n);
 	}
 	void Update() {
 		for each (auto comp in components)
@@ -1022,33 +1081,36 @@ public:
 		}
 	}
 	void UI() {
-		if (nk_tree_push_hashed(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI), "hash\0", 5, __LINE__)) {
+		if (nk_tree_push_hashed(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI), name.data(), 5, __LINE__)) {
 
+			// height, width, row
+			const int val = 6000;
+			//nk_layout_row_static(ctx, 18, 100, 1);
+			transform.SetPosition(nke_Vec3(transform.GetPosition(), "Position", -val, val));
+			transform.SetRotation(nke_Vec3(transform.GetRotation(), "Rotation", -val, val));
+			transform.SetScale(nke_Vec3(transform.GetScale(), "Scale", -val, val));
 			for each (auto comp in components)
 			{
 				PF_ASSERT(comp && "component is null");
 
-				//if (nk_tree_push(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI))) 
 				if (nk_tree_push_hashed(ctx, NK_TREE_TAB, comp->name.data(), static_cast<nk_collapse_states>(comp->openUI), "hashin\0", 7, __LINE__))
 				{
-
 					nk_checkbox_label(ctx, "Enabled", &comp->enabled);
-
-					//nk_group_begin_titled(ctx, "","Transform", 0);
-					//nk_label(ctx, "label test", NK_TEXT_ALIGN_CENTERED);
-
-					//nk_group_end(ctx);
 
 					comp->UI();
 
-					for each (Transform* child in transform.children)
-					{
-						child->gameobject.UI();
-					}
-
 					nk_tree_pop(ctx);
 				}
+			}
 
+
+			if (transform.children.size() > 0) {
+				nk_label(ctx, "Children", nk_text_align::NK_TEXT_ALIGN_LEFT);
+			}
+
+			for each (Transform* child in transform.children)
+			{
+				child->gameobject.UI();
 			}
 
 			nk_tree_pop(ctx);
@@ -1073,19 +1135,47 @@ public:
 	}
 };
 
+bool Transform::TryGetClean() {
+	if (dirty == Dirty::None) return false;
+	PF_INFO("Cleaned {0}", gameobject.name);
+	if (dirty == Dirty::Model) {
+		rotMat = Transform::GenRotMat(rotation);
+
+		up = glm::normalize(rotMat * Vec4(Transform::WorldUp(), 1));
+		right = glm::normalize(rotMat * Vec4(Transform::WorldRight(), 1));
+		front = glm::normalize(rotMat * Vec4(Transform::WorldFront(), 1));
+
+
+		model = Transform::GenModel(scale, position, rotMat);
+		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
+	}
+
+	if (dirty == Dirty::Acum) {
+		if (parent == nullptr) {
+			acum = model;
+		}
+		else
+		{
+			acum = parent->GetAccumulated() * model;
+		}
+
+		for (auto child : children) {
+			child->SetDirty(Dirty::Acum);
+		}
+	}
+
+	dirty = Dirty::None;
+	return true;
+}
 
 #pragma region Components
 class Camera : public Component {
 	friend class GameObject;
-	const float YAW = -90.0f;
-	const float PITCH = 0.0f;
-	const float SPEED = 5.f;
-	const float SENSITIVITY = 1.f;
-	const float ZOOM = 45.0f;
 
-	unsigned int power = 10000;
-	bool isPerspective = true;
-	float speed = 20;
+	int power = 10000;
+	int isPerspective = true;
+	float speed = 100.f;
+	float sensitivity = 1.f;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
 	float farClippingPlane = 200.0f;
@@ -1109,67 +1199,82 @@ public:
 
 	// Inherited via Component
 	virtual void UI() override {
-		fov = nk_propertyf(ctx, "FOV", 30.f, fov, 120.0f, 0.01f, 0.005f);
+		nk_checkbox_label(ctx, "IsPerspective", &isPerspective);
+		power = nk_propertyi(ctx, "Power", 0, power, 10000, 1.f, 1.f);
+		fov = nk_propertyf(ctx, "Fov", 30.f, fov, 120.0f, 0.01f, 0.005f);
+		nearClippingPlane = nk_propertyf(ctx, "Near", 0.001, nearClippingPlane, farClippingPlane, 1.f, 0.005f);
+		farClippingPlane = nk_propertyf(ctx, "Far", nearClippingPlane, farClippingPlane, 6000, 1.f, 0.005f);
+		speed = nk_propertyf(ctx, "Speed", 50, speed, 500, 1.f, 0.005f);
+		sensitivity = nk_propertyf(ctx, "Sensitivity", 0.1f, sensitivity, 3, 0.1f, 0.005f);
+
 	}
 
 	virtual void HandleEvent(const SDL_Event &e) override {
+
+		if (!SDL_GetRelativeMouseMode()) return;
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
 			//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT) 
 			{
+
+				float scaledSpeed = static_cast<float>(deltaTime) * speed;
+
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
 					PF_INFO(" Camera SDL_SCANCODE_W");
-					transform.Translate(transform.Front() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(transform.Front() * scaledSpeed);
+					std::cout << transform.GetPosition() << std::endl;
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
 					PF_INFO(" Camera SDL_SCANCODE_S");
-					transform.Translate(-transform.Front() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(-transform.Front() * scaledSpeed);
 
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
 					PF_INFO(" Camera SDL_SCANCODE_A");
-					transform.Translate(-transform.Right() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(-transform.Right() * scaledSpeed);
 
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
 					PF_INFO(" Camera SDL_SCANCODE_D");
-					transform.Translate(transform.Right() * static_cast<float>(deltaTime) * speed);
+					transform.Translate(transform.Right() * scaledSpeed);
 				}
 			}
 		}
-	
-	
+
 		if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
-			//Vec3 target
+			float movX = sensitivity * e.motion.xrel * deltaTime;
+			float movY = sensitivity * e.motion.yrel* deltaTime;
+
+			transform.Rotate(movY, movX, 0);
 		}
-	
+
 	}
 
 
 
 
 
-virtual Mat4& GetView() {
-	Transform &t = transform;
+	virtual Mat4& GetView() {
+		Transform &t = transform;
 
-	view = Transform::GenModel(t.GetScale(), -t.GetPosition(), t.GetRotation()); //glm::lookAt(transform->GetPosition(), transform->GetPosition() + front, up);
+		view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.Front(), transform.Up());
 
 
-	return transform.GetAccumulated();
-}
-virtual Mat4& GetProjection() {
-	int w, h;
-	SDL_GetWindowSize(win, &w, &h);
-
-	if (isPerspective)
-	{
-		projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+		return transform.GetAccumulated();
 	}
-	else {
-		projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
-	}
+	virtual Mat4& GetProjection() {
+		int w, h;
+		SDL_GetWindowSize(win, &w, &h);
 
-	return projection;
-}
+		if (isPerspective)
+		{
+			projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+		}
+		else {
+			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
+		}
+
+		return projection;
+	}
 
 
 };
@@ -1197,9 +1302,9 @@ class Light : public Component {
 public:
 	LightType type;
 	Color kA{ 1,1,1,1 };
-	Vec3 kD{ 0,0,1 };
-	Vec3 kS{ 1,0,0 };
-	Vec3 kE{ 0,0,0 };
+	Color kD{ 0,0,1,1 };
+	Color kS{ 1,0,0,1 };
+	Color kE{ 0,0,0,1 };
 
 
 	virtual void Bind() = 0;
@@ -1207,20 +1312,10 @@ public:
 
 	virtual void UI() override {
 
-
-		if (nk_combo_begin_color(ctx, nk_rgb_cf(kA), nk_vec2(200, 400))) {
-
-			nk_layout_row_dynamic(ctx, 120, 1);
-			kA = nk_color_picker(ctx, kA, NK_RGBA);
-			nk_layout_row_dynamic(ctx, 25, 2);
-			nk_layout_row_dynamic(ctx, 25, 1);
-
-			kA.r = nk_propertyf(ctx, "#R:", 0, kA.r, 1.0f, 0.01f, 0.005f);
-			kA.g = nk_propertyf(ctx, "#G:", 0, kA.g, 1.0f, 0.01f, 0.005f);
-			kA.b = nk_propertyf(ctx, "#B:", 0, kA.b, 1.0f, 0.01f, 0.005f);
-			kA.a = nk_propertyf(ctx, "#A:", 0, kA.a, 1.0f, 0.01f, 0.005f);
-			nk_combo_end(ctx);
-		}
+		nke_Color(kA, "kA");
+		nke_Color(kD, "kD");
+		nke_Color(kS, "kS");
+		nke_Color(kE, "kE");
 	}
 	virtual void HandleEvent(const SDL_Event &e) override {}
 	virtual void ShadowPass() {}
@@ -1236,7 +1331,7 @@ class PointLight : public Light {
 public:
 	Vec3 attenuation;
 
-	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
+	PointLight(LIGHT_PARAMS) : Light (o, t, "PointLight")
 	{
 		this->type = LightType::POINT;
 	}
@@ -1259,7 +1354,7 @@ public:
 	Vec3 attenuation;
 	float innerAngle = 15.f;
 	float outterAngle = 20.f;
-	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
+	SpotLight(LIGHT_PARAMS) : Light (o, t, "SpotLight")
 	{
 		this->type = LightType::SPOTLIGHT;
 
@@ -1276,6 +1371,7 @@ public:
 
 	virtual void UI() override {
 		Light::UI();
+		attenuation = nke_Vec3(attenuation, "Attenuation", 0, 20);
 		innerAngle = nk_propertyf(ctx, "innerAngle", 0, innerAngle, outterAngle, 0.01f, 0.005f);
 		outterAngle = nk_propertyf(ctx, "outterAngle", innerAngle, outterAngle, 180, 0.01f, 0.005f);
 	}
