@@ -57,7 +57,6 @@ inline void InitNuklear()
 {
 }
 
-
 void Init() {
 	InitLog();
 	//InitSDL();
@@ -123,10 +122,10 @@ void InitScene() {
 	});
 
 
-	//Mesh * cajita(new Mesh("assets/models/fullcube/fullCube.obj"));
-	//{
-	//	meshes.push_back(cajita);
-	//}
+	Mesh * cajita(new Mesh("assets/models/cuboPower/cuboPower.obj"));
+	{
+		meshes.push_back(cajita);
+	}
 
 	//std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
 
@@ -314,7 +313,7 @@ int main(void)
 		}
 
 		//PF_INFO("UPDATE UI");
-		if (nk_begin(ctx, "Hierarchy", nk_rect(500, 50, 230, 250),
+		if (nk_begin(ctx, "Hierarchy", nk_rect(500, 50, 300, 400),
 			NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 			NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 		{

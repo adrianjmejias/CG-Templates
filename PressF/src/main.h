@@ -149,10 +149,11 @@ int UNIVERSALID = 0;
 #include <map>
 #include <queue>
 #include <iostream>
+#include <numeric>
 #include <sstream>
 #include <fstream>
 #include <initializer_list>
-
+#include <stddef.h>
 //#include <filesystem>
 
 #pragma endregion Includes
@@ -215,9 +216,9 @@ using iVec3 = glm::ivec3;
 
 std::string to_string(const Vec3& v) {
 	char c[10];
-	
+
 	std::string s = "(";
-	
+
 	sprintf(c, "%.3f", v[0]);
 
 	s.append(c);
@@ -290,11 +291,15 @@ using Mat4 = glm::mat4;
 
 enum class IllumModel {
 	CUBEMAP = 11,
+	NORMAL,
+	OCCLUSION_PARALLAX,
 	REFLECTION,
 	REFRACTION,
-	SHADOW,
+	TRANSPARENCY,
+	SHADOW_MAPPING,
 	COOK,
-	BLINN_PHONG
+	BLINN_PHONG,
+	DISPLACEMENT,
 };
 
 
@@ -393,7 +398,10 @@ public:
 class Asset {
 public:
 
-	Asset(const std::string n) : name(n)
+	Asset(const std::string& n) : name(n)
+	{
+	}
+	Asset(const std::string& n, const std::string& p) : name(n), path(p)
 	{
 	}
 	//Asset(const std::filesystem::path p): name(p.filename)
@@ -486,16 +494,35 @@ public:
 
 			});
 
-			//case IllumModel::REFLECTION:
-			//	return new ShaderProgram({
-			//		Shader::FromPath("REFLECTION.vert", GL_VERTEX_SHADER),
-			//		Shader::FromPath("REFLECTION.frag", GL_FRAGMENT_SHADER),
-			//		});
-			//case IllumModel::REFRACTION:
-			//	return new ShaderProgram({
-			//		Shader::FromPath("REFRACTION.vert", GL_VERTEX_SHADER),
-			//		Shader::FromPath("REFRACTION.frag", GL_FRAGMENT_SHADER),
-			//		});
+		case IllumModel::REFLECTION:
+			return new ShaderProgram({
+				Shader::FromPath("assets/shaders/defaults/REFLECTION.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/REFLECTION.frag", GL_FRAGMENT_SHADER),
+				}, [](PARAMS_PREREQ) {
+
+
+
+			});
+		case IllumModel::TRANSPARENCY:
+			return new ShaderProgram({
+				Shader::FromPath("assets/shaders/defaults/TRANSPARENCY.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/TRANSPARENCY.frag", GL_FRAGMENT_SHADER),
+				},
+				[](PARAMS_PREREQ) {
+
+
+
+			});
+		case IllumModel::REFRACTION:
+			return new ShaderProgram({
+				Shader::FromPath("assets/shaders/defaults/REFRACTION.vert", GL_VERTEX_SHADER),
+				Shader::FromPath("assets/shaders/defaults/REFRACTION.frag", GL_FRAGMENT_SHADER),
+				},
+				[](PARAMS_PREREQ) {
+
+
+
+			});
 			//case IllumModel::SHADOW:
 			//	return new ShaderProgram({
 			//		Shader::FromPath("SHADOW.vert", GL_VERTEX_SHADER),
@@ -1331,7 +1358,7 @@ class PointLight : public Light {
 public:
 	Vec3 attenuation;
 
-	PointLight(LIGHT_PARAMS) : Light (o, t, "PointLight")
+	PointLight(LIGHT_PARAMS) : Light(o, t, "PointLight")
 	{
 		this->type = LightType::POINT;
 	}
@@ -1354,7 +1381,7 @@ public:
 	Vec3 attenuation;
 	float innerAngle = 15.f;
 	float outterAngle = 20.f;
-	SpotLight(LIGHT_PARAMS) : Light (o, t, "SpotLight")
+	SpotLight(LIGHT_PARAMS) : Light(o, t, "SpotLight")
 	{
 		this->type = LightType::SPOTLIGHT;
 
@@ -1671,7 +1698,6 @@ public:
 	}
 };
 
-
 void CubeMap::Render(SystemRenderer &renderer) {
 
 	shader->use();
@@ -1692,7 +1718,6 @@ void CubeMap::Render(SystemRenderer &renderer) {
 	// set depth function back to default
 }
 
-
 #pragma region Models
 //#define DEBUG_OBJ_LOADER
 #ifdef DEBUG_OBJ_LOADER
@@ -1701,191 +1726,196 @@ void CubeMap::Render(SystemRenderer &renderer) {
 #define DEBUG_PRINT(x) 
 #endif // DEBUG
 
-using Face = iVec3;
+#define MESH_LOAD_FORMAL_PARAMS std::vector<Vec3>& tempPos, std::vector<Vec2>& tempUV, std::vector<Vec3>& tempNormal
+#define MESH_LOAD_ACT_PARAMS tempPos, tempUV, tempNormal
 
-class Vertex {
-public:
-	Vec3 pos;
-	Vec3 uv;
-	Vec3 normal;
-	Vec3 tangent;
-	Vec3 bitangent;
-};
 
 class SubMesh : public Asset {
 public:
-	Mesh & group;
-	Vec2 AABB;
+	unsigned int VAO = 0;
+	size_t nIndices = 0;
+	size_t nUV = 0;
+	size_t nPos = 0;
+	size_t nNorm = 0;
+	Mesh &group;
+	std::array<Vec3, 2> AABB;
 	SubMesh(Mesh& g, std::string n)
 		: group(g), Asset(n)
 	{
 	}
-};
+	Mesh& Read(std::istream& file, MESH_LOAD_FORMAL_PARAMS) {
 
-std::istream& operator>> (std::istream& file, SubMesh& mesh) {
-	Vec3 v;
-	Vec3 vt;
-	Vec3 vn;
+		SubMesh& mesh = *this;
+		Vec3 v;
+		Vec3 vt;
+		Vec3 vn;
 
-	iVec3 f;
-	iVec3 ft;
-	iVec3 fn;
-	std::string tofData;
+		iVec3 f;
+		iVec3 ft;
+		iVec3 fn;
+		std::string tofData;
 
 
-	while (!file.eof() && file.good() && file.peek() != 'o')
-	{
-		std::string buffer;
-		std::getline(file, buffer);
-		std::stringstream stream(buffer);
-
-		stream >> tofData;
-
-		std::cout << buffer << std::endl;
-		if (tofData[0] == 'v')
+		while (!file.eof() && file.good() && file.peek() != 'o')
 		{
+			std::string buffer;
+			std::getline(file, buffer);
+			std::stringstream stream(buffer);
 
-			if (tofData.size() > 1) {
-				switch (tofData[1])
-				{
-				case 'n':
-				{
-					stream >> vn;
-					//mesh->vertexNormal.push_back(vn);
-					//vertexData.push_back(vn);
-					DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
+			stream >> tofData;
 
-				}
-
-				break;
-
-				case 't':
-					// while(!stream.eof()) // por ahora no triangula
-				{
-					stream >> vt[0] >> vt[1];
-					v[2] = 0;
-					//mesh->vertex.push_back(vt);
-					//vertexData.push_back(Vec3(vt[0], vt[1], 0.f));
-					DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
-				}
-
-
-				break;
-
-				default:
-					break;
-				}
-			}
-			else
+			std::cout << buffer << std::endl;
+			if (tofData[0] == 'v')
 			{
-				// Position
-				// while(!stream.eof()) //por ahora no triangula
-				{
-					DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
-				}
-			}
-		}
-		else if (tofData == "f")
-		{
-			auto posInit = stream.tellg();
-			stream >> buffer;
-			stream.seekg(posInit); // hago como si no hubiera leido nada del stream
-
-								   //x case f v1 v2 v3 ....
-								   //x case f v1/vt1 v2/vt2 v3/vt3 ...
-								   // case f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
-								   // case f v1//vn1 v2//vn2 v3//vn3 ...
-
-			bool hasDoubleSlash = false;
-			unsigned int countDeSlash = 0;
-			{
-				unsigned int slashPos = buffer.find_first_of("/");
-				hasDoubleSlash = (buffer[slashPos + 1]) == '/';
-			}
-			countDeSlash = std::count(buffer.begin(), buffer.end(), '/');
-
-			DEBUG_PRINT(std::cout << hasDoubleSlash << " " << countDeSlash << std::endl);
-
-			//std::vector<std::string> tokens;
-
-
-
-
-			switch (countDeSlash)
-			{
-			case 0: // solo caras
-			{
-
-				stream >> f;
-
-				//mesh->face.push_back(f);
-				DEBUG_PRINT(std::cout << "(" << f[0] << ", " << f[1] << ", " << f[2] << ")" << std::endl);
-			}
-			break;
-			case 1: // caras y texturas
-			{
-				for (int ii = 0; ii < 3; ii++)
-				{
-					stream >> buffer;
-					sscanf_s(buffer.c_str(), "%d/%d", &f[ii], &ft[ii]);
-
-					DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ")" << std::endl);
-				}
-
-				//mesh->face.push_back(f);
-				//mesh->faceTex.push_back(ft);
-			}
-			break;
-			case 2:
-			{
-				if (hasDoubleSlash)
-				{ // caras y normales
-
-					for (int ii = 0; ii < 3; ii++)
+				if (tofData.size() > 1) {
+					switch (tofData[1])
 					{
-						stream >> buffer;
-						sscanf_s(buffer.c_str(), "%d//%d", &f[ii], &fn[ii]);
-						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << fn[ii] << ")" << std::endl);
+					case 'n':
+					{
+						nNorm++;
+						stream >> vn;
+						tempNormal.push_back(vn);
+						DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
+
 					}
 
-					//mesh->face.push_back(f);
-					//mesh->faceNorm.push_back(fn);
+					break;
 
+					case 't':
+						// while(!stream.eof()) // por ahora no triangula
+					{
+						nUV++;
+						stream >> vt[0] >> vt[1];
+						tempUV.push_back(vt);
+						DEBUG_PRINT(std::cout << "(" << vt[0] << ", " << vt[1] << ")" << std::endl);
+					}
+					break;
+
+					default:
+						throw std::exception("not supported, wtf");
+						break;
+					}
 				}
 				else
-				{ //caras texturas y normales
+				{
+					// Position
+					// while(!stream.eof()) //por ahora no triangula
+					{
+						nPos++;
+						stream >> v;
+						tempPos.push_back(v);
+						DEBUG_PRINT(std::cout << "(" << v[0] << ", " << v[1] << ", " << v[2] << ")" << std::endl);
+					}
+				}
+			}
+			else if (tofData == "f")
+			{
+				nIndices++;
+
+
+
+				auto posInit = stream.tellg();
+				stream >> buffer;      // EXTRAIGO UN TOKEN PARA VER QUE TIPO DE CARA VIENE ej de buffer 6/1/1
+				stream.seekg(posInit); // luego hago como si no hubiera leido nada del stream
+
+									   //x case f v1 v2 v3 ....
+									   //x case f v1/vt1 v2/vt2 v3/vt3 ...
+									   // case f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
+									   // case f v1//vn1 v2//vn2 v3//vn3 ...
+
+				bool hasDoubleSlash = false;
+				unsigned int countDeSlash = 0;
+				{
+					unsigned int slashPos = buffer.find_first_of("/");
+					hasDoubleSlash = (buffer[slashPos + 1]) == '/';
+				}
+				countDeSlash = std::count(buffer.begin(), buffer.end(), '/');
+
+				DEBUG_PRINT(std::cout << hasDoubleSlash << " " << countDeSlash << std::endl);
+
+				//std::vector<std::string> tokens;
+
+
+
+
+				switch (countDeSlash)
+				{
+				case 0: // solo caras
+				{
+
+					stream >> f;
+
+					//mesh->face.push_back(f);
+					DEBUG_PRINT(std::cout << "(" << f[0] << ", " << f[1] << ", " << f[2] << ")" << std::endl);
+				}
+				break;
+				case 1: // caras y texturas
+				{
 					for (int ii = 0; ii < 3; ii++)
 					{
 						stream >> buffer;
-						sscanf_s(buffer.c_str(), "%d/%d/%d", &f[ii], &ft[ii], &fn[ii]);
-						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ", " << fn[ii] << ")" << std::endl);
+						sscanf_s(buffer.c_str(), "%d/%d", &f[ii], &ft[ii]);
+
+						DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ")" << std::endl);
 					}
 
 					//mesh->face.push_back(f);
-					//mesh->faceNorm.push_back(fn);
 					//mesh->faceTex.push_back(ft);
 				}
-			}
+				break;
+				case 2:
+				{
+					if (hasDoubleSlash)
+					{ // caras y normales
 
-			break;
+						for (int ii = 0; ii < 3; ii++)
+						{
+							stream >> buffer;
+							sscanf_s(buffer.c_str(), "%d//%d", &f[ii], &fn[ii]);
+							DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << fn[ii] << ")" << std::endl);
+						}
+
+						//mesh->face.push_back(f);
+						//mesh->faceNorm.push_back(fn);
+
+					}
+					else
+					{ //caras texturas y normales
+						for (int ii = 0; ii < 3; ii++)
+						{
+							stream >> buffer;
+							sscanf_s(buffer.c_str(), "%d/%d/%d", &f[ii], &ft[ii], &fn[ii]);
+							DEBUG_PRINT(std::cout << "(" << f[ii] << ", " << ft[ii] << ", " << fn[ii] << ")" << std::endl);
+						}
+
+						//mesh->face.push_back(f);
+						//mesh->faceNorm.push_back(fn);
+						//mesh->faceTex.push_back(ft);
+					}
+				}
+
+				break;
+				}
 			}
-		}
-		else if (tofData == "usemtl")
-		{
-			stream >> buffer;// pongo el nombre del material
-							 //mesh->materials.push_back(materials[buffer]);
+			else if (tofData == "usemtl")
+			{
+				stream >> buffer;// pongo el nombre del material
+								 //mesh->materials.push_back(materials[buffer]);
+
+
+			}
 		}
 	}
-	return file;
-}
+};
+
 
 class Material;
 class ShaderProgram;
-std::istream& operator>> (std::istream& file, Material& material);
 
-class Material : public Asset {
+class Material {
 public:
-	ShaderProgram * shader = nullptr;
+	size_t nFaces = 0;
+	ShaderProgram *shader = nullptr;
 
 
 	void Bind() {
@@ -1894,9 +1924,7 @@ public:
 
 
 	std::map<std::string, Texture*> maps;
-	Material(std::string n) : Asset(n) {
 
-	}
 	Vec3 kA;
 	Vec3 kD;
 	Vec3 kS;
@@ -1906,17 +1934,138 @@ public:
 	float dissolve = 1;
 
 	//http://paulbourke.net/dataformats/mtl/
-	static std::vector<Material*> ReadMTLLIB(std::string matPath) {
 
-		std::vector<Material*> materials;
-		std::ifstream file(matPath, std::ios::in);
+	Material(std::istream& file, const std::string& pathBase) {
+		Material& material = *this;
+		std::string buffer;
+		while (!file.eof() && file.good())
+		{
+			std::string tofData;
+
+			if (file.peek() == 'n') {
+				return;
+			}
+
+			std::getline(file, buffer);
+
+			std::stringstream stream(buffer);
+
+			stream >> tofData;
+			std::cout << buffer << std::endl;
+			{
+
+
+				// para los K falta espectral y xyz
+				if (tofData == "Ka") {
+					stream >> material.kA;
+				}
+				else if (tofData == "Kd") {
+					stream >> material.kD;
+				}
+				else if (tofData == "Ks") {
+					stream >> material.kS;
+				}
+				else if (tofData == "Ns") {
+					stream >> material.shiny;
+				}
+				else if (tofData == "Ni") {
+					stream >> material.refractionIndex;
+				}
+				else if (tofData == "d") {
+					stream >> material.dissolve;
+				}
+				else if (tofData == "Tf") {
+
+				}
+				else if (tofData == "illum") {
+					int type;
+					stream >> type;
+					material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
+				}
+				else if (tofData == "map_Ka") {
+
+					stream >> tofData;
+
+					if (material.maps.find(tofData) == material.maps.end())
+					{
+						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::AMBIENT);
+					}
+
+				}
+				else if (tofData == "map_Kd") {
+
+					stream >> tofData;
+
+					if (material.maps.find(tofData) == material.maps.end())
+					{
+						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::DIFFUSE);
+
+					}
+
+				}
+				else if (tofData == "map_Ks") {
+
+
+				}
+				else if (tofData == "map_Ns") {
+					stream >> tofData;
+
+					if (material.maps.find(tofData) == material.maps.end())
+					{
+						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::SHINY);
+
+					}
+
+
+				}
+				else if (tofData == "map_d") {
+
+				}
+				else if (tofData == "disp") {
+					stream >> tofData;
+
+					if (material.maps.find(tofData) == material.maps.end())
+					{
+						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::DISPLACEMENT);
+
+					}
+
+				}
+				else if (tofData == "decal") {
+
+
+				}
+				else if (tofData == "bump") {
+
+					stream >> tofData;
+
+					if (material.maps.find(tofData) == material.maps.end())
+					{
+						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::BUMP);
+
+					}
+				}
+			}
+		}
+
+	}
+};
+
+
+class MTLLib : public Asset {
+public:
+	std::map<std::string, Material*> materials;
+
+	MTLLib(std::string MTLName, std::string matPath) : Asset(name, path) {
+
+		std::ifstream file(matPath + "/" + MTLName, std::ios::in);
 
 		if (!file.is_open())
 		{
-			DEBUG_PRINT(std::cout << "Couldn't open material file" << matPath << std::endl);
+			DEBUG_PRINT(std::cout << "Couldn't open material file" << matPath + "/" + MTLName << std::endl);
 			__debugbreak();
 
-			return materials;
+			throw std::exception("Couldn't open material file");
 		}
 
 		std::string buffer;
@@ -1932,143 +2081,27 @@ public:
 			if (tofData == "newmtl") {
 				std::cout << buffer << std::endl;
 				stream >> tofData;
-				Material *mat(new Material(tofData));
-				file >> *mat;
-				materials.push_back(mat);
+				materials[tofData] = new Material(file, matPath);
 			}
 		}
 		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
-
-		return materials;
 	}
+
+
 
 };
 
-std::istream& operator>> (std::istream& file, Material& material)
-{
-	std::string buffer;
-	while (!file.eof() && file.good())
-	{
-		std::string tofData;
-
-		if (file.peek() == 'n') {
-			return file;
-		}
-
-		std::getline(file, buffer);
-
-		std::stringstream stream(buffer);
-
-		stream >> tofData;
-		std::cout << buffer << std::endl;
-		{
 
 
-			// para los K falta espectral y xyz
-			if (tofData == "Ka") {
-				stream >> material.kA;
-			}
-			else if (tofData == "Kd") {
-				stream >> material.kD;
-			}
-			else if (tofData == "Ks") {
-				stream >> material.kS;
-			}
-			else if (tofData == "Ns") {
-				stream >> material.shiny;
-			}
-			else if (tofData == "Ni") {
-				stream >> material.refractionIndex;
-			}
-			else if (tofData == "d") {
-				stream >> material.dissolve;
-			}
-			else if (tofData == "Tf") {
-
-			}
-			else if (tofData == "illum") {
-				int type;
-				stream >> type;
-				material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
-			}
-			else if (tofData == "map_Ka") {
-
-				stream >> tofData;
-
-				if (material.maps.find(tofData) == material.maps.end())
-				{
-					material.maps[tofData] = new Texture(tofData, MapType::AMBIENT);
-				}
-
-			}
-			else if (tofData == "map_Kd") {
-
-				stream >> tofData;
-
-				if (material.maps.find(tofData) == material.maps.end())
-				{
-					material.maps[tofData] = new Texture(tofData, MapType::DIFFUSE);
-
-				}
-
-			}
-			else if (tofData == "map_Ks") {
-
-
-			}
-			else if (tofData == "map_Ns") {
-				stream >> tofData;
-
-				if (material.maps.find(tofData) == material.maps.end())
-				{
-					material.maps[tofData] = new Texture(tofData, MapType::SHINY);
-
-				}
-
-
-			}
-			else if (tofData == "map_d") {
-
-			}
-			else if (tofData == "disp") {
-				stream >> tofData;
-
-				if (material.maps.find(tofData) == material.maps.end())
-				{
-					material.maps[tofData] = new Texture(tofData, MapType::DISPLACEMENT);
-
-				}
-
-			}
-			else if (tofData == "decal") {
-
-
-			}
-			else if (tofData == "bump") {
-
-				stream >> tofData;
-
-				if (material.maps.find(tofData) == material.maps.end())
-				{
-					material.maps[tofData] = new Texture(tofData, MapType::BUMP);
-
-				}
-			}
-		}
-	}
-
-	return file;
-}
 
 //http://paulbourke.net/dataformats/obj/
 class Mesh : public Asset {
 public:
 	unsigned int VBO;
-	unsigned int VAO;
 	unsigned int EBO;
-	std::vector<Vertex> vertex;
-	std::vector<Material*> materials;
+
+	MTLLib *mtl;
 	std::vector<SubMesh*> submesh;
 
 	SubMesh& AddSubMesh(std::string n) {
@@ -2080,6 +2113,11 @@ public:
 	Mesh(const std::string path)
 		: Asset(path)
 	{
+
+		std::vector<Vec3> tempPos;
+		std::vector<Vec3> tempNormal;
+		std::vector<Vec2> tempUV;
+
 		std::ifstream file(path, std::ios::in);
 		std::string buffer;
 		if (!file.is_open())
@@ -2089,6 +2127,11 @@ public:
 			std::cin.ignore();
 			exit(-1);
 		}
+
+		int slashPos = path.find_last_of("/");
+		std::string matPath = path.substr(0, slashPos);
+		std::string name = path.substr(slashPos, path.find_last_of(".")).append(".mtl");
+		mtl = new MTLLib(name, matPath);
 
 
 		while (!file.eof() && file.good())
@@ -2108,17 +2151,7 @@ public:
 				if (tofData == "o") {
 					stream >> tofData;
 					SubMesh &m = AddSubMesh(tofData);
-					file >> m;
-				}
-				else if (tofData == "mtllib") {
-					std::cout << buffer << std::endl;
-
-					stream >> tofData;
-					std::string matPath = path.substr(0, path.find_last_of("/"));
-					matPath.append("/" + tofData);
-
-					materials = Material::ReadMTLLIB(matPath);
-
+					m.Read(file, MESH_LOAD_ACT_PARAMS);
 				}
 				else if (tofData == "s")
 				{
@@ -2126,16 +2159,11 @@ public:
 
 					// if
 				}
+				//else if (tofData == "mtllib") {} already reading it at the beggining
 			}
-			DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 			DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 		}
 
-		////for (auto mesh : meshes)
-		////{
-
-		////	mesh->face.pop_back();
-		////}
 
 		////for (auto mesh : meshes)
 		////{
@@ -2177,21 +2205,81 @@ public:
 
 		////}
 
-
+		GLCreate(MESH_LOAD_ACT_PARAMS);
 	}
 
-	void GLCreate() {
 
-		glBindVertexArray(VAO);
-		// 2. copy our vertices array in a vertex buffer for OpenGL to use
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
-		// 3. copy our index array in a element buffer for OpenGL to use
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-		// 4. then set the vertex attributes pointers
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
+	void PreProcessMeshes(MESH_LOAD_FORMAL_PARAMS) {
+
+
+		size_t off = 0;
+
+		for each (SubMesh *s in submesh)
+		{
+			SubMesh& sub = *s;
+
+			for (size_t ii = off, iiEnd = off + sub.nIndices; ii < iiEnd; ii++) {
+
+
+
+
+
+
+			}
+
+
+
+		}
+
+
+	}
+	void GLCreate(MESH_LOAD_FORMAL_PARAMS) {
+
+		PreProcessMeshes(MESH_LOAD_ACT_PARAMS);
+
+		GLCALL(glGenBuffers(1, &VBO));
+		//GLCALL(glBufferData(GL_ARRAY_BUFFER, std::reduce(std::execution::par, begin(vec), end(vec));,0, GL_STATIC_DRAW));
+
+	//GLCALL(glBufferSubData(GL_ARRAY_BUFFER, offset, size, pointer));
+		GLCALL(glEnableVertexAttribArray(0));
+		GLCALL(glEnableVertexAttribArray(1));
+		GLCALL(glEnableVertexAttribArray(2));
+		GLCALL(glEnableVertexAttribArray(3));
+
+
+
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+		size_t off = 0;
+		for each (SubMesh* s in submesh)
+		{
+			//PF_ASSERT(s && "you can't have null submeshes");
+			//SubMesh &sub = *s;
+
+			//GLCALL(glGenVertexArrays(1, &sub.VAO));
+			//GLCALL(glBindVertexArray(sub.VAO));
+
+			//GLCALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+			//GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, pos))));
+			//GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, normal))));
+			//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, tangent))));
+			//GLCALL(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)(off + offsetof(Vertex, uv))));
+
+
+			//// tamaño del bloque de vertices de la submesh
+			//off += sub.nPos * sizeof(Vertex);
+		}
+
+
+		//glBindVertexArray(VAO);
+		//// 2. copy our vertices array in a vertex buffer for OpenGL to use
+		//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
+		//// 3. copy our index array in a element buffer for OpenGL to use
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		////glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		//// 4. then set the vertex attributes pointers
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		//glEnableVertexAttribArray(0);
 
 	}
 	void Render() {
