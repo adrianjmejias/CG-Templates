@@ -10,13 +10,11 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-
 #define PF_INFO(...)      spdlog::info(__VA_ARGS__)
 #define PF_ERROR(...)     spdlog::error(__VA_ARGS__)
 #define PF_DEBUG(...)     spdlog::debug(__VA_ARGS__)
 #define PF_WARN(...)      spdlog::warn(__VA_ARGS__)
 #define PF_CRITICAL(...)  spdlog::critical(__VA_ARGS__)
-
 
 #ifdef  DEBUG
 #define PF_ASSERT(x) if(!(x)){\
@@ -30,9 +28,7 @@
 
 #endif //  DEBUG
 
-
 bool GLLogCall(const char* function, const char* file, int line);
-
 
 #define GLASSERT(x) if (!(x)) __debugbreak();
 #define GLCALL(x) GLClearError();\
@@ -62,15 +58,12 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 		default:break;
 		}
 
-
-
 		PF_ERROR("[OpenGL Error {0} | {1}  \nCall {2}  \nError : {3}]", file, line, function, errName);
 		return false;
 	}
 
 	return true;
 }
-
 
 /* nuklear - 1.32.0 - public domain */
 #include <stdio.h>
@@ -83,8 +76,6 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 #include <math.h>
 #include <limits.h>
 #include <time.h>
-
-
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -111,7 +102,7 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 * ===============================================================*/
 /* This are some code examples to provide a small overview of what can be
 * done with this library. To try out an example uncomment the defines */
-//#define INCLUDE_ALL 
+//#define INCLUDE_ALL
 /*#define INCLUDE_STYLE */
 #define INCLUDE_OVERVIEW
 
@@ -161,9 +152,6 @@ int UNIVERSALID = 0;
 #define COMP_PARAMS GameObject &o, Transform &t
 #define INIT_COMP(n) :Component(o,t, n)
 
-
-
-
 /* Platform */
 SDL_Window *win;
 SDL_GLContext glContext;
@@ -171,6 +159,7 @@ int win_width, win_height;
 int running = 1;
 
 /* GUI */
+#define STL_BYTE_SIZE(cont, type) (cont.size() * sizeof(type))
 
 struct nk_context *ctx;
 struct nk_colorf bg;
@@ -198,12 +187,10 @@ double deltaTime = 0;
 
 using MousePosType = int;
 
-
 MousePosType mouse_lastPosX = 0;
 MousePosType mouse_lastPosY = 0;
 MousePosType mouse_deltaX = 0;
 MousePosType mouse_deltaY = 0;
-
 
 #pragma region Types
 
@@ -213,8 +200,7 @@ using Vec2 = glm::vec2;
 using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
 
-
-#define NKE_COLOR2VEC4(c) (Vec4{c.r,c.g,c.b,c.a}) 
+#define NKE_COLOR2VEC4(c) (Vec4{c.r,c.g,c.b,c.a})
 
 std::string to_string(const Vec3& v) {
 	char c[10];
@@ -255,11 +241,8 @@ Vec3 nke_Vec3(Vec3 v, const std::string &label, const float min, const float max
 }
 
 void nke_Color(Color &c, std::string label) {
-
-
 	nk_label(ctx, label.c_str(), nk_text_align::NK_TEXT_ALIGN_LEFT);
 	if (nk_combo_begin_color(ctx, nk_rgb_cf(c), nk_vec2(200, 400))) {
-
 		nk_layout_row_dynamic(ctx, 120, 1);
 		c = nk_color_picker(ctx, c, NK_RGBA);
 		nk_layout_row_dynamic(ctx, 25, 2);
@@ -271,7 +254,6 @@ void nke_Color(Color &c, std::string label) {
 		c.a = nk_propertyf(ctx, "#A:", 0, c.a, 1.0f, 0.01f, 0.005f);
 		nk_combo_end(ctx);
 	}
-
 }
 
 std::ostream& operator<<(std::ostream& os, const Vec3& v)
@@ -282,6 +264,11 @@ std::ostream& operator<<(std::ostream& os, const Vec3& v)
 std::istream& operator>> (std::istream& is, Vec3& v)
 {
 	is >> v.x >> v.y >> v.z;
+	return is;
+}
+std::istream& operator>> (std::istream& is, Vec4& v)
+{
+	is >> v.x >> v.y >> v.z >> v.w;
 	return is;
 }
 std::istream& operator>> (std::istream& is, iVec3& v)
@@ -304,7 +291,6 @@ enum class IllumModel {
 	DISPLACEMENT,
 };
 
-
 enum class ClampType {
 	REPEAT = GL_REPEAT,
 	MIRROR_REPEAT = GL_MIRRORED_REPEAT,
@@ -321,13 +307,13 @@ enum class MapType {
 	AMBIENT,
 	DIFFUSE,
 	SPECULAR,
+	BUMP,
+	CUBEMAP,
 	SHINY,
 	DISPLACEMENT,
 	DECAL,
-	BUMP,
 	REFLECTION,
 	DISSOLVE,
-	CUBEMAP,
 };
 
 enum class FBAttachment {
@@ -367,6 +353,13 @@ enum class FBAttachment {
 	STENCIL_ATTACHMENT = GL_STENCIL_ATTACHMENT,
 };
 
+#pragma endregion Types
+
+template <typename TT>
+struct VectorGl : public std::vector<TT> {
+	unsigned int id;
+	unsigned int type;
+};
 
 class SystemRenderer;
 class GameObject;
@@ -377,18 +370,12 @@ class Asset;
 class Transform;
 class GameObject;
 class Mesh;
-
-
-#pragma endregion Types
-
 class SubMesh;
 class SystemRenderer;
+class ShaderProgram;
 class Light;
 
 class Material;
-
-
-
 
 using PreReqFunc = std::function<void(const Material&)>;
 #define HEADER_LAMBDA [&](const Material& mat)
@@ -408,14 +395,11 @@ public:
 	}
 	//Asset(const std::filesystem::path p): name(p.filename)
 	//{
-
 	//	path = p;
 	//}
 	std::string name;
 	std::string path;
-
 };
-
 
 #pragma region Shading
 
@@ -426,7 +410,6 @@ class Shader : public Asset {
 	Shader(std::string n) : Asset(n) {}
 public:
 	unsigned int Get() { return id; }
-
 
 	static Shader* FromString(const std::string str, unsigned int type) {
 		auto s = new Shader(str);
@@ -452,7 +435,6 @@ public:
 	~Shader();
 private:
 	static std::string GetShaderName(const unsigned int type) {
-
 		switch (type)
 		{
 		case GL_VERTEX_SHADER:
@@ -466,45 +448,35 @@ private:
 			break;
 		}
 
-
 		__debugbreak();
 		throw std::exception("Not implemented");
 	}
-
 };
 
+ShaderProgram *shaders[30];
 class ShaderProgram :
 	protected std::vector< Shader *>
 {
 private:
 	unsigned int id;
 public:
+	bool lit = true;
+	bool viewDependant = true;
+	bool MVP = true;
+	bool shadows = true;
 	PreReqFunc preReq;
-	static ShaderProgram* GetDefault(IllumModel model, PreReqFunc f) {
-#define CASE_GEN(TT) case IllumModel::TT:\
-return new ShaderProgram({\
-				Shader::FromPath("assets/shaders/defaults/"#TT".vert", GL_VERTEX_SHADER),\
-				Shader::FromPath("assets/shaders/defaults/"#TT".frag", GL_FRAGMENT_SHADER),\
-	}, f);\
-break;\
+	static ShaderProgram* GetDefault(IllumModel model) {
+		ShaderProgram *a = shaders[static_cast<int>(model)];
 
-		switch (model) {
-			CASE_GEN(CUBEMAP);
-			CASE_GEN(COOK);
-			CASE_GEN(REFLECTION);
-			CASE_GEN(TRANSPARENCY);
-			CASE_GEN(REFRACTION);
-			CASE_GEN(SHADOW_MAPPING);
-			CASE_GEN(BLINN_PHONG);
-		}
+		if (a)
+			return a;
 
 		__debugbreak();
 		throw std::exception("NOT RECOGNIZED SHADER");
 	}
 
 	ShaderProgram(std::vector<Shader* > li, const PreReqFunc &f)
-		: std::vector<Shader* >(std::move(li)),
-		preReq(f)
+		: std::vector<Shader* >(std::move(li)), preReq(f)
 	{
 		Compile();
 	};
@@ -523,7 +495,7 @@ public:
 	/**
 	* Enables the shader to be use
 	*/
-	void  use();
+	void  use() const;
 
 	/**
 	* Sets a bool uniform
@@ -618,6 +590,7 @@ public:
 };
 
 void Shader::ReCompile() {
+	PF_INFO("Recompiling {0}", name);
 	SetFromFile(path, type);
 }
 
@@ -658,7 +631,6 @@ void Shader::SetFromString(const std::string salsa, unsigned int t) {
 	//std::cout << "shader compiled: " << name << std::endl;
 }
 
-
 void Shader::SetFromFile(std::string p, unsigned int t) {
 	type = t;
 	path = p;
@@ -695,7 +667,6 @@ Shader::~Shader() {
 }
 
 void ShaderProgram::Compile() {
-
 	GLCALL(id = glCreateProgram());
 	//std::cout << "Loading Program with --------------------------------------------------------" << std::endl;
 
@@ -715,7 +686,7 @@ void ShaderProgram::Compile() {
 
 	//if(!success){
 	//	// lo dejo asi pa ver si es necesario implementar esto y sacar un mensaje serio
-	//	std::cout<< "Error validating"<<std::endl; 
+	//	std::cout<< "Error validating"<<std::endl;
 
 	//	int length;
 
@@ -728,10 +699,8 @@ void ShaderProgram::Compile() {
 	//	std::cout << "Failed to validate program :(" << std::endl;
 	//	std::cout << message;
 
-
 	//	__debugbreak();
 	//}
-
 
 	GLCALL(glGetProgramiv(id, GL_LINK_STATUS, &success));
 
@@ -749,9 +718,7 @@ void ShaderProgram::Compile() {
 		PF_ERROR(message);
 
 		__debugbreak();
-
 	}
-
 
 	//std::cout << "Program loaded --------------------------------------------------------" << std::endl;
 }
@@ -765,7 +732,6 @@ void ShaderProgram::ReCompile() {
 	{
 		Shader &shader = *at(ii);
 		shader.ReCompile();
-
 	}
 	Compile();
 }
@@ -774,7 +740,7 @@ unsigned int ShaderProgram::Get() {
 	return id;
 }
 
-void ShaderProgram::use()
+void ShaderProgram::use() const
 {
 	GLCALL(glUseProgram(id));
 }
@@ -892,7 +858,6 @@ public:
 	Transform(GameObject& go) :
 		gameobject(go)
 	{
-
 	}
 	Transform *parent = nullptr;
 	std::vector<Transform *> children;
@@ -932,8 +897,6 @@ public:
 	Vec3 Right() { return right; }
 	Vec3 Up() { return up; }
 
-
-
 	static Vec3 WorldFront() {
 		return Vec3{ 0,0,1 };
 	}
@@ -944,9 +907,11 @@ public:
 		return Vec3{ 0,1,0 };
 	}
 	static Vec3 RotatePoint(Vec3 point, Vec3 rotation) {
-		return  GenRotMat(rotation) * Vec4(point, 1);
+		return  RotatePoint(point, GenRotMat(rotation));
 	}
-
+	static Vec3 RotatePoint(Vec3 point, Mat4 rotation) {
+		return  rotation * Vec4(point, 1);
+	}
 
 #pragma endregion mutators
 
@@ -960,7 +925,6 @@ private:
 		}
 		return this;
 	}
-
 
 	/*
 	Returs true if it was dirty.
@@ -1019,7 +983,6 @@ public:
 		rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
 		return rot;
 	}
-
 };
 
 int GO_ID = 0;
@@ -1049,13 +1012,11 @@ public:
 		}
 	}
 
-
 	void HandleEvent(const SDL_Event &e) {
 		for each (auto comp in components)
 		{
 			PF_ASSERT(comp && "COMPONENT IS NULL");
 			if (comp->enabled) {
-
 				//PF_INFO("HANDLE EVENT ,{0}", this->name);
 				comp->HandleEvent(e);
 			}
@@ -1063,7 +1024,6 @@ public:
 	}
 	void UI() {
 		if (nk_tree_push_hashed(ctx, NK_TREE_TAB, name.data(), static_cast<nk_collapse_states>(openUI), name.data(), 5, __LINE__)) {
-
 			// height, width, row
 			const int val = 6000;
 			//nk_layout_row_static(ctx, 18, 100, 1);
@@ -1083,7 +1043,6 @@ public:
 					nk_tree_pop(ctx);
 				}
 			}
-
 
 			if (transform.children.size() > 0) {
 				nk_label(ctx, "Children", nk_text_align::NK_TEXT_ALIGN_LEFT);
@@ -1118,21 +1077,21 @@ public:
 
 bool Transform::TryGetClean() {
 	if (dirty == Dirty::None) return false;
-	PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up", gameobject.name);
-	std::cout << position << " " << rotation << " " << scale << std::endl;
-	std::cout << front << " " << right << " " << up << std::endl;
+	//PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up", gameobject.name);
+	//std::cout << position << " " << rotation << " " << scale << std::endl;
+	//std::cout << front << " " << right << " " << up << std::endl;
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 
-		up = rotMat * Vec4(Transform::WorldUp(), 1);
-		right = rotMat * Vec4(Transform::WorldRight(), 1);
-		front = rotMat * Vec4(Transform::WorldFront(), 1);
+		up = RotatePoint(WorldUp(), rotMat);
+		right = RotatePoint(WorldRight(), rotMat);
+		front = RotatePoint(WorldFront(), rotMat);
 
 		if (parent) {
 			const Mat4& parentRot = parent->rotMat;
-			up = parentRot * Vec4(up, 1);
-			right = parentRot * Vec4(right, 1);
-			front = parentRot * Vec4(front, 1);
+			up = RotatePoint(up, parentRot);
+			right = RotatePoint(right, parentRot);
+			front = RotatePoint(front, parentRot);
 		}
 
 		up = glm::normalize(up);
@@ -1173,14 +1132,11 @@ class Camera : public Component {
 	float nearClippingPlane = 0.1f;
 	float farClippingPlane = 200.0f;
 
-
 	Mat4 projection;
 	Mat4 view;
 
-
 	Camera(COMP_PARAMS) INIT_COMP("Camera")
 	{
-
 	}
 
 public:
@@ -1188,7 +1144,6 @@ public:
 	virtual void Update() override {
 		//PF_INFO("Camera running");
 	}
-
 
 	// Inherited via Component
 	virtual void UI() override {
@@ -1199,16 +1154,13 @@ public:
 		farClippingPlane = nk_propertyf(ctx, "Far", nearClippingPlane, farClippingPlane, 6000, 1.f, 0.005f);
 		speed = nk_propertyf(ctx, "Speed", 50, speed, 500, 1.f, 0.005f);
 		sensitivity = nk_propertyf(ctx, "Sensitivity", 0.1f, sensitivity, 3, 0.1f, 0.005f);
-
 	}
 
 	virtual void HandleEvent(const SDL_Event &e) override {
-
 		if (!SDL_GetRelativeMouseMode()) return;
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT) 
+			//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT)
 			{
-
 				float scaledSpeed = static_cast<float>(deltaTime) * speed;
 
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
@@ -1229,7 +1181,7 @@ public:
 		if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
 			float movX = sensitivity * e.motion.xrel * deltaTime;
 			float movY = sensitivity * e.motion.yrel* deltaTime;
-			
+
 			transform.Rotate(movY, movX, 0);
 			//Vec3 rot = transform.GetRotation();
 
@@ -1247,7 +1199,6 @@ public:
 			//transform.SetRotation(glm::degrees(front));
 			//setrotation
 		}
-
 	}
 
 	virtual Mat4& GetView() {
@@ -1271,17 +1222,10 @@ public:
 
 		return projection;
 	}
-
-
 };
 
 class Mover : public Component {
-
 };
-
-
-
-
 
 #pragma region Light
 enum class LightType {
@@ -1306,7 +1250,7 @@ public:
 
 	Light(COMP_PARAMS, LightType lt) : Component(o, t, "Light"), type(lt) {}
 
-	void Bind(iVec3& countLights, ShaderProgram &shader) {
+	void Bind(iVec3& countLights, const ShaderProgram &shader) {
 		int& myCount = countLights[static_cast<int>(type)];
 
 		switch (type)
@@ -1339,16 +1283,12 @@ public:
 		shader.setVec4(name + ".diffuse", NKE_COLOR2VEC4(kD));
 		shader.setVec4(name + ".specular", NKE_COLOR2VEC4(kS));
 
-
 		myCount++;
 	}
 	void Update() override {
-
 	}
 
 	void UI() override {
-
-
 		switch (type)
 		{
 		case LightType::POINT:
@@ -1390,12 +1330,9 @@ public:
 	virtual void Update() {};
 	virtual void UI() {};
 	void HandleEvent(const SDL_Event &e) override;
-
 };
 
-
 class Texture {
-
 public:
 	unsigned int id;
 	int width;
@@ -1467,7 +1404,6 @@ public:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<int>(clamp));
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<int>(texInterpolation));
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<int>(texInterpolation));
-
 		}
 		else
 		{
@@ -1504,12 +1440,8 @@ public:
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
 	}
-
-
 };
-
 
 class SystemRenderer;
 class CubeMap;
@@ -1519,7 +1451,7 @@ public:
 	Texture * tex;
 	ShaderProgram *shader;
 	std::vector<float> skyboxVertices{
-		// positions          
+		// positions
 		-1.0f,  1.0f, -1.0f,
 		-1.0f, -1.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,
@@ -1561,10 +1493,7 @@ public:
 
 	CubeMap(const std::vector<std::string> faces) {
 		tex = new Texture(faces);
-		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP, HEADER_LAMBDA{
-			PF_INFO("LLAMANDO SHADER DESDE EL CUBEMAP");
-			});
-
+		shader = ShaderProgram::GetDefault(IllumModel::CUBEMAP);
 
 		// skybox VAO
 		GLCALL(glGenVertexArrays(1, &skyboxVAO));
@@ -1577,16 +1506,13 @@ public:
 	}
 
 	void Render();
-
 };
-
-
 
 class SystemRenderer {
 private:
+public:
 	std::list<Camera*> camera;
 	std::list<Renderer*> renderers;
-public:
 	std::list<Light*> lights;
 	Camera & GetCamera() {
 		return *camera.front();
@@ -1594,7 +1520,6 @@ public:
 	CubeMap *cubemap = nullptr;
 public:
 	void Steal(std::vector<GameObject*> gos) {
-
 		for each (GameObject* go in gos)
 		{
 			auto &comps = go->components;
@@ -1615,46 +1540,12 @@ public:
 					renderers.push_back(ren);
 					continue;
 				}
-
-
 			}
 		}
-
-	}
-
-	void Render() {
-		//lights
-		for each (Light* light in lights)
-		{
-			light->ShadowPass();
-		}
-
-		for each (MeshRenderer* ren in renderers)
-		{
-			PF_ASSERT(ren && "Renderer is null");
-
-			ren->Render(
-				[&](ShaderProgram& shader) {
-				iVec3 lightsPlaced{ 0,0,0 };
-
-				for each (Light* light in lights)
-				{
-					light->Bind(lightsPlaced, shader);
-				}
-			}
-			);
-		}
-
-
-
-		cubemap->Render();
 	}
 };
 
 void CubeMap::Render() {
-
-
-
 	GLCALL(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
 	// skybox cube
 	GLCALL(glBindVertexArray(skyboxVAO));
@@ -1669,19 +1560,14 @@ void CubeMap::Render() {
 }
 
 #pragma region Models
-//#define DEBUG_OBJ_LOADER
-#ifdef DEBUG_OBJ_LOADER
-#define DEBUG_PRINT(...) 
-#else
-#define DEBUG_PRINT(...) 
-#endif // DEBUG
-
-
-
 
 class SubMesh : public Asset {
 public:
 	unsigned int VAO = 0;
+	VectorGl <Vec3> pos;
+	VectorGl <Vec3> norm;
+	VectorGl <Vec2> uv;
+
 	size_t nIndices = 0;
 	size_t nUV = 0;
 	size_t nPos = 0;
@@ -1695,29 +1581,35 @@ public:
 	Mesh& Read(std::istream& file, int&);
 };
 
-
 class Material;
-ShaderProgram *shaders[30];
+
 class ShaderProgram;
 
+//http://paulbourke.net/dataformats/mtl/
 class Material {
 public:
+#define MAP_CASE(MAP_NAME, MAP_TYPE)\
+(tofData == MAP_NAME) {																				   \
+																								   \
+	stream >> tofData;																			   \
+																								   \
+	if (material.maps.find(tofData) == material.maps.end())										   \
+	{																							   \
+		material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::MAP_TYPE);		   \
+	}																							   \
+																								   \
+}																								   \
+
 	ShaderProgram *shader = nullptr;
-
-
-
 	std::map<std::string, Texture*> maps;
 
-	Vec3 kA;
-	Vec3 kD;
-	Vec3 kS;
-	Vec3 kE{ 0,0,0 };
+	Vec4 kA{ 1,0,0,1 };
+	Vec4 kD{ 0,1,0,1 };
+	Vec4 kS{ 0,0,1,1 };
+	Vec4 kE{ 0,0,0,0 };
 	float shiny = 0;
 	float refractionIndex = 1;
 	float dissolve = 1;
-
-	//http://paulbourke.net/dataformats/mtl/
-
 	Material(std::istream& file, const std::string& pathBase) {
 		Material& material = *this;
 		std::string buffer;
@@ -1734,168 +1626,53 @@ public:
 			std::stringstream stream(buffer);
 
 			stream >> tofData;
-			//std::cout << buffer << std::endl;
-			{
-
-
-				// para los K falta espectral y xyz
-				if (tofData == "Ka") {
-					stream >> material.kA;
-				}
-				else if (tofData == "Kd") {
-					stream >> material.kD;
-				}
-				else if (tofData == "Ks") {
-					stream >> material.kS;
-				}
-				else if (tofData == "Ns") {
-					stream >> material.shiny;
-				}
-				else if (tofData == "Ni") {
-					stream >> material.refractionIndex;
-				}
-				else if (tofData == "d") {
-					stream >> material.dissolve;
-				}
-				else if (tofData == "Tf") {
-
-				}
-				else if (tofData == "illum") {
-					int type;
-					stream >> type;
-
-
-					PreReqFunc f;
-					switch (static_cast<IllumModel>(type))
-					{
-					case IllumModel::CUBEMAP:
-						f = HEADER_LAMBDA
-						{
-							ShaderProgram &shader = *mat.shader;
-
-
-
-
-						};
-						break;
-					case IllumModel::NORMAL:
-						break;
-					case IllumModel::OCCLUSION_PARALLAX:
-						break;
-					case IllumModel::REFLECTION:
-						break;
-					case IllumModel::REFRACTION:
-						break;
-					case IllumModel::TRANSPARENCY:
-						break;
-					case IllumModel::SHADOW_MAPPING:
-						break;
-					case IllumModel::COOK:
-						f = HEADER_LAMBDA
-						{
-							ShaderProgram &shader = *mat.shader;
-
-
-
-
-
-						};
-						break;
-					case IllumModel::BLINN_PHONG:
-						f = HEADER_LAMBDA
-						{
-
-						};
-						break;
-					case IllumModel::DISPLACEMENT:
-						break;
-					default:
-						break;
-					}
-
-					material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type), f);
-				}
-				else if (tofData == "map_Ka") {
-
-					stream >> tofData;
-
-					if (material.maps.find(tofData) == material.maps.end())
-					{
-						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::AMBIENT);
-					}
-
-				}
-				else if (tofData == "map_Kd") {
-
-					stream >> tofData;
-
-					if (material.maps.find(tofData) == material.maps.end())
-					{
-						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::DIFFUSE);
-
-					}
-
-				}
-				else if (tofData == "map_Ks") {
-
-
-				}
-				else if (tofData == "map_Ns") {
-					stream >> tofData;
-
-					if (material.maps.find(tofData) == material.maps.end())
-					{
-						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::SHINY);
-
-					}
-
-
-				}
-				else if (tofData == "map_d") {
-
-				}
-				else if (tofData == "disp") {
-					stream >> tofData;
-
-					if (material.maps.find(tofData) == material.maps.end())
-					{
-						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::DISPLACEMENT);
-
-					}
-
-				}
-				else if (tofData == "decal") {
-
-
-				}
-				else if (tofData == "bump") {
-
-					stream >> tofData;
-
-					if (material.maps.find(tofData) == material.maps.end())
-					{
-						material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::BUMP);
-
-					}
-				}
+			if (tofData == "Ka") {
+				stream >> material.kA;
 			}
-		}
+			else if (tofData == "Kd") {
+				stream >> material.kD;
+			}
+			else if (tofData == "Ks") {
+				stream >> material.kS;
+			}
+			else if (tofData == "Ns") {
+				stream >> material.shiny;
+			}
+			else if (tofData == "Ni") {
+				stream >> material.refractionIndex;
+			}
+			else if (tofData == "d") {
+				stream >> material.dissolve;
+			}
+			else if (tofData == "Tf") {
+			}
+			else if (tofData == "illum") {
+				int type;
+				stream >> type;
 
+				material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
+			}
+			else if MAP_CASE("map_Ka", AMBIENT)
+			else if MAP_CASE("map_Kd", DIFFUSE)
+			else if MAP_CASE("map_Ks", SPECULAR)
+			else if MAP_CASE("map_Ns", SHINY)
+			else if MAP_CASE("map_d", DISSOLVE)
+			else if MAP_CASE("disp", DISPLACEMENT)
+			else if MAP_CASE("decal", DECAL)
+			else if MAP_CASE("bump", BUMP)
+		}
 	}
 };
-
 
 class MTLLib : public Asset {
 public:
 	std::map<std::string, Material*> materials;
 
 	MTLLib(std::string MTLName, std::string matPath) : Asset(name, path) {
-
 		std::ifstream file(matPath + "/" + MTLName, std::ios::in);
 
 		if (!file.is_open())
 		{
-			DEBUG_PRINT(std::cout << "Couldn't open material file" << matPath + "/" + MTLName << std::endl);
 			__debugbreak();
 
 			throw std::exception("Couldn't open material file");
@@ -1910,37 +1687,29 @@ public:
 			std::stringstream stream(buffer);
 
 			stream >> tofData;
-			DEBUG_PRINT(std::cout << buffer << std::endl);
+
 			if (tofData == "newmtl") {
 				//std::cout << buffer << std::endl;
 				stream >> tofData;
 				materials[tofData] = new Material(file, matPath);
 			}
 		}
-		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
-		DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 	}
-
-
-
 };
 
 struct Face {
-
 };
 
 using PolygonGroup = std::vector<Face>;
 
 struct RenderSpec {
 	const Material& mat;
+	size_t init;
 	size_t quantityFaces = 0;
-	size_t nUV = 0;
-	size_t nPos = 0;
-	size_t nNorm = 0;
-	GLuint VAO;
+	unsigned int VAO;
+	unsigned int VBO_POS;
 
 	RenderSpec(Material& m) : mat(m) {
-
 	}
 };
 
@@ -1972,8 +1741,6 @@ public:
 	{
 		int init = 0;
 
-
-
 		std::ifstream file(path, std::ios::in);
 		std::string buffer;
 		int actMat = -1;
@@ -1990,12 +1757,10 @@ public:
 		std::string name = path.substr(slashPos + 1, path.find_last_of(".") - (slashPos + 1)).append(".mtl");
 		mtl = new MTLLib(name, matPath);
 
-
 		while (!file.eof() && file.good())
 		{
 			std::getline(file, buffer);
 			std::stringstream stream(buffer);
-			DEBUG_PRINT(std::cout << buffer << std::endl);
 			{
 				std::string tofData;
 				stream >> tofData;
@@ -2013,7 +1778,6 @@ public:
 
 					//// the vertex ii contributed n triangles
 					//std::vector< std::vector<size_t> > trianglesVertexNContributed(m.nPos, std::vector<size_t>());
-
 
 					//for (size_t ii = init, count = 0; ii < m.nIndices; ii++, count++)
 					//{
@@ -2039,9 +1803,6 @@ public:
 
 					//	//tempBiTan.push_back(CalcBitangentOfTriangle(tempvertex));
 
-
-
-
 					//}
 					init += m.nIndices;
 				}
@@ -2056,30 +1817,34 @@ public:
 			//DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
 		}
 
-		GLCreate();
-	}
-
-	void Render(std::function<void(ShaderProgram&)> f) {
-		size_t off = 0;
-		//glBindVertexArray(this->gl_BufferId);
-		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
+		size_t numVertex = pos.size();
+		for (iVec3& idx : iPos)
 		{
-			const Material &mat = materialOrderForRender[ii].mat;
-			const size_t nElem = materialOrderForRender[ii].quantityFaces;
-			glBindVertexArray(materialOrderForRender[ii].VAO);
-			mat.shader->use();
-			mat.shader->preReq(mat);
-			f(*mat.shader);
-
-			//[&](ShaderProgram& shader) {
-			//	for each (Light* light in lights)
-			//	{
-			//		light->Bind(lightsPlaced, shader);
-			//	}
-
-			glDrawElements(GL_TRIANGLES, nElem, GL_INT, (void*)(off += nElem));
+			ProcessIndex(idx, numVertex);
+		}
+		numVertex = tempNormal.size();
+		for (iVec3& idx : tempiNormal)
+		{
+			ProcessIndex(idx, numVertex);
 		}
 
+		numVertex = tempUV.size();
+		for (iVec3& idx : tempiUV)
+		{
+			ProcessIndex(idx, numVertex);
+		}
+
+		GLCreate();
+	}
+	void Render(std::function<void(ShaderProgram&)> f) {
+		//glGenBuffers(1, &gl_BufferId);
+
+		//glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId);
+
+		//glBufferData(
+		//	GL_ARRAY_BUFFER,
+		//	STL_BYTE_SIZE(pos, Vec3) + STL_BYTE_SIZE(iPos, iVec3),
+		//	0, GL_STATIC_DRAW);
 	}
 
 	static void TraverseMesh(const Mesh& m, std::function<void(int, int, int, int)>) {
@@ -2107,7 +1872,6 @@ public:
 	contribution[vertice] = {tri1, tri2, ...}
 	*/
 	static std::vector<std::vector <size_t> > GetContibution(const std::vector<iVec3>& faces, size_t begin, size_t size) {
-
 		std::vector<std::vector <size_t> > contribution(size, std::vector<size_t>());
 
 		for (size_t ii = 0; ii < size; ii++)
@@ -2119,42 +1883,14 @@ public:
 		}
 
 		return contribution;
-
 	}
 
 	//static Vec3 CalcBitangentOfTriangle(const Vec2& uv1, const Vec2& uv2, const Vec2& uv3, const Vec3& p1, const Vec3& p2, const Vec3& p3)
 	//{
 	//	float u3u1 = (u3 - u1);
 
-
 	//	return ((u3u1*(p2-p1)) - ((u2-u1)*(p3-p1))) / (((v2-v1)*u3u1) - ((u2-u1)*(v3-v1)));
 	//}
-
-
-	void GLCreate() {
-
-
-		GLCALL(glGenBuffers(1, &gl_BufferId));
-		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-
-		// guardo todo el objeto y submallados en un solo buffer
-		GLCALL(glBufferData(
-			GL_ARRAY_BUFFER,
-			// Vertex Data
-			pos.size() * sizeof(Vec3) +
-			tempNormal.size() * sizeof(Vec3) +
-			tempUV.size() * sizeof(Vec2) +
-
-			// Index Data
-			iPos.size() * sizeof(iVec3) +
-			tempiNormal.size() * sizeof(iVec3) +
-			tempiUV.size() * sizeof(iVec3),
-			0,
-			GL_STATIC_DRAW
-		));
-		size_t off = 0; //used on macro
-		size_t vecSize; //used on macro
-
 #define PF_SUBDATA(buffType,vec, type)\
 vecSize = vec.size() * sizeof(type);\
 GLCALL(glBufferSubData(\
@@ -2165,17 +1901,83 @@ GLCALL(glBufferSubData(\
 ));\
 off+=vecSize;\
 
+#define SET_ATTRIB_POINTER(LAYOUT, VEC, TYPE, N_VERT, GL_TYPE)\
+	GLCALL(glEnableVertexAttribArray(LAYOUT));\
+	vecSize = VEC.size() * sizeof(TYPE);\
+	GLCALL(glVertexAttribPointer(LAYOUT, N_VERT, GL_TYPE, GL_FALSE, vecSize, (void*)(off += vecSize))); \
+
+	void GLCreate() {
+		for (RenderSpec& spec : materialOrderForRender)
+		{
+			const size_t nFaces = spec.quantityFaces;
+#pragma region PreprocessVertex
+			const size_t offFaces = spec.init;
+
+			std::vector<Vec3> matPos;
+
+			for (size_t ii = offFaces, iiEnd = offFaces + nFaces; ii < iiEnd; ii++)
+			{
+				const iVec3& face = iPos[ii];
+				matPos.push_back(pos[face.x]);
+				matPos.push_back(pos[face.y]);
+				matPos.push_back(pos[face.z]);
+			}
+#pragma endregion
+
+			// tengo el array de posiciones
+			GLCALL(glGenVertexArrays(1, &spec.VAO));
+			GLCALL(glGenBuffers(1, &spec.VBO_POS));
+
+			GLCALL(glBindVertexArray(spec.VAO));
+			{
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_POS));
+				{
+					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(pos, Vec3), matPos.data(), GL_STATIC_DRAW));
+					GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
+					GLCALL(glEnableVertexAttribArray(0));
+				}
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+			}
+
+			GLCALL(glBindVertexArray(0));
+		}
+
+#ifdef TODO_EN_UNO
+		GLCALL(glGenBuffers(1, &gl_BufferId));
+
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
+
+		// guardo todo el objeto y submallados en un solo buffer
+		GLCALL(glBufferData(
+			GL_ARRAY_BUFFER,
+			// Vertex Data
+			STL_BYTE_SIZE(pos, Vec3) +
+			STL_BYTE_SIZE(tempNormal, Vec3) +
+			STL_BYTE_SIZE(tempUV, Vec2) +
+
+			// Index Data
+			STL_BYTE_SIZE(iPos, Vec3) +
+			STL_BYTE_SIZE(tempiNormal, Vec3) +
+			STL_BYTE_SIZE(tempiUV, Vec3),
+			0,
+			GL_STATIC_DRAW
+		));
+		size_t off = 0; //used on macro
+		size_t vecSize; //used on macro
+
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
+
 		PF_SUBDATA(GL_ARRAY_BUFFER, pos, Vec3);
 		PF_SUBDATA(GL_ARRAY_BUFFER, tempNormal, Vec3);
 		PF_SUBDATA(GL_ARRAY_BUFFER, tempUV, Vec2);
 
-		PF_SUBDATA(GL_ARRAY_BUFFER, iPos, iVec3);
-		PF_SUBDATA(GL_ARRAY_BUFFER, tempiNormal, iVec3);
-		PF_SUBDATA(GL_ARRAY_BUFFER, tempiUV, iVec3);
+		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_BufferId));
 
+		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, iPos, iVec3);
+		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, tempiNormal, iVec3);
+		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, tempiUV, iVec3);
 
-
-
+		const int InitIndex = 3;
 
 		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
 		{
@@ -2183,73 +1985,25 @@ off+=vecSize;\
 			GLCALL(glGenVertexArrays(1, &mat.VAO));
 			GLCALL(glBindVertexArray(mat.VAO));
 
-			GLCALL(glEnableVertexAttribArray(0));
-			GLCALL(glEnableVertexAttribArray(1));
-			GLCALL(glEnableVertexAttribArray(2));
-
-
-			const int InitIndex = 3;
-			GLCALL(glEnableVertexAttribArray(InitIndex));
-			GLCALL(glEnableVertexAttribArray(InitIndex + 1));
-			GLCALL(glEnableVertexAttribArray(InitIndex + 2));
-
-
-			//#define PF_ATTRIB_POINTER(layout, nElem, vec, type)\
-			//		vecSize = mat. * sizeof(type);											\
-			//
-			//
-			//			PF_ATTRIB_POINTER(0, 3, pos, Vec3);
-			//
-			//
-			//		}
-			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-
 			size_t off = 0;
 			size_t vecSize = 0;
 
 			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-			vecSize = pos.size() * sizeof(Vec3);
-			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
 
-			vecSize = tempNormal.size() * sizeof(Vec3);
-			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
-
-			vecSize = tempUV.size() * sizeof(Vec2);
-			GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
-
-
-
+			SET_ATTRIB_POINTER(0, pos, Vec3, 3, GL_FLOAT);
+			SET_ATTRIB_POINTER(1, tempNormal, Vec3, 3, GL_FLOAT);
+			SET_ATTRIB_POINTER(2, tempUV, Vec2, 2, GL_FLOAT);
 
 			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_BufferId));
 
-			vecSize = iPos.size() * sizeof(iVec3);
-			GLCALL(glVertexAttribPointer(InitIndex, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
-
-			vecSize = tempiNormal.size() * sizeof(iVec3);
-			GLCALL(glVertexAttribPointer(InitIndex + 1, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
-
-			vecSize = tempiUV.size() * sizeof(iVec3);
-			GLCALL(glVertexAttribPointer(InitIndex + 2, 3, GL_FLOAT, GL_FALSE, vecSize, (void*)(off += vecSize)));
+			SET_ATTRIB_POINTER(InitIndex, iPos, Vec3, 3, GL_UNSIGNED_INT);
+			SET_ATTRIB_POINTER(InitIndex + 1, tempiNormal, Vec3, 3, GL_UNSIGNED_INT);
+			SET_ATTRIB_POINTER(InitIndex + 2, tempiUV, Vec3, 3, GL_UNSIGNED_INT);
 
 			GLCALL(glBindVertexArray(0));
-
-
-			//glBindVertexArray(VAO);
-			//// 2. copy our vertices array in a vertex buffer for OpenGL to use
-			//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			//glBufferData(GL_ARRAY_BUFFER, sizeof(vertex) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
-			//// 3. copy our index array in a element buffer for OpenGL to use
-			//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-			////glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-			//// 4. then set the vertex attributes pointers
-			//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-			//glEnableVertexAttribArray(0);
-
 		}
-
-
+#endif // TODO_EN_UNO
 	}
-
 };
 
 void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {
@@ -2257,7 +2011,6 @@ void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {
 }
 
 Mesh& SubMesh::Read(std::istream& file, int &actMat) {
-
 	SubMesh& mesh = *this;
 	Vec3 v;
 	Vec3 vt;
@@ -2267,7 +2020,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 	iVec3 ft;
 	iVec3 fn;
 	std::string tofData;
-
 
 	while (!file.eof() && file.good() && file.peek() != 'o')
 	{
@@ -2290,7 +2042,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 					stream >> vn;
 					group.tempNormal.push_back(vn);
 					//DEBUG_PRINT(std::cout << "(" << vn[0] << ", " << vn[1] << ", " << vn[2] << ")" << std::endl);
-
 				}
 
 				break;
@@ -2298,7 +2049,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 				case 't':
 					// while(!stream.eof()) // por ahora no triangula
 				{
-
 					nUV++;
 					stream >> vt[0] >> vt[1];
 					group.tempUV.push_back(vt);
@@ -2331,8 +2081,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 			group.materialOrderForRender[actMat].quantityFaces++;
 			nIndices++;
 
-
-
 			auto posInit = stream.tellg();
 			stream >> buffer;      // EXTRAIGO UN TOKEN PARA VER QUE TIPO DE CARA VIENE ej de buffer 6/1/1
 			stream.seekg(posInit); // luego hago como si no hubiera leido nada del stream
@@ -2354,14 +2102,10 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 
 			//std::vector<std::string> tokens;
 
-
-
-
 			switch (countDeSlash)
 			{
 			case 0: // solo caras
 			{
-
 				stream >> f;
 
 				group.iPos.push_back(f);
@@ -2386,7 +2130,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 			{
 				if (hasDoubleSlash)
 				{ // caras y normales
-
 					for (int ii = 0; ii < 3; ii++)
 					{
 						stream >> buffer;
@@ -2396,7 +2139,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 
 					group.iPos.push_back(f);
 					group.tempiNormal.push_back(fn);
-
 				}
 				else
 				{ //caras texturas y normales
@@ -2420,10 +2162,11 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 		{
 			stream >> buffer;// pongo el nombre del material
 							 //mesh->materials.push_back(materials[buffer]);
-
-			group.materialOrderForRender.push_back(RenderSpec(*group.mtl->materials[buffer]));
 			actMat++;
 
+			group.materialOrderForRender.push_back(RenderSpec(*group.mtl->materials[buffer]));
+
+			group.materialOrderForRender[actMat].init = nIndices;
 		}
 	}
 }
@@ -2431,7 +2174,6 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 #pragma endregion Models
 
 class FrameBuffer {
-
 	//For a framebuffer to be complete the following requirements have to be satisfied :
 
 	// We have to attach at least one buffer(color, depth or stencil buffer).
@@ -2445,8 +2187,6 @@ public:
 	FrameBuffer() {
 		GLCALL(glGenFramebuffers(1, &fbo));
 
-
-
 		if (!glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE) {
 			__debugbreak();
 		}
@@ -2459,19 +2199,17 @@ public:
 		Bind();
 		glFramebufferTexture2D(GL_FRAMEBUFFER, static_cast<int>(attchType), GL_TEXTURE_2D, tex.id, 0);
 		UnBind();
-
 	}
 
 	void Bind() {
-		// By binding to the GL_FRAMEBUFFER target all the next read and write 
+		// By binding to the GL_FRAMEBUFFER target all the next read and write
 		// framebuffer operations will affect the currently bound framebuffer.
-		// It is also possible to bind a framebuffer to a read or write target 
+		// It is also possible to bind a framebuffer to a read or write target
 		// specifically by binding to GL_READ_FRAMEBUFFER or GL_DRAW_FRAMEBUFFER respectively.
-		// The framebuffer bound to GL_READ_FRAMEBUFFER is then used for all read operations like 
+		// The framebuffer bound to GL_READ_FRAMEBUFFER is then used for all read operations like
 		// glReadPixels and the framebuffer bound to GL_DRAW_FRAMEBUFFER is used as the destination for rendering,
-		// clearing and other write operations.Most of the times you won't need to make this distinction though and 
+		// clearing and other write operations.Most of the times you won't need to make this distinction though and
 		// you generally bind to both with GL_FRAMEBUFFER.
-
 
 		GLCALL(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
 	}
@@ -2483,9 +2221,7 @@ public:
 
 SystemRenderer *sRenderer;
 
-
 void MeshRenderer::HandleEvent(const SDL_Event &e) {
-
 	if (e.type == SDL_EventType::SDL_KEYDOWN) {
 		if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
 			for each (auto pair in mesh.mtl->materials)
@@ -2494,5 +2230,4 @@ void MeshRenderer::HandleEvent(const SDL_Event &e) {
 			}
 		}
 	}
-
 }

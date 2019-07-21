@@ -1,0 +1,2 @@
+
+#define hola(a) a
