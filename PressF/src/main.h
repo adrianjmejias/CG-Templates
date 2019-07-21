@@ -9,13 +9,14 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <glm/gtc/random.hpp>
 
 #define PF_INFO(...)      spdlog::info(__VA_ARGS__)
 #define PF_ERROR(...)     spdlog::error(__VA_ARGS__)
 #define PF_DEBUG(...)     spdlog::debug(__VA_ARGS__)
 #define PF_WARN(...)      spdlog::warn(__VA_ARGS__)
 #define PF_CRITICAL(...)  spdlog::critical(__VA_ARGS__)
-
+#define forn(var,init,end) for(int var = init; var<end; var++)
 #ifdef  DEBUG
 #define PF_ASSERT(x) if(!(x)){\
 	PF_ERROR("PF_ASSERT FAILED : {0}" , #x);\
@@ -203,7 +204,7 @@ using iVec3 = glm::ivec3;
 #define NKE_COLOR2VEC4(c) (Vec4{c.r,c.g,c.b,c.a})
 
 std::string to_string(const Vec3& v) {
-	char c[10];
+	char c[30];
 
 	std::string s = "(";
 
@@ -494,13 +495,17 @@ class Mesh;
 class SubMesh;
 class SystemRenderer;
 class ShaderProgram;
+class RenderSpec;
 class Light;
+class MeshRenderer;
 
 class Material;
-
 using EmptyFunction = std::function<void()>;
 using PreReqFunc = std::function<void(EmptyFunction)>;
 #define HEADER_LAMBDA [&](EmptyFunction draw)
+
+
+
 
 class AssetManager {
 public:
@@ -710,6 +715,7 @@ public:
 	*/
 	void  setMat4(const std::string &name, const glm::mat4 &mat) const;
 #pragma endregion shaderDcl
+
 };
 
 void Shader::ReCompile() {
@@ -946,13 +952,17 @@ std::vector<GameObject*> objects;
 std::vector<Mesh*> meshes;
 
 class Component {
+	friend class GameObject;
+protected:
+	int enabled = true;
 public:
 	std::string name;
 	int openUI = false;
-	int enabled = true;
 	Transform &transform;
 	GameObject &gameobject;
 
+
+	bool Enabled();
 	Component(GameObject &o, Transform &t, const std::string n) : transform(t), gameobject(o)
 	{
 		name = n;
@@ -1004,7 +1014,20 @@ public:
 	Vec3 GetRotation() { return rotation; }
 	Vec3 GetScale() { return scale; }
 	Vec3 GetPosition() { return position; }
-	Transform* SetRotation(const Vec3& val) { SetDirty(Dirty::Model);  rotation = val; return this; }
+	Transform* SetRotation(const Vec3& val) {
+		SetDirty(Dirty::Model);
+		rotation = val;
+
+		//forn(ii, 0, 3){
+		//	if (rotation[ii] > 360 || rotation[ii] < -360) {
+		//		rotation[ii] = (glm::abs(rotation[ii]) - 360)  * glm::sign(rotation[ii]);
+		//	}
+		//}
+
+
+
+		return this;
+	}
 	Transform* SetScale(const Vec3& val) { SetDirty(Dirty::Model); scale = val; return this; }
 	Transform* SetPosition(const Vec3& val) { SetDirty(Dirty::Model); position = val; return this; }
 	Transform* SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
@@ -1053,6 +1076,7 @@ private:
 	Returs true if it was dirty.
 	Cleans accumulated matrix
 	*/
+public:
 	bool TryGetClean();
 
 public:
@@ -1114,8 +1138,14 @@ class GameObject {
 	int _id;
 	friend class SystemRenderer;
 	std::list<Component*> components;
-
+	int enabled = true;
 public:
+
+
+	// esto puede llegar a ser orden N y debe ser seteado como un evento asi como lo es Dirty
+	bool IsEnabled() {
+		return enabled;// && (transform.parent) ? transform.parent->gameobject.IsEnabled() : true;
+	}
 	int openUI = false;
 	Transform transform;
 	std::string name;
@@ -1124,22 +1154,24 @@ public:
 		name = std::to_string(_id).append(n);
 	}
 	void Update() {
-		for each (auto comp in components)
-		{
-			PF_ASSERT(comp && "COMPONENT IS NULL");
+		if (IsEnabled())
+			for each (auto comp in components)
+			{
+				PF_ASSERT(comp && "COMPONENT IS NULL");
 
-			//PF_INFO("Object {0}", name);
-			if (comp->enabled) {
-				comp->Update();
+				//PF_INFO("Object {0}", name);
+				if (comp->Enabled()) {
+					transform.TryGetClean();
+					comp->Update();
+				}
 			}
-		}
 	}
 
 	void HandleEvent(const SDL_Event &e) {
 		for each (auto comp in components)
 		{
 			PF_ASSERT(comp && "COMPONENT IS NULL");
-			if (comp->enabled) {
+			if (comp->Enabled()) {
 				//PF_INFO("HANDLE EVENT ,{0}", this->name);
 				comp->HandleEvent(e);
 			}
@@ -1150,6 +1182,7 @@ public:
 			// height, width, row
 			const int val = 6000;
 			//nk_layout_row_static(ctx, 18, 100, 1);
+			nk_checkbox_label(ctx, "Enabled", &enabled);
 			transform.SetPosition(nke_Vec3(transform.GetPosition(), "Position", -val, val));
 			transform.SetRotation(nke_Vec3(transform.GetRotation(), "Rotation", -val, val));
 			transform.SetScale(nke_Vec3(transform.GetScale(), "Scale", -val, val));
@@ -1235,6 +1268,7 @@ bool Transform::TryGetClean() {
 		}
 
 		for (auto child : children) {
+			PF_ASSERT(child && "you shouldn't have a null child");
 			child->SetDirty(Dirty::Acum);
 		}
 	}
@@ -1245,9 +1279,9 @@ bool Transform::TryGetClean() {
 
 #pragma region Components
 class Camera : public Component {
-#define GL_CAM
-	friend class GameObject;
 
+	friend class GameObject;
+public:
 	int power = 10000;
 	int isPerspective = true;
 	float speed = 25.f;
@@ -1270,7 +1304,7 @@ class Camera : public Component {
 	{
 		Pitch = -48.05f;
 		Yaw = 12.88f;
-		transform.SetPosition({9.42f, -1.24, 5.14});
+		//transform.SetPosition({9.42f, -1.24, 5.14});
 		sensitivity = 0.10f;
 		fov = 70;
 		updateCameraVectors();
@@ -1420,7 +1454,7 @@ public:
 		default:
 			__debugbreak(); // this should never happen
 			break;
-	}
+		}
 #endif // SEND_DATA_SEPARATED
 
 #ifdef SEND_DATA_JOINED
@@ -1441,7 +1475,7 @@ public:
 		shader.setVec4(name + ".kS", NKE_COLOR2VEC4(kS));
 
 		myCount++;
-}
+	}
 	void Update() override {
 	}
 
@@ -1471,6 +1505,27 @@ public:
 
 #pragma endregion  Components
 
+class Rotator : public Component {
+protected:
+	Vec3 sentido{ 0,0,0 };
+	float rapidez = 10.f;
+	float time = 0;
+public:
+	Rotator(COMP_PARAMS) INIT_COMP("Rotator") {
+		enabled = false;
+	}
+	virtual void Update() {
+		time += deltaTime;
+		if (time > 10) {
+			sentido = glm::ballRand(1.f);
+		}
+		transform.Rotate(sentido * rapidez * static_cast<float>(deltaTime));
+	};
+	virtual void UI() {};
+	void HandleEvent(const SDL_Event &e) {
+	}
+};
+
 class Renderer : public Component {
 protected:
 	Renderer(COMP_PARAMS, std::string n) INIT_COMP(n) {}
@@ -1481,7 +1536,7 @@ public:
 class MeshRenderer : public Renderer {
 public:
 	Mesh & mesh;
-	MeshRenderer(RENDERER_PARAMS, Mesh &m) : Renderer(o, t, "MeshRenderer"), mesh(m) {}
+	MeshRenderer(RENDERER_PARAMS, Mesh &m);
 
 	virtual void Render(const std::function<void(ShaderProgram&)>&) override;
 	virtual void Update() {};
@@ -1669,15 +1724,16 @@ public:
 TYPE Get##FUNC_NAME(){return VALUE;}\
 
 class SystemRenderer {
-private:
-	MeshRenderer* ActMesh;
-	//RenderSpec* ActSpec;
 
 public:
+
+
+
 	//GEN_GETTER(RenderSpec&, ActSpec, *ActSpec);
 	//GEN_GETTER(MeshRenderer&, ActMesh, *ActMesh);
 
 	std::list<Camera*> camera;
+
 	std::list<Renderer*> renderers;
 	std::list<Light*> lights;
 	Camera & GetCamera() {
@@ -1868,7 +1924,8 @@ struct Face {
 
 using PolygonGroup = std::vector<Face>;
 
-struct RenderSpec {
+class RenderSpec {
+public:
 	const Material& mat;
 	size_t init;
 	size_t quantityFaces = 0;
@@ -1886,6 +1943,7 @@ struct RenderSpec {
 class Mesh : public Asset {
 private:
 public:
+	std::list<MeshRenderer*> registered;
 	std::vector<Vec3> pos;
 	std::vector<iVec3> iPos;
 	std::vector<Vec3> tempNormal;
@@ -1903,6 +1961,9 @@ public:
 		SubMesh * m = new SubMesh(*this, n);
 		submesh.push_back(m);
 		return *m;
+	}
+	void Register(MeshRenderer* a) {
+		registered.push_back(a);
 	}
 
 	Mesh(const std::string path)
@@ -1943,36 +2004,6 @@ public:
 					stream >> tofData;
 					SubMesh &m = AddSubMesh(tofData);
 					m.Read(file, actMat);
-					//std::vector<Vec3> tempNormalFace; tempNormalFace.reserve(m.nIndices);
-
-					//// the vertex ii contributed n triangles
-					//std::vector< std::vector<size_t> > trianglesVertexNContributed(m.nPos, std::vector<size_t>());
-
-					//for (size_t ii = init, count = 0; ii < m.nIndices; ii++, count++)
-					//{
-					//	iVec3 &f = tempiPos[ii];
-					//	iVec3 &ft = tempiUV[ii];
-
-					//	ProcessIndex(f, m.nIndices);
-					//	ProcessIndex(ft, m.nIndices);
-					//}
-
-					//for (size_t count = 0; count < trianglesVertexNContributed.size(); count++)
-					//{
-					//	const std::vector<size_t>& trianglesContributed = trianglesVertexNContributed[count];
-
-					//	Vec3 avg{ 0,0,0 };
-
-					//	for each (const size_t triangleContributed in trianglesContributed)
-					//	{
-					//		avg += tempNormalFace[triangleContributed];
-					//	}
-					//	avg = glm::normalize(avg / (float)trianglesContributed.size());
-					//	tempNormal.push_back(avg);
-
-					//	//tempBiTan.push_back(CalcBitangentOfTriangle(tempvertex));
-
-					//}
 					init += m.nIndices;
 				}
 				else if (tofData == "s")
@@ -2061,29 +2092,7 @@ public:
 
 	//	return ((u3u1*(p2-p1)) - ((u2-u1)*(p3-p1))) / (((v2-v1)*u3u1) - ((u2-u1)*(v3-v1)));
 	//}
-#define PF_SUBDATA(buffType,vec, type)\
-vecSize = vec.size() * sizeof(type);\
-GLCALL(glBufferSubData(\
-		buffType,\
-		off,\
-		vecSize,\
-		vec.data()\
-));\
-off+=vecSize;\
 
-#define SET_ATTRIB_POINTER(LAYOUT, VEC, TYPE, N_VERT, GL_TYPE)\
-	GLCALL(glEnableVertexAttribArray(LAYOUT));\
-	vecSize = VEC.size() * sizeof(TYPE);\
-	GLCALL(glVertexAttribPointer(LAYOUT, N_VERT, GL_TYPE, GL_FALSE, vecSize, (void*)(off += vecSize))); \
-
-#define LOCURAAAA(LAYOUT, ID, CONTAINER, VERTEX_TYPE)\
-	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, ID));\
-	{\
-		GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(CONTAINER, VERTEX_TYPE), CONTAINER.data(), GL_STATIC_DRAW));\
-		GLCALL(glVertexAttribPointer(LAYOUT, VERTEX_TYPE::length(), GL_FLOAT, GL_FALSE, sizeof(VERTEX_TYPE), (void*)0));\
-		GLCALL(glEnableVertexAttribArray(0));\
-	}\
-	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));\
 
 	void GLCreate() {
 		for (RenderSpec& spec : materialOrderForRender)
@@ -2128,9 +2137,33 @@ off+=vecSize;\
 
 			GLCALL(glBindVertexArray(spec.VAO));
 			{
-				LOCURAAAA(0, spec.VBO_POS, matPos, Vec3);
-				LOCURAAAA(1, spec.VBO_NORM, matNorm, Vec3);
-				LOCURAAAA(2, spec.VBO_TEX, matTex, Vec2);
+				//LOCURAAAA(0, spec.VBO_POS, matPos, Vec3);
+				//LOCURAAAA(1, spec.VBO_NORM, matNorm, Vec3);
+				//LOCURAAAA(2, spec.VBO_TEX, matTex, Vec2);
+
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_POS));
+				{
+					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matPos, Vec3), matPos.data(), GL_STATIC_DRAW));
+					GLCALL(glVertexAttribPointer(0, Vec3::length(), GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
+					GLCALL(glEnableVertexAttribArray(0));
+				}
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_NORM));
+				{
+					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matNorm, Vec3), matNorm.data(), GL_STATIC_DRAW));
+					GLCALL(glVertexAttribPointer(1, Vec3::length(), GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
+					GLCALL(glEnableVertexAttribArray(1));
+				}
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_NORM));
+				{
+					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matTex, Vec2), matTex.data(), GL_STATIC_DRAW));
+					GLCALL(glVertexAttribPointer(2, Vec2::length(), GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0));
+					GLCALL(glEnableVertexAttribArray(2));
+				}
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 			}
 
 			GLCALL(glBindVertexArray(0));
@@ -2195,9 +2228,9 @@ off+=vecSize;\
 			SET_ATTRIB_POINTER(InitIndex + 2, tempiUV, Vec3, 3, GL_UNSIGNED_INT);
 
 			GLCALL(glBindVertexArray(0));
-	}
+		}
 #endif // TODO_EN_UNO
-}
+	}
 };
 
 void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {
@@ -2214,6 +2247,12 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 	iVec3 ft;
 	iVec3 fn;
 	std::string tofData;
+	
+	int size = group.submesh.size();
+	if ((size-1) > 0) { // yo ya estoy agregado entonces me saco
+		nIndices = group.submesh[size-2]->nIndices; // como soy el ultimo busco el penultimo
+	}
+
 
 	while (!file.eof() && file.good() && file.peek() != 'o')
 	{
@@ -2416,12 +2455,27 @@ public:
 SystemRenderer *sRenderer;
 
 void MeshRenderer::HandleEvent(const SDL_Event &e) {
-	if (e.type == SDL_EventType::SDL_KEYDOWN) {
-		if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
-			for each (auto pair in mesh.mtl->materials)
-			{
-				pair.second->shader->ReCompile();
-			}
-		}
-	}
+	//if (e.type == SDL_EventType::SDL_KEYDOWN) {
+	//	if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
+	//		for each (auto pair in mesh.mtl->materials)
+	//		{
+	//			pair.second->shader->ReCompile();
+	//		}
+	//	}
+	//}
 }
+
+MeshRenderer::MeshRenderer(RENDERER_PARAMS, Mesh &m) : Renderer(o, t, "MeshRenderer"), mesh(m) {
+	mesh.Register(this);
+}
+
+bool Component::Enabled() {
+	return enabled;// && gameobject.IsEnabled();;
+
+}
+
+
+ShaderProgram* ActShader;
+MeshRenderer* ActRenderer;
+RenderSpec* ActSpec;
+

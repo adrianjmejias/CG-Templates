@@ -37,18 +37,23 @@ uniform struct Light
 } LIGHTS[1];
 
 
+
 in struct {
 	vec4 m_pos;
 	vec4 w_pos;
 	vec4 norm;
 	vec4 uv;
-} obj;
+} OBJ;
+
+in vec3 n;
+
 
 out color fColor;
 
+
+
+
 void main()
 {
-//    vec3 dir_view = normalize(view.pos - );
-
-	fColor = LIGHTS[0].kD;
+    fColor = OBJ.norm;
 }

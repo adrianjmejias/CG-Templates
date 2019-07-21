@@ -103,6 +103,15 @@ void InitShaders() {
 			draw();
 		}
 	);
+	INIT_SHADER(SHADOW_MAPPING, true, false, false, true,
+		HEADER_LAMBDA
+		{
+			Camera& cam = sRenderer->GetCamera();
+			ActShader->setFloat("near", cam.nearClippingPlane);
+			ActShader->setFloat("far", cam.farClippingPlane);
+			draw();
+		}
+	);
 }
 
 void InitScene() {
@@ -118,16 +127,25 @@ void InitScene() {
 	{
 		meshes.push_back(cajita);
 	}
+
+	GameObject *parent(new GameObject("CAJA FATHEEER"));
+	parent->AddComponent<Rotator>();
+	objects.push_back(parent);
+
+	for (int ii = 0; ii < 10; ii++)
 	{
 		GameObject *go(new GameObject("Modelo"));
 		MeshRenderer& m = go->AddComponent<MeshRenderer>(*cajita);
-		objects.push_back(go);
+		go->transform.SetRotation(glm::ballRand(60.f));
+		go->transform.SetPosition(glm::ballRand(10.f) + 4.f);
+		//go->transform.SetScale(glm::ballRand(1.5f) + 1.f);
+		go->transform.SetParent(&parent->transform);
 	}
 
-	Mesh * plano(new Mesh("assets/models/plane/plane.obj"));
-	{
-		meshes.push_back(plano);
-	}
+	//Mesh * plano(new Mesh("assets/models/plane/plane.obj"));
+	//{
+	//	meshes.push_back(plano);
+	//}
 	//{
 	//	GameObject *go(new GameObject("Plano"));
 	//	MeshRenderer& m = go->AddComponent<MeshRenderer>(*plano);
@@ -201,9 +219,11 @@ int main(void)
 	InitShaders();
 	InitScene();
 
-	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	bool capture = false;
 
 	if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
@@ -215,6 +235,7 @@ int main(void)
 	while (running)
 	{
 #pragma region GoodShit
+
 
 		SDL_GetWindowSize(win, &win_width, &win_height);
 		glViewport(0, 0, win_width, win_height);
@@ -261,6 +282,14 @@ int main(void)
 					}
 					capture = !capture;
 				}
+				if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
+					for each (auto pair in meshes)
+					{
+						for (auto mat : pair->mtl->materials) {
+							mat.second->shader->ReCompile();
+						}
+					}
+				}
 			}
 
 			for each (auto go in callOrder)
@@ -272,15 +301,17 @@ int main(void)
 		}
 		nk_input_end(ctx);
 		//PF_INFO("UPDATE GO");
-
+		if(deltaTime > 0)
 		for each (auto go in callOrder)
 		{
 			go->Update();
 		}
 
-#ifdef INCLUDE_OVERVIEW
-		overview(ctx);
-#endif
+		//overview(ctx);
+	end:
+
+
+
 
 		//PF_INFO("UPDATE UI");
 		if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
@@ -307,17 +338,22 @@ int main(void)
 		//	light->ShadowPass();
 		//}
 
-		for each (MeshRenderer* ren in renderers)
+		for each (Mesh* m in meshes)
 		{
-			PF_ASSERT(ren && "Renderer is null");
-			auto &materialOrderForRender = ren->mesh.materialOrderForRender;
+			PF_ASSERT(m && "Mesh is not null");
+
+			Mesh& mesh = *m;
+			auto &materialOrderForRender = mesh.materialOrderForRender;
 
 			for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
 			{
 				const Material &MAT = materialOrderForRender[ii].mat;
 				const size_t nElem = materialOrderForRender[ii].quantityFaces;
-				const ShaderProgram &shader = *MAT.shader;
+				ShaderProgram &shader = *MAT.shader;
 				iVec3 lightsPlaced{ 0,0,0 };
+
+				ActShader = &shader;
+				ActSpec = &materialOrderForRender[ii];
 
 				shader.use();
 				GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
@@ -355,7 +391,7 @@ int main(void)
 
 				// pasamos toda la data del material
 #define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
-
+				
 				SET_SHADER_PROP(MAT.kA);
 				SET_SHADER_PROP(MAT.kD);
 				SET_SHADER_PROP(MAT.kS);
@@ -364,25 +400,32 @@ int main(void)
 				shader.setFloat("MAT.IOR", MAT.refractionIndex);
 				shader.setFloat("MAT.shiny", MAT.shiny);
 
-				// pasamos toda la data del objeto
-				if (shader.MVP) {
-					Transform &transform = ren->transform;
-					shader.setMat4("model", transform.GetAccumulated());
-					shader.setMat4("view", view);
-					shader.setMat4("proj", proj);
-				}
+				shader.setMat4("view", view);
+				shader.setMat4("proj", proj);
 
-				shader.preReq([&]() {
-					GLCALL(glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(nElem * 3)));
-				});
+				int nVertex = nElem * 3;
+				for (MeshRenderer* ren : mesh.registered)
+				{
+					PF_ASSERT(ren && "Renderer is null");
+					if (ren->Enabled()) {
+						ActRenderer = ren;
+						Transform &transform = ren->transform;
+						shader.setMat4("model", transform.GetAccumulated());
+
+						shader.preReq([&]() {
+							GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
+						});
+					}
+				}
 				GLCALL(glBindVertexArray(0));
 			}
 		}
-
 		//cubemap->Render();
 
 		nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 		SDL_GL_SwapWindow(win);
+
+
 		NOW = SDL_GetPerformanceCounter();
 		deltaTime = (double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency());
 		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);

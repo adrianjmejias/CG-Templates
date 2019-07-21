@@ -1157,5 +1157,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\defaults\utility.glsl" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.vert" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.frag" />
   </ItemGroup>
 </Project>
