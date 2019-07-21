@@ -350,7 +350,7 @@ public:
 	float Zoom;
 
 	// Constructor with vectors
-	CameraGL(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	CameraGL(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, 1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 	{
 		Position = position;
 		WorldUp = up;
@@ -1246,33 +1246,38 @@ bool Transform::TryGetClean() {
 #pragma region Components
 class Camera : public Component {
 #define GL_CAM
-
-	CameraGL cam;
-
 	friend class GameObject;
 
 	int power = 10000;
 	int isPerspective = true;
-	float speed = 20.f;
-	float sensitivity = 1.f;
+	float speed = 25.f;
+	float sensitivity = 0.3f;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
 	float farClippingPlane = 200.0f;
+
+	glm::vec3 Front;
+	glm::vec3 Up;
+	glm::vec3 Right;
+
+	float Yaw;
+	float Pitch;
 
 	Mat4 projection;
 	Mat4 view;
 
 	Camera(COMP_PARAMS) INIT_COMP("Camera")
 	{
+		Pitch = -48.05f;
+		Yaw = 12.88f;
+		transform.SetPosition({9.42f, -1.24, 5.14});
+		sensitivity = 0.10f;
+		fov = 70;
+		updateCameraVectors();
 	}
 public:
 	// Inherited via Component
 	virtual void Update() override {
-		//transform.SetPosition()
-		cam.MouseSensitivity = sensitivity;
-		cam.MovementSpeed = speed;
-
-		//PF_INFO("Camera running");
 	}
 
 	// Inherited via Component
@@ -1283,7 +1288,7 @@ public:
 		nearClippingPlane = nk_propertyf(ctx, "Near", 0.001, nearClippingPlane, farClippingPlane, 1.f, 0.005f);
 		farClippingPlane = nk_propertyf(ctx, "Far", nearClippingPlane, farClippingPlane, 6000, 1.f, 0.005f);
 		speed = nk_propertyf(ctx, "Speed", 50, speed, 500, 1.f, 0.005f);
-		sensitivity = nk_propertyf(ctx, "Sensitivity", 0.1f, sensitivity, 3, 0.1f, 0.005f);
+		sensitivity = nk_propertyf(ctx, "Sensitivity", 0.001f, sensitivity, 3, 00.1f, 0.005f);
 	}
 
 	virtual void HandleEvent(const SDL_Event &e) override {
@@ -1293,20 +1298,16 @@ public:
 			{
 				float scaledSpeed = static_cast<float>(deltaTime) * speed;
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
-					//transform.Translate(transform.Front() * scaledSpeed);
-					cam.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
+					transform.Translate(Front * scaledSpeed);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
-					//transform.Translate(-transform.Front() * scaledSpeed);
-					cam.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
+					transform.Translate(-Front * scaledSpeed);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
-					//transform.Translate(transform.Right() * scaledSpeed);
-					cam.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
+					transform.Translate(-Right * scaledSpeed);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
-					//transform.Translate(-transform.Right() * scaledSpeed);
-					cam.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
+					transform.Translate(Right* scaledSpeed);
 				}
 			}
 		}
@@ -1315,34 +1316,44 @@ public:
 			float movX = sensitivity * e.motion.xrel * deltaTime;
 			float movY = sensitivity * e.motion.yrel* deltaTime;
 
-			//transform.Rotate(movY, movX, 0);
+			float xoffset = e.motion.xrel* sensitivity;
+			float yoffset = e.motion.yrel*sensitivity;
 
-			cam.ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
+			Yaw += xoffset;
+			Pitch += yoffset;
 
-			//Vec3 rot = transform.GetRotation();
+			// Make sure that when pitch is out of bounds, screen doesn't get flipped
+			//if (constrainPitch)
+			{
+				if (Pitch > 89.0f)
+					Pitch = 89.0f;
+				if (Pitch < -89.0f)
+					Pitch = -89.0f;
+			}
 
-			//float pitch = rot.x;
-			////if (constrainPitch)
-			//{
-			//	if (pitch > 89.0f)
-			//		pitch = 89.0f;
-			//	if (pitch < -89.0f)
-			//		pitch = -89.0f;
-			//}
-
-			//Vec3 front{ cos(glm::radians(rot.y)) * cos(glm::radians(pitch)),sin(glm::radians(pitch)),	sin(glm::radians(rot.y)) * cos(glm::radians(pitch)) };
-
-			//transform.SetRotation(glm::degrees(front));
-			//setrotation
+			transform.SetRotation(glm::degrees(Front));
+			// Update Front, Right and Up Vectors using the updated Euler angles
+			updateCameraVectors();
 		}
 	}
 
+	void updateCameraVectors()
+	{
+		// Calculate the new Front vector
+		glm::vec3 front;
+		front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		front.y = sin(glm::radians(Pitch));
+		front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		Front = glm::normalize(front);
+		// Also re-calculate the Right and Up vector
+		Right = glm::normalize(glm::cross(Front, Transform::WorldUp()));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		Up = glm::normalize(glm::cross(Right, Front));
+	}
 	virtual Mat4& GetView() {
-		//view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.Front(), transform.Up());
+		view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + Front, Up);
 		//view = transform.GetAccumulated();
 		//view = Transform::GenModel(-transform.GetPosition(), -transform.GetRotation(), transform.GetScale());
 		//return view;
-		view = cam.GetViewMatrix();
 		return view;
 	}
 	virtual Mat4& GetProjection() {
@@ -1359,9 +1370,6 @@ public:
 
 		return projection;
 	}
-};
-
-class Mover : public Component {
 };
 
 #pragma region Light
@@ -1412,7 +1420,7 @@ public:
 		default:
 			__debugbreak(); // this should never happen
 			break;
-		}
+	}
 #endif // SEND_DATA_SEPARATED
 
 #ifdef SEND_DATA_JOINED
@@ -1433,7 +1441,7 @@ public:
 		shader.setVec4(name + ".kS", NKE_COLOR2VEC4(kS));
 
 		myCount++;
-	}
+}
 	void Update() override {
 	}
 
@@ -2187,9 +2195,9 @@ off+=vecSize;\
 			SET_ATTRIB_POINTER(InitIndex + 2, tempiUV, Vec3, 3, GL_UNSIGNED_INT);
 
 			GLCALL(glBindVertexArray(0));
-		}
-#endif // TODO_EN_UNO
 	}
+#endif // TODO_EN_UNO
+}
 };
 
 void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {

@@ -109,8 +109,6 @@ void InitScene() {
 	GameObject *go1(new GameObject("Camara"));
 	Camera& cam = go1->AddComponent<Camera>();
 	objects.push_back(go1);
-	go1->transform.Translate(0, 0, -10);
-	cam.transform.SetRotation(0, 0, 0);
 
 	GameObject *go2(new GameObject("LUZ"));
 	Light& light1 = go2->AddComponent<Light>(LightType::DIRECTIONAL);
@@ -130,11 +128,11 @@ void InitScene() {
 	{
 		meshes.push_back(plano);
 	}
-	{
-		GameObject *go(new GameObject("Plano"));
-		MeshRenderer& m = go->AddComponent<MeshRenderer>(*plano);
-		objects.push_back(go);
-	}
+	//{
+	//	GameObject *go(new GameObject("Plano"));
+	//	MeshRenderer& m = go->AddComponent<MeshRenderer>(*plano);
+	//	objects.push_back(go);
+	//}
 	//std::cout<< Transform::WorldFront()<< Transform::RotatePoint(Transform::WorldFront(), {0,90,0}) <<std::endl;
 
 	//GameObject *caja(new GameObject("Cajita"));
@@ -203,6 +201,9 @@ int main(void)
 	InitShaders();
 	InitScene();
 
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	bool capture = false;
 
 	if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
@@ -217,7 +218,7 @@ int main(void)
 
 		SDL_GetWindowSize(win, &win_width, &win_height);
 		glViewport(0, 0, win_width, win_height);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(bg.r, bg.g, bg.b, bg.a);
 		SDL_Event evt;
 		LAST = NOW;
@@ -387,6 +388,7 @@ int main(void)
 		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
 		mouse_deltaX -= mouse_lastPosX;
 		mouse_deltaY -= mouse_lastPosY;
+		mouse_deltaY *= -1;
 	}
 
 cleanup:
