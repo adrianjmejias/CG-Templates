@@ -1155,4 +1155,7 @@
   <ItemGroup>
     <ClCompile Include="PressF\src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\defaults\utility.glsl" />
+  </ItemGroup>
 </Project>

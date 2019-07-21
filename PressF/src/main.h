@@ -316,6 +316,127 @@ enum class MapType {
 	DISSOLVE,
 };
 
+// Defines several possible options for camera movement.Used as abstraction to stay away from window - system specific input methods
+enum Camera_Movement {
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT
+};
+
+// Default camera values
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 2.5f;
+const float SENSITIVITY = 0.1f;
+const float ZOOM = 45.0f;
+
+// An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
+class CameraGL
+{
+public:
+	// Camera Attributes
+	glm::vec3 Position;
+	glm::vec3 Front;
+	glm::vec3 Up;
+	glm::vec3 Right;
+	glm::vec3 WorldUp;
+	// Euler Angles
+	float Yaw;
+	float Pitch;
+	// Camera options
+	float MovementSpeed;
+	float MouseSensitivity;
+	float Zoom;
+
+	// Constructor with vectors
+	CameraGL(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	{
+		Position = position;
+		WorldUp = up;
+		Yaw = yaw;
+		Pitch = pitch;
+		updateCameraVectors();
+	}
+	// Constructor with scalar values
+	CameraGL(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+	{
+		Position = glm::vec3(posX, posY, posZ);
+		WorldUp = glm::vec3(upX, upY, upZ);
+		Yaw = yaw;
+		Pitch = pitch;
+		updateCameraVectors();
+	}
+
+	// Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+	glm::mat4 GetViewMatrix()
+	{
+		return glm::lookAt(Position, Position + Front, Up);
+	}
+
+	// Processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
+	void ProcessKeyboard(Camera_Movement direction, float deltaTime)
+	{
+		float velocity = MovementSpeed * deltaTime;
+		if (direction == FORWARD)
+			Position += Front * velocity;
+		if (direction == BACKWARD)
+			Position -= Front * velocity;
+		if (direction == LEFT)
+			Position -= Right * velocity;
+		if (direction == RIGHT)
+			Position += Right * velocity;
+	}
+
+	// Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
+	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+	{
+		xoffset *= MouseSensitivity;
+		yoffset *= MouseSensitivity;
+
+		Yaw += xoffset;
+		Pitch += yoffset;
+
+		// Make sure that when pitch is out of bounds, screen doesn't get flipped
+		if (constrainPitch)
+		{
+			if (Pitch > 89.0f)
+				Pitch = 89.0f;
+			if (Pitch < -89.0f)
+				Pitch = -89.0f;
+		}
+
+		// Update Front, Right and Up Vectors using the updated Euler angles
+		updateCameraVectors();
+	}
+
+	// Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
+	void ProcessMouseScroll(float yoffset)
+	{
+		if (Zoom >= 1.0f && Zoom <= 45.0f)
+			Zoom -= yoffset;
+		if (Zoom <= 1.0f)
+			Zoom = 1.0f;
+		if (Zoom >= 45.0f)
+			Zoom = 45.0f;
+	}
+
+private:
+	// Calculates the front vector from the Camera's (updated) Euler Angles
+	void updateCameraVectors()
+	{
+		// Calculate the new Front vector
+		glm::vec3 front;
+		front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		front.y = sin(glm::radians(Pitch));
+		front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+		Front = glm::normalize(front);
+		// Also re-calculate the Right and Up vector
+		Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
+		Up = glm::normalize(glm::cross(Right, Front));
+	}
+};
+
 enum class FBAttachment {
 	COLOR_ATTACHMENT0 = GL_COLOR_ATTACHMENT0,
 	COLOR_ATTACHMENT1 = GL_COLOR_ATTACHMENT1,
@@ -377,8 +498,10 @@ class Light;
 
 class Material;
 
-using PreReqFunc = std::function<void(const Material&)>;
-#define HEADER_LAMBDA [&](const Material& mat)
+using EmptyFunction = std::function<void()>;
+using PreReqFunc = std::function<void(EmptyFunction)>;
+#define HEADER_LAMBDA [&](EmptyFunction draw)
+
 class AssetManager {
 public:
 	std::list<Asset> assets;
@@ -870,9 +993,9 @@ public:
 	Vec3 position{ 0, 0, 0 };
 	Vec3 rotation{ 0, 0, 0 };
 	Vec3 scale{ 1, 1, 1 };
-	Mat4 model;
-	Mat4 acum;
-	Mat4 rotMat;
+	Mat4 model = Mat4(1);
+	Mat4 acum = Mat4(1);
+	Mat4 rotMat = Mat4(1);
 
 	Dirty dirty = Dirty::None;
 
@@ -1122,6 +1245,10 @@ bool Transform::TryGetClean() {
 
 #pragma region Components
 class Camera : public Component {
+#define GL_CAM
+
+	CameraGL cam;
+
 	friend class GameObject;
 
 	int power = 10000;
@@ -1138,10 +1265,13 @@ class Camera : public Component {
 	Camera(COMP_PARAMS) INIT_COMP("Camera")
 	{
 	}
-
 public:
 	// Inherited via Component
 	virtual void Update() override {
+		//transform.SetPosition()
+		cam.MouseSensitivity = sensitivity;
+		cam.MovementSpeed = speed;
+
 		//PF_INFO("Camera running");
 	}
 
@@ -1162,18 +1292,21 @@ public:
 			//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT)
 			{
 				float scaledSpeed = static_cast<float>(deltaTime) * speed;
-
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_W) {
-					transform.Translate(transform.Front() * scaledSpeed);
+					//transform.Translate(transform.Front() * scaledSpeed);
+					cam.ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_S) {
-					transform.Translate(-transform.Front() * scaledSpeed);
+					//transform.Translate(-transform.Front() * scaledSpeed);
+					cam.ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_A) {
-					transform.Translate(transform.Right() * scaledSpeed);
+					//transform.Translate(transform.Right() * scaledSpeed);
+					cam.ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
 				}
 				if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_D) {
-					transform.Translate(-transform.Right() * scaledSpeed);
+					//transform.Translate(-transform.Right() * scaledSpeed);
+					cam.ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
 				}
 			}
 		}
@@ -1182,7 +1315,10 @@ public:
 			float movX = sensitivity * e.motion.xrel * deltaTime;
 			float movY = sensitivity * e.motion.yrel* deltaTime;
 
-			transform.Rotate(movY, movX, 0);
+			//transform.Rotate(movY, movX, 0);
+
+			cam.ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
+
 			//Vec3 rot = transform.GetRotation();
 
 			//float pitch = rot.x;
@@ -1203,9 +1339,10 @@ public:
 
 	virtual Mat4& GetView() {
 		//view = glm::lookAt(transform.GetPosition(), transform.GetPosition() + transform.Front(), transform.Up());
-		view = transform.GetAccumulated();
+		//view = transform.GetAccumulated();
 		//view = Transform::GenModel(-transform.GetPosition(), -transform.GetRotation(), transform.GetScale());
 		//return view;
+		view = cam.GetViewMatrix();
 		return view;
 	}
 	virtual Mat4& GetProjection() {
@@ -1217,7 +1354,7 @@ public:
 			projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
 		}
 		else {
-			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), -1.f, 1.f);
+			projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), nearClippingPlane, farClippingPlane);
 		}
 
 		return projection;
@@ -1251,8 +1388,10 @@ public:
 	Light(COMP_PARAMS, LightType lt) : Component(o, t, "Light"), type(lt) {}
 
 	void Bind(iVec3& countLights, const ShaderProgram &shader) {
+#define SEND_DATA_JOINED
 		int& myCount = countLights[static_cast<int>(type)];
 
+#ifdef SEND_DATA_SEPARATED
 		switch (type)
 		{
 		case LightType::DIRECTIONAL:
@@ -1274,14 +1413,24 @@ public:
 			__debugbreak(); // this should never happen
 			break;
 		}
+#endif // SEND_DATA_SEPARATED
+
+#ifdef SEND_DATA_JOINED
+		name = "LIGHTS[" + std::to_string(myCount) + "]";
+
+		shader.setInt(name + ".type", static_cast<int>(type));
+		shader.setVec3(name + ".position", transform.GetPosition());
+		shader.setVec3(name + ".attenuation", attenuation);
+		shader.setFloat(name + ".innerAngle", glm::radians(innerAngle));
+		shader.setFloat(name + ".outerAngle", glm::radians(outterAngle));
+#endif // SEND_DATA_JOINED
 
 		shader.setVec3(name + ".direction", transform.front);
 		shader.setBool(name + ".isOn", enabled);
 
-		name.append(".color");
-		shader.setVec4(name + ".ambient", NKE_COLOR2VEC4(kA));
-		shader.setVec4(name + ".diffuse", NKE_COLOR2VEC4(kD));
-		shader.setVec4(name + ".specular", NKE_COLOR2VEC4(kS));
+		shader.setVec4(name + ".kA", NKE_COLOR2VEC4(kA));
+		shader.setVec4(name + ".kD", NKE_COLOR2VEC4(kD));
+		shader.setVec4(name + ".kS", NKE_COLOR2VEC4(kS));
 
 		myCount++;
 	}
@@ -1508,9 +1657,18 @@ public:
 	void Render();
 };
 
+#define GEN_GETTER(TYPE, FUNC_NAME, VALUE)\
+TYPE Get##FUNC_NAME(){return VALUE;}\
+
 class SystemRenderer {
 private:
+	MeshRenderer* ActMesh;
+	//RenderSpec* ActSpec;
+
 public:
+	//GEN_GETTER(RenderSpec&, ActSpec, *ActSpec);
+	//GEN_GETTER(MeshRenderer&, ActMesh, *ActMesh);
+
 	std::list<Camera*> camera;
 	std::list<Renderer*> renderers;
 	std::list<Light*> lights;
@@ -1546,16 +1704,16 @@ public:
 };
 
 void CubeMap::Render() {
-	GLCALL(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
-	// skybox cube
-	GLCALL(glBindVertexArray(skyboxVAO));
-	shader->use();
-	shader->setInt("skybox", 0);
-	GLCALL(glActiveTexture(GL_TEXTURE0));
-	GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex->id));
-	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
-	GLCALL(glBindVertexArray(0));
-	GLCALL(glDepthFunc(GL_LESS));
+	//GLCALL(glDepthFunc(GL_LEQUAL));  // change depth function so depth test passes when values are equal to depth buffer's content
+	//// skybox cube
+	//GLCALL(glBindVertexArray(skyboxVAO));
+	//shader->use();
+	//shader->setInt("skybox", 0);
+	//GLCALL(glActiveTexture(GL_TEXTURE0));
+	//GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex->id));
+	//GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+	//GLCALL(glBindVertexArray(0));
+	//GLCALL(glDepthFunc(GL_LESS));
 	// set depth function back to default
 }
 
@@ -1708,6 +1866,9 @@ struct RenderSpec {
 	size_t quantityFaces = 0;
 	unsigned int VAO;
 	unsigned int VBO_POS;
+	unsigned int VBO_NORM;
+	unsigned int VBO_TEX;
+	unsigned int VBO_BITAN;
 
 	RenderSpec(Material& m) : mat(m) {
 	}
@@ -1822,6 +1983,7 @@ public:
 		{
 			ProcessIndex(idx, numVertex);
 		}
+
 		numVertex = tempNormal.size();
 		for (iVec3& idx : tempiNormal)
 		{
@@ -1906,6 +2068,15 @@ off+=vecSize;\
 	vecSize = VEC.size() * sizeof(TYPE);\
 	GLCALL(glVertexAttribPointer(LAYOUT, N_VERT, GL_TYPE, GL_FALSE, vecSize, (void*)(off += vecSize))); \
 
+#define LOCURAAAA(LAYOUT, ID, CONTAINER, VERTEX_TYPE)\
+	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, ID));\
+	{\
+		GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(CONTAINER, VERTEX_TYPE), CONTAINER.data(), GL_STATIC_DRAW));\
+		GLCALL(glVertexAttribPointer(LAYOUT, VERTEX_TYPE::length(), GL_FLOAT, GL_FALSE, sizeof(VERTEX_TYPE), (void*)0));\
+		GLCALL(glEnableVertexAttribArray(0));\
+	}\
+	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));\
+
 	void GLCreate() {
 		for (RenderSpec& spec : materialOrderForRender)
 		{
@@ -1914,29 +2085,44 @@ off+=vecSize;\
 			const size_t offFaces = spec.init;
 
 			std::vector<Vec3> matPos;
+			std::vector<Vec2> matTex;
+			std::vector<Vec3> matNorm;
 
 			for (size_t ii = offFaces, iiEnd = offFaces + nFaces; ii < iiEnd; ii++)
 			{
-				const iVec3& face = iPos[ii];
-				matPos.push_back(pos[face.x]);
-				matPos.push_back(pos[face.y]);
-				matPos.push_back(pos[face.z]);
+				if (ii < iPos.size()) {
+					const iVec3& facePos = iPos[ii];
+					matPos.push_back(pos[facePos.x]);
+					matPos.push_back(pos[facePos.y]);
+					matPos.push_back(pos[facePos.z]);
+				}
+
+				if (ii < tempiUV.size()) {
+					const iVec3& faceTex = tempiUV[ii];
+					matTex.push_back(tempUV[faceTex.x]);
+					matTex.push_back(tempUV[faceTex.y]);
+				}
+
+				if (ii < tempiNormal.size()) {
+					const iVec3& faceNorm = tempiNormal[ii];
+					matNorm.push_back(tempNormal[faceNorm.x]);
+					matNorm.push_back(tempNormal[faceNorm.y]);
+					matNorm.push_back(tempNormal[faceNorm.z]);
+				}
 			}
 #pragma endregion
 
 			// tengo el array de posiciones
 			GLCALL(glGenVertexArrays(1, &spec.VAO));
 			GLCALL(glGenBuffers(1, &spec.VBO_POS));
+			GLCALL(glGenBuffers(1, &spec.VBO_NORM));
+			GLCALL(glGenBuffers(1, &spec.VBO_TEX));
 
 			GLCALL(glBindVertexArray(spec.VAO));
 			{
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_POS));
-				{
-					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(pos, Vec3), matPos.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
-					GLCALL(glEnableVertexAttribArray(0));
-				}
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+				LOCURAAAA(0, spec.VBO_POS, matPos, Vec3);
+				LOCURAAAA(1, spec.VBO_NORM, matNorm, Vec3);
+				LOCURAAAA(2, spec.VBO_TEX, matTex, Vec2);
 			}
 
 			GLCALL(glBindVertexArray(0));

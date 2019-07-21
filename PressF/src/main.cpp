@@ -93,12 +93,14 @@ void InitShaders() {
 	INIT_SHADER(COOK, true, true, false, true,
 		HEADER_LAMBDA
 		{
+			draw();
 		}
 	);
 
 	INIT_SHADER(CUBEMAP, true, false, false, true,
 		HEADER_LAMBDA
 		{
+			draw();
 		}
 	);
 }
@@ -200,49 +202,6 @@ int main(void)
 
 	InitShaders();
 	InitScene();
-
-#pragma region Setupquad
-	//basic->Compile();
-
-// set up vertex data (and buffer(s)) and configure vertex attributes
-// ------------------------------------------------------------------
-	//float vertices[] = {
-	//	0.5f,  0.5f, 0.0f,  // top right
-	//	0.5f, -0.5f, 0.0f,  // bottom right
-	//	-0.5f, -0.5f, 0.0f,  // bottom left
-	//	-0.5f,  0.5f, 0.0f   // top left
-	//};
-	//unsigned int indices[] = {  // note that we start from 0!
-	//	0, 1, 3,  // first Triangle
-	//	1, 2, 3   // second Triangle
-	//};
-	//unsigned int VBO, VAO, EBO;
-	//glGenVertexArrays(1, &VAO);
-	//glGenBuffers(1, &VBO);
-	//glGenBuffers(1, &EBO);
-	//// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-	//glBindVertexArray(VAO);
-
-	//auto m = meshes.front();
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(m->pos, Vec3), m->pos.data(), GL_STATIC_DRAW);
-
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m->iPos), m->iPos.data(), GL_STATIC_DRAW);
-
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-	//glEnableVertexAttribArray(0);
-
-	//// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//// remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
-	////glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	//// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-	//// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-	//glBindVertexArray(0);
-#pragma endregion
 
 	bool capture = false;
 
@@ -354,9 +313,9 @@ int main(void)
 
 			for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
 			{
-				const Material &mat = materialOrderForRender[ii].mat;
+				const Material &MAT = materialOrderForRender[ii].mat;
 				const size_t nElem = materialOrderForRender[ii].quantityFaces;
-				const ShaderProgram &shader = *mat.shader;
+				const ShaderProgram &shader = *MAT.shader;
 				iVec3 lightsPlaced{ 0,0,0 };
 
 				shader.use();
@@ -376,7 +335,7 @@ int main(void)
 				};
 
 				// ponemos texturas
-				for each (auto pair in mat.maps)
+				for each (auto pair in MAT.maps)
 				{
 					Texture &tex = *pair.second;
 					int type = static_cast<int>(tex.type);
@@ -396,15 +355,13 @@ int main(void)
 				// pasamos toda la data del material
 #define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
 
-				SET_SHADER_PROP(mat.kA);
-				SET_SHADER_PROP(mat.kD);
-				SET_SHADER_PROP(mat.kS);
-				SET_SHADER_PROP(mat.kE);
+				SET_SHADER_PROP(MAT.kA);
+				SET_SHADER_PROP(MAT.kD);
+				SET_SHADER_PROP(MAT.kS);
+				SET_SHADER_PROP(MAT.kE);
 
-				shader.setFloat("mat.IOR", mat.refractionIndex);
-				shader.setFloat("mat.shiny", mat.shiny);
-
-				shader.preReq(mat);
+				shader.setFloat("MAT.IOR", MAT.refractionIndex);
+				shader.setFloat("MAT.shiny", MAT.shiny);
 
 				// pasamos toda la data del objeto
 				if (shader.MVP) {
@@ -414,7 +371,9 @@ int main(void)
 					shader.setMat4("proj", proj);
 				}
 
-				GLCALL(glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(nElem * 3)));
+				shader.preReq([&]() {
+					GLCALL(glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(nElem * 3)));
+				});
 				GLCALL(glBindVertexArray(0));
 			}
 		}
@@ -428,7 +387,6 @@ int main(void)
 		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
 		mouse_deltaX -= mouse_lastPosX;
 		mouse_deltaY -= mouse_lastPosY;
-		mouse_deltaY *= -1;
 	}
 
 cleanup:
