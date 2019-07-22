@@ -17,7 +17,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	for each (std::string objPath in objPaths)
 	{
 		Model model;
-		
+
 		if (!model.LoadFile(objPath)) {
 			//PF_ERROR("Failed to load model {0}", objPath);
 			__debugbreak();
@@ -44,66 +44,86 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 void Application::MainLoop()
 {
+	while (running) {
+		std::cout << "looping";
+		SDL_GetWindowSize(win, &win_width, &win_heigth);
+		glViewport(0, 0, win_width, win_heigth);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(1, 1, 0, 1);
+		LAST = NOW;
+		SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
 
-	SDL_GetWindowSize(win, &win_width, &win_heigth);
-	glViewport(0, 0, win_width, win_heigth);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(1, 0, 0, 1);
-	LAST = NOW;
-	SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
+		HandleEvents();
 
-	HandleEvents();
+		UILoop();
 
-	UILoop();
-	UpdateLoop();
+		UpdateLoop();
 
-	//std::sort(begin(callOrder), end(callorder), [])
+		//std::sort(begin(callOrder), end(callorder), [])
 
-	NOW = SDL_GetPerformanceCounter();
-	deltaTime = (double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency());
-	SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
-	mouse_deltaX -= mouse_lastPosX;
-	mouse_deltaY -= mouse_lastPosY;
-	mouse_deltaY *= -1;
+		SDL_GL_SwapWindow(win);
+
+		NOW = SDL_GetPerformanceCounter();
+		deltaTime = (double)((NOW - LAST) / (double)SDL_GetPerformanceFrequency());
+		SDL_GetMouseState(&mouse_deltaX, &mouse_deltaY);
+		mouse_deltaX -= mouse_lastPosX;
+		mouse_deltaY -= mouse_lastPosY;
+		mouse_deltaY *= -1;
+	}
 }
 
 void Application::HandleEvents()
 {
 
-	//SDL_Event evt;
-	//nk_input_begin(ctx);
-	//while (SDL_PollEvent(&evt))
-	//{
-	//	if (evt.type == SDL_QUIT) {
-	//		running = false;
-	//		break;
-	//	}
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+	{
 
-	//	if (evt.type == SDL_EventType::SDL_KEYDOWN) {
-	//		if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
-	//			//PF_INFO("capture {0}", capture);
-	//			if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
-	//				__debugbreak();
-	//			}
-	//			captureMouse = !captureMouse;
-	//		}
-	//		if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
-	//		/*	for each (auto pair in meshes)
-	//			{
-	//				for (auto mat : pair->mtl->materials) {
-	//					mat.second->shader->ReCompile();
-	//				}
-	//			}*/
-	//		}
-	//	}
 
-	///*	for each (auto go in callOrder)
-	//	{
-	//		go->HandleEvent(evt);
-	//	}*/
+		if (e.type == SDL_QUIT) {
+			running = false;
+			break;
+		}
 
-	//	nk_sdl_handle_event(&evt);
-	//}
+		if (e.type == SDL_EventType::SDL_KEYDOWN) {
+			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
+				running = false;
+			}
+		}
+		//	if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
+		//		//PF_INFO("capture {0}", capture);
+		//		if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
+		//			__debugbreak();
+		//		}
+		//		captureMouse = !captureMouse;
+		//	}
+		//	if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
+		//	/*	for each (auto pair in meshes)
+		//		{
+		//			for (auto mat : pair->mtl->materials) {
+		//				mat.second->shader->ReCompile();
+		//			}
+		//		}*/
+		//	}
+		//}
+
+	/*	for each (auto go in callOrder)
+		{
+			go->HandleEvent(evt);
+		}*/
+
+		if (e.window.type == SDL_EventType::SDL_WINDOWEVENT) {
+			switch (e.window.event) {
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				SDL_Log("Window %d size changed to %dx%d",
+					e.window.windowID,
+					e.window.data1,
+					e.window.data2);
+				break;
+			}
+		}
+
+	}
 	//nk_input_end(ctx);
 }
 
@@ -126,6 +146,23 @@ void Application::UILoop()
 void Application::UpdateLoop()
 {
 
+
+
+	/* process frame */
+	//process_frame(ctx);
+
+	/* render */
+	//r_clear(mu_color(bg[0], bg[1], bg[2], 255));
+	/*mu_Command *cmd = NULL;
+	while (mu_next_command(ctx, &cmd)) {
+		switch (cmd->type) {
+		case MU_COMMAND_TEXT: r_draw_text(cmd->text.str, cmd->text.pos, cmd->text.color); break;
+		case MU_COMMAND_RECT: r_draw_rect(cmd->rect.rect, cmd->rect.color); break;
+		case MU_COMMAND_ICON: r_draw_icon(cmd->icon.id, cmd->icon.rect, cmd->icon.color); break;
+		case MU_COMMAND_CLIP: r_set_clip_rect(cmd->clip.rect); break;
+		}
+	}
+	r_present();*/
 }
 
 void Application::RenderLoop()
@@ -227,13 +264,13 @@ void Application::RenderLoop()
 	//	//cubemap->Render();
 	//
 	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-	//	SDL_GL_SwapWindow(win);
 	//
 }
 
 Application::Application()
 {
 	/* SDL setup */
+	SDL_SetMainReady();
 	SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "0");
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_EVENTS);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
@@ -258,6 +295,13 @@ Application::Application()
 		<< GLVersion.minor << std::endl;
 	/* OpenGL setup */
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
+	//ctx = malloc(sizeof(mu_Context));
+	//mu_init(ctx);
+
+	//ctx->text_width = win_width;
+	//ctx->text_height = win_heigth;
 
 	//ctx = nk_sdl_init(win);
 	///* Load Fonts: if none of these are loaded a default font will be used  */

@@ -51,7 +51,8 @@ project "PressF"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.obj}",
-		"%{IncludeDir.stb}"
+		"%{IncludeDir.stb}",
+		"%{IncludeDir.microui}"
    }
 
    libdirs
