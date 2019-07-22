@@ -10,15 +10,12 @@
 *
 * ===============================================================
 */
+
 #pragma once
-//#include <SDL.h>
 
-
-#ifndef NK_API
-#define NK_API extern	
-#endif // ! 
 #ifndef NK_SDL_GL3_H_
 #define NK_SDL_GL3_H_
+
 
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win);
 NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);

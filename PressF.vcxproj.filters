@@ -30,6 +30,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PressF\src\Application.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\GameObject.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Logger.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Model.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\OBJ_Loader.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Shader.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\ShaderProgram.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\UserInterface.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Window.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\main.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\types.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="dependencies\glm\glm\common.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
@@ -1134,39 +1167,6 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\Application.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\GameObject.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\Logger.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\main.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\Model.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\OBJ_Loader.h" />
-    <ClInclude Include="PressF\src\Shader.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\ShaderProgram.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\types.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\UserInterface.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="PressF\src\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1178,10 +1178,10 @@
     <ClCompile Include="PressF\src\Logger.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\main.cpp">
+    <ClCompile Include="PressF\src\Model.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\Model.cpp">
+    <ClCompile Include="PressF\src\OBJ_Loader.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\Shader.cpp">
@@ -1193,8 +1193,11 @@
     <ClCompile Include="PressF\src\UserInterface.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
-    <ClCompile Include="Window.cpp" />
-    <ClCompile Include="PressF\src\Window.cpp" />
+    <ClCompile Include="PressF\src\Window.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\main.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

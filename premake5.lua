@@ -12,7 +12,7 @@ IncludeDir = {}
 IncludeDir["glm"] = "dependencies/glm"
 IncludeDir["spdlog"] = "dependencies/spdlog/include"
 IncludeDir["Glad"] = "dependencies/Glad/include"
-IncludeDir["nuklear"] = "dependencies/nuklear"
+IncludeDir["microui"] = "dependencies/microui/src"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
 IncludeDir["obj"] = "dependencies/OBJ-Loader"
@@ -62,14 +62,14 @@ project "PressF"
    links {
       "Glad",
       "SDL2",
-      "nuklear"
+      -- "nuklear"
    }
 
    -- linkoptions { "``" }
    -- prebuildcommands { "MyTool --dosomething" }
 
    filter "configurations:Debug"
-      defines { "DEBUG"}
+      defines { "_CRT_SECURE_NO_WARNINGS", "DEBUG"}
       symbols "On"
 
    filter "configurations:Release"

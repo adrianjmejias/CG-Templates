@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+
 #include "main.h"
 
 
@@ -20,4 +20,6 @@ int main() {
 		});
 
 	app.MainLoop();
+
+	return 0; 
 }

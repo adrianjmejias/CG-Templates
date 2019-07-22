@@ -1,7 +1,9 @@
 #pragma once
 
 
+
 #include "types.h"
+
 #include "Model.h"
 
 
@@ -29,12 +31,8 @@ public:
 	bool running;
 	bool captureMouse = false;
 
-
-
-
-
-	struct nk_context *ctx;
-	struct nk_colorf bg { 0.10f, 0.18f, 0.24f, 1.0f };
+	//struct nk_context *ctx;
+	//struct nk_colorf bg { 0.10f, 0.18f, 0.24f, 1.0f };
 
 public:
 

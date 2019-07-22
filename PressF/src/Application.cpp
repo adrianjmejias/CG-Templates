@@ -48,7 +48,7 @@ void Application::MainLoop()
 	SDL_GetWindowSize(win, &win_width, &win_heigth);
 	glViewport(0, 0, win_width, win_heigth);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(bg.r, bg.g, bg.b, bg.a);
+	glClearColor(1, 0, 0, 1);
 	LAST = NOW;
 	SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
 
@@ -70,164 +70,165 @@ void Application::MainLoop()
 void Application::HandleEvents()
 {
 
-	SDL_Event evt;
-	nk_input_begin(ctx);
-	while (SDL_PollEvent(&evt))
-	{
-		if (evt.type == SDL_QUIT) {
-			running = false;
-			break;
-		}
+	//SDL_Event evt;
+	//nk_input_begin(ctx);
+	//while (SDL_PollEvent(&evt))
+	//{
+	//	if (evt.type == SDL_QUIT) {
+	//		running = false;
+	//		break;
+	//	}
 
-		if (evt.type == SDL_EventType::SDL_KEYDOWN) {
-			if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
-				//PF_INFO("capture {0}", capture);
-				if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
-					__debugbreak();
-				}
-				captureMouse = !captureMouse;
-			}
-			if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
-			/*	for each (auto pair in meshes)
-				{
-					for (auto mat : pair->mtl->materials) {
-						mat.second->shader->ReCompile();
-					}
-				}*/
-			}
-		}
+	//	if (evt.type == SDL_EventType::SDL_KEYDOWN) {
+	//		if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
+	//			//PF_INFO("capture {0}", capture);
+	//			if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
+	//				__debugbreak();
+	//			}
+	//			captureMouse = !captureMouse;
+	//		}
+	//		if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
+	//		/*	for each (auto pair in meshes)
+	//			{
+	//				for (auto mat : pair->mtl->materials) {
+	//					mat.second->shader->ReCompile();
+	//				}
+	//			}*/
+	//		}
+	//	}
 
-	/*	for each (auto go in callOrder)
-		{
-			go->HandleEvent(evt);
-		}*/
+	///*	for each (auto go in callOrder)
+	//	{
+	//		go->HandleEvent(evt);
+	//	}*/
 
-		nk_sdl_handle_event(&evt);
-	}
-	nk_input_end(ctx);
+	//	nk_sdl_handle_event(&evt);
+	//}
+	//nk_input_end(ctx);
 }
 
 void Application::UILoop()
 {
 
-	//overview(ctx);
-	if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
-		NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-		NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
-	{
-		//for each (auto go in objects)
-		//{
-		//	go->UI();
-		//}
-	}
-	nk_end(ctx);
+	////overview(ctx);
+	//if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
+	//	NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+	//	NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+	//{
+	//	//for each (auto go in objects)
+	//	//{
+	//	//	go->UI();
+	//	//}
+	//}
+	//nk_end(ctx);
 }
 
 void Application::UpdateLoop()
 {
-//	Camera &cam = sRenderer->GetCamera();
-//	auto view = cam.GetView();
-//	auto proj = cam.GetProjection();
-//	auto lights = sRenderer->lights;
-//	auto renderers = sRenderer->renderers;
-//	auto cubemap = sRenderer->cubemap;
-//
-//	//for each (Light* light in lights)
-//	//{
-//	//	light->ShadowPass();
-//	//}
-//
-//	for each (Mesh* m in meshes)
-//	{
-//		PF_ASSERT(m && "Mesh is not null");
-//
-//		Mesh& mesh = *m;
-//		auto &materialOrderForRender = mesh.materialOrderForRender;
-//
-//		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
-//		{
-//			const Material &MAT = materialOrderForRender[ii].mat;
-//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
-//			ShaderProgram &shader = *MAT.shader;
-//			iVec3 lightsPlaced{ 0,0,0 };
-//
-//			ActShader = &shader;
-//			ActSpec = &materialOrderForRender[ii];
-//
-//			shader.use();
-//			GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
-//
-//			const std::vector<std::string > nameMapping = {
-//				"tex_kA", /*MapType::AMBIENT*/
-//				"tex_kD", /*MapType::DIFFUSE*/
-//				"tex_kS", /*MapType::SPECULAR*/
-//				"tex_bump", /*MapType::BUMP*/
-//				"tex_cubemap", /*MapType::CUBEMAP*/
-//				"", /*MapType::SHINY*/
-//				"", /*MapType::DISPLACEMENT*/
-//				"", /*MapType::DECAL*/
-//				"", /*MapType::REFLECTION*/
-//				"", /*MapType::DISSOLVE*/
-//			};
-//
-//			// ponemos texturas
-//			for each (auto pair in MAT.maps)
-//			{
-//				Texture &tex = *pair.second;
-//				int type = static_cast<int>(tex.type);
-//				glActiveTexture(GL_TEXTURE0 + type);
-//				glBindTexture(GL_TEXTURE_2D, tex.id);
-//				shader.setInt(nameMapping[type], tex.id);
-//			}
-//
-//			// pasamos toda la data de las luces
-//			if (shader.lit) {
-//				for each (Light* light in lights)
-//				{
-//					light->Bind(lightsPlaced, shader);
-//				}
-//			}
-//
-//			// pasamos toda la data del material
-//#define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
-//
-//			SET_SHADER_PROP(MAT.kA);
-//			SET_SHADER_PROP(MAT.kD);
-//			SET_SHADER_PROP(MAT.kS);
-//			SET_SHADER_PROP(MAT.kE);
-//
-//			shader.setFloat("MAT.IOR", MAT.refractionIndex);
-//			shader.setFloat("MAT.shiny", MAT.shiny);
-//
-//			shader.setMat4("view", view);
-//			shader.setMat4("proj", proj);
-//
-//			int nVertex = nElem * 3;
-//			for (MeshRenderer* ren : mesh.registered)
-//			{
-//				PF_ASSERT(ren && "Renderer is null");
-//				if (ren->Enabled()) {
-//					ActRenderer = ren;
-//					Transform &transform = ren->transform;
-//					shader.setMat4("model", transform.GetAccumulated());
-//
-//					shader.preReq([&]() {
-//						GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
-//					});
-//				}
-//			}
-//			GLCALL(glBindVertexArray(0));
-//		}
-//	}
-//	//cubemap->Render();
-//
-//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-//	SDL_GL_SwapWindow(win);
-//
+
 }
 
 void Application::RenderLoop()
 {
+	//	Camera &cam = sRenderer->GetCamera();
+	//	auto view = cam.GetView();
+	//	auto proj = cam.GetProjection();
+	//	auto lights = sRenderer->lights;
+	//	auto renderers = sRenderer->renderers;
+	//	auto cubemap = sRenderer->cubemap;
+	//
+	//	//for each (Light* light in lights)
+	//	//{
+	//	//	light->ShadowPass();
+	//	//}
+	//
+	//	for each (Mesh* m in meshes)
+	//	{
+	//		PF_ASSERT(m && "Mesh is not null");
+	//
+	//		Mesh& mesh = *m;
+	//		auto &materialOrderForRender = mesh.materialOrderForRender;
+	//
+	//		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
+	//		{
+	//			const Material &MAT = materialOrderForRender[ii].mat;
+	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
+	//			ShaderProgram &shader = *MAT.shader;
+	//			iVec3 lightsPlaced{ 0,0,0 };
+	//
+	//			ActShader = &shader;
+	//			ActSpec = &materialOrderForRender[ii];
+	//
+	//			shader.use();
+	//			GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
+	//
+	//			const std::vector<std::string > nameMapping = {
+	//				"tex_kA", /*MapType::AMBIENT*/
+	//				"tex_kD", /*MapType::DIFFUSE*/
+	//				"tex_kS", /*MapType::SPECULAR*/
+	//				"tex_bump", /*MapType::BUMP*/
+	//				"tex_cubemap", /*MapType::CUBEMAP*/
+	//				"", /*MapType::SHINY*/
+	//				"", /*MapType::DISPLACEMENT*/
+	//				"", /*MapType::DECAL*/
+	//				"", /*MapType::REFLECTION*/
+	//				"", /*MapType::DISSOLVE*/
+	//			};
+	//
+	//			// ponemos texturas
+	//			for each (auto pair in MAT.maps)
+	//			{
+	//				Texture &tex = *pair.second;
+	//				int type = static_cast<int>(tex.type);
+	//				glActiveTexture(GL_TEXTURE0 + type);
+	//				glBindTexture(GL_TEXTURE_2D, tex.id);
+	//				shader.setInt(nameMapping[type], tex.id);
+	//			}
+	//
+	//			// pasamos toda la data de las luces
+	//			if (shader.lit) {
+	//				for each (Light* light in lights)
+	//				{
+	//					light->Bind(lightsPlaced, shader);
+	//				}
+	//			}
+	//
+	//			// pasamos toda la data del material
+	//#define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
+	//
+	//			SET_SHADER_PROP(MAT.kA);
+	//			SET_SHADER_PROP(MAT.kD);
+	//			SET_SHADER_PROP(MAT.kS);
+	//			SET_SHADER_PROP(MAT.kE);
+	//
+	//			shader.setFloat("MAT.IOR", MAT.refractionIndex);
+	//			shader.setFloat("MAT.shiny", MAT.shiny);
+	//
+	//			shader.setMat4("view", view);
+	//			shader.setMat4("proj", proj);
+	//
+	//			int nVertex = nElem * 3;
+	//			for (MeshRenderer* ren : mesh.registered)
+	//			{
+	//				PF_ASSERT(ren && "Renderer is null");
+	//				if (ren->Enabled()) {
+	//					ActRenderer = ren;
+	//					Transform &transform = ren->transform;
+	//					shader.setMat4("model", transform.GetAccumulated());
+	//
+	//					shader.preReq([&]() {
+	//						GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
+	//					});
+	//				}
+	//			}
+	//			GLCALL(glBindVertexArray(0));
+	//		}
+	//	}
+	//	//cubemap->Render();
+	//
+	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
+	//	SDL_GL_SwapWindow(win);
+	//
 }
 
 Application::Application()
@@ -258,24 +259,24 @@ Application::Application()
 	/* OpenGL setup */
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	ctx = nk_sdl_init(win);
-	/* Load Fonts: if none of these are loaded a default font will be used  */
-	/* Load Cursor: if you uncomment cursor loading please hide the cursor */
-	{
-		struct nk_font_atlas *atlas;
-		nk_sdl_font_stash_begin(&atlas);
-		/*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-		nk_sdl_font_stash_end();
-		nk_style_load_all_cursors(ctx, atlas->cursors);
-		//nk_style_set_font(ctx, &roboto->handle);
-	}
+	//ctx = nk_sdl_init(win);
+	///* Load Fonts: if none of these are loaded a default font will be used  */
+	///* Load Cursor: if you uncomment cursor loading please hide the cursor */
+	//{
+	//	struct nk_font_atlas *atlas;
+	//	nk_sdl_font_stash_begin(&atlas);
+	//	/*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+	//	nk_sdl_font_stash_end();
+	//	nk_style_load_all_cursors(ctx, atlas->cursors);
+	//	//nk_style_set_font(ctx, &roboto->handle);
+	//}
 
 }
 
 
 Application::~Application()
 {
-	nk_sdl_shutdown();
+	//nk_sdl_shutdown();
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);
 	SDL_Quit();
