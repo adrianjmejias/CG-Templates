@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma region Includes
-
+#include <OBJ_Loader.h>
 #include <glad/glad.h>
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
@@ -187,7 +187,7 @@ Uint64 LAST = 0;
 double deltaTime = 0;
 
 using MousePosType = int;
-
+GLint GO_ID = 0;
 MousePosType mouse_lastPosX = 0;
 MousePosType mouse_lastPosY = 0;
 MousePosType mouse_deltaX = 0;
@@ -499,6 +499,7 @@ class ShaderProgram;
 class RenderSpec;
 class Light;
 class MeshRenderer;
+class CubeMap;
 
 class Material;
 using EmptyFunction = std::function<void()>;
@@ -508,10 +509,6 @@ using PreReqFunc = std::function<void(EmptyFunction)>;
 
 
 
-class AssetManager {
-public:
-	std::list<Asset> assets;
-};
 
 class Asset {
 public:
@@ -1140,7 +1137,6 @@ public:
 	}
 };
 
-int GO_ID = 0;
 
 class GameObject {
 	int _id;
@@ -1513,46 +1509,15 @@ public:
 
 #pragma endregion  Components
 
-class Rotator : public Component {
-protected:
-	Vec3 sentido{ 0,0,0 };
-	float rapidez = 10.f;
-	float time = 0;
-public:
-	Rotator(COMP_PARAMS) INIT_COMP("Rotator") {
-		enabled = false;
-	}
-	virtual void Update() {
-		time += deltaTime;
-		if (time > 10) {
-			sentido = glm::ballRand(1.f);
-		}
-		transform.Rotate(sentido * rapidez * static_cast<float>(deltaTime));
-	};
-	virtual void UI() {};
-	void HandleEvent(const SDL_Event &e) {
-	}
-};
 
-class Renderer : public Component {
-protected:
-	Renderer(COMP_PARAMS, std::string n) INIT_COMP(n) {}
-public:
-	virtual void Render(const std::function<void(ShaderProgram&)> &) = 0;
-};
-
-class MeshRenderer : public Renderer {
+class MeshRenderer : public Component {
 public:
 	Mesh & mesh;
-	MeshRenderer(RENDERER_PARAMS, Mesh &m);
-
-	virtual void Render(const std::function<void(ShaderProgram&)>&) override;
+	MeshRenderer(COMP_PARAMS, Mesh &m);
 	virtual void Update() {};
 	virtual void UI() {};
 	void HandleEvent(const SDL_Event &e) override;
 };
-
-
 
 class Texture {
 public:
@@ -1665,8 +1630,7 @@ public:
 	}
 };
 
-class SystemRenderer;
-class CubeMap;
+
 
 class CubeMap {
 public:
@@ -1744,7 +1708,7 @@ public:
 
 	std::list<Camera*> camera;
 
-	std::list<Renderer*> renderers;
+	std::list<MeshRenderer*> renderers;
 	std::list<Light*> lights;
 	Camera & GetCamera() {
 		return *camera.front();
@@ -1768,7 +1732,7 @@ public:
 					continue;
 				}
 
-				if (Renderer *ren = dynamic_cast<Renderer*>((*ii))) {
+				if (MeshRenderer *ren = dynamic_cast<MeshRenderer*>((*ii))) {
 					renderers.push_back(ren);
 					continue;
 				}
@@ -1818,160 +1782,20 @@ class Material;
 class ShaderProgram;
 
 //http://paulbourke.net/dataformats/mtl/
-class Material {
-public:
-#define MAP_CASE(MAP_NAME, MAP_TYPE)\
-(tofData == MAP_NAME) {																				   \
-																								   \
-	stream >> tofData;																			   \
-																								   \
-	if (material.maps.find(tofData) == material.maps.end())										   \
-	{																							   \
-		material.maps[tofData] = new Texture(pathBase + "/" + tofData, MapType::MAP_TYPE);		   \
-	}																							   \
-																								   \
-}																								   \
+class Material : objl::Material{
 
-	ShaderProgram *shader = nullptr;
-	std::map<std::string, Texture*> maps;
-
-	Vec4 kA{ 1,0,0,1 };
-	Vec4 kD{ 0,1,0,1 };
-	Vec4 kS{ 0,0,1,1 };
-	Vec4 kE{ 0,0,0,0 };
-	float shiny = 0;
-	float refractionIndex = 1;
-	float dissolve = 1;
-	Material(std::istream& file, const std::string& pathBase) {
-		Material& material = *this;
-		std::string buffer;
-		while (!file.eof() && file.good())
-		{
-			std::string tofData;
-
-			if (file.peek() == 'n') {
-				return;
-			}
-
-			std::getline(file, buffer);
-
-			std::stringstream stream(buffer);
-
-			stream >> tofData;
-			if (tofData == "Ka") {
-				stream >> material.kA;
-			}
-			else if (tofData == "Kd") {
-				stream >> material.kD;
-			}
-			else if (tofData == "Ks") {
-				stream >> material.kS;
-			}
-			else if (tofData == "Ns") {
-				stream >> material.shiny;
-			}
-			else if (tofData == "Ni") {
-				stream >> material.refractionIndex;
-			}
-			else if (tofData == "d") {
-				stream >> material.dissolve;
-			}
-			else if (tofData == "Tf") {
-			}
-			else if (tofData == "illum") {
-				int type;
-				stream >> type;
-
-				material.shader = ShaderProgram::GetDefault(static_cast<IllumModel>(type));
-			}
-			else if MAP_CASE("map_Ka", AMBIENT)
-			else if MAP_CASE("map_Kd", DIFFUSE)
-			else if MAP_CASE("map_Ks", SPECULAR)
-			else if MAP_CASE("map_Ns", SHINY)
-			else if MAP_CASE("map_d", DISSOLVE)
-			else if MAP_CASE("disp", DISPLACEMENT)
-			else if MAP_CASE("decal", DECAL)
-			else if MAP_CASE("bump", BUMP)
-		}
-	}
 };
 
-class MTLLib : public Asset {
-public:
-	std::map<std::string, Material*> materials;
 
-	MTLLib(std::string MTLName, std::string matPath) : Asset(name, path) {
-		std::ifstream file(matPath + "/" + MTLName, std::ios::in);
 
-		if (!file.is_open())
-		{
-			__debugbreak();
 
-			throw std::exception("Couldn't open material file");
-		}
-
-		std::string buffer;
-		while (!file.eof() && file.good())
-		{
-			std::string tofData;
-			std::getline(file, buffer);
-
-			std::stringstream stream(buffer);
-
-			stream >> tofData;
-
-			if (tofData == "newmtl") {
-				//std::cout << buffer << std::endl;
-				stream >> tofData;
-				materials[tofData] = new Material(file, matPath);
-			}
-		}
-	}
-};
-
-struct Face {
-};
-
-using PolygonGroup = std::vector<Face>;
-
-class RenderSpec {
-public:
-	const Material& mat;
-	size_t init;
-	size_t quantityFaces = 0;
-	unsigned int VAO;
-	unsigned int VBO_POS;
-	unsigned int VBO_NORM;
-	unsigned int VBO_TEX;
-	unsigned int VBO_BITAN;
-
-	RenderSpec(Material& m) : mat(m) {
-	}
-};
 
 //http://paulbourke.net/dataformats/obj/
-class Mesh : public Asset {
+class Mesh : public Asset, virtual public  objl::Loader {
 private:
 public:
 	std::list<MeshRenderer*> registered;
-	std::vector<Vec3> pos;
-	std::vector<iVec3> iPos;
-	std::vector<Vec3> tempNormal;
-	std::vector<Vec3> tempBiTan;
-	std::vector<Vec2> tempUV;
-	std::vector<iVec3> tempiUV;
-	std::vector<iVec3> tempiNormal;
-	unsigned int gl_BufferId;
 
-	MTLLib *mtl;
-	std::vector< RenderSpec > materialOrderForRender;
-	std::vector<SubMesh*> submesh;
-
-	SubMesh& AddSubMesh(std::string n) {
-		SubMesh * m = new SubMesh(*this, n);
-		submesh.push_back(m);
-		return *m;
-	}
 	void Register(MeshRenderer* a) {
 		registered.push_back(a);
 	}
@@ -1979,87 +1803,106 @@ public:
 	Mesh(const std::string path)
 		: Asset(path)
 	{
-		int init = 0;
+		std::ostream& file = std::cout;
+		if (LoadFile(path)) {
 
-		std::ifstream file(path, std::ios::in);
-		std::string buffer;
-		int actMat = -1;
-		if (!file.is_open())
-		{
-			PF_ERROR("Couldn't open file {0}", path);
-			__debugbreak();
-			std::cin.ignore();
-			exit(-1);
-		}
-
-		int slashPos = path.find_last_of("/");
-		std::string matPath = path.substr(0, slashPos);
-		std::string name = path.substr(slashPos + 1, path.find_last_of(".") - (slashPos + 1)).append(".mtl");
-		mtl = new MTLLib(name, matPath);
-
-		while (!file.eof() && file.good())
-		{
-			std::getline(file, buffer);
-			std::stringstream stream(buffer);
+			// Go through each loaded mesh and out its contents
+			for (int i = 0; i < LoadedMeshes.size(); i++)
 			{
-				std::string tofData;
-				stream >> tofData;
+				// Copy one of the loaded meshes to be our current mesh
+				objl::Mesh curMesh = LoadedMeshes[i];
 
-				if (tofData[0] == '#')
-				{
-					continue;
+				//// Print Mesh Name
+				//file << "Mesh " << i << ": " << curMesh.MeshName << "\n";
+
+				//// Print Vertices
+				//file << "Vertices:\n";
+
+				//// Go through each vertex and print its number,
+				////  position, normal, and texture coordinate
+				//for (int j = 0; j < curMesh.Vertices.size(); j++)
+				//{
+				//	file << "V" << j << ": " <<
+				//		"P(" << curMesh.Vertices[j].Position.X << ", " << curMesh.Vertices[j].Position.Y << ", " << curMesh.Vertices[j].Position.Z << ") " <<
+				//		"N(" << curMesh.Vertices[j].Normal.X << ", " << curMesh.Vertices[j].Normal.Y << ", " << curMesh.Vertices[j].Normal.Z << ") " <<
+				//		"TC(" << curMesh.Vertices[j].TextureCoordinate.X << ", " << curMesh.Vertices[j].TextureCoordinate.Y << ")\n";
+				//}
+
+				//// Print Indices
+				//file << "Indices:\n";
+
+				//// Go through every 3rd index and print the
+				////	triangle that these indices represent
+				//for (int j = 0; j < curMesh.Indices.size(); j += 3)
+				//{
+				//	if (j <= 0 || (j + 1) <= 0 || (j + 2) <= 0) {
+				//		__debugbreak();
+				//	}
+				//	file << "T" << j / 3 << ": " << curMesh.Indices[j] << ", " << curMesh.Indices[j + 1] << ", " << curMesh.Indices[j + 2] << "\n";
+				//}
+
+				//// Print Material
+				//file << "Material: " << curMesh.MeshMaterial.name << "\n";
+				//file << "Ambient Color: " << curMesh.MeshMaterial.Ka.X << ", " << curMesh.MeshMaterial.Ka.Y << ", " << curMesh.MeshMaterial.Ka.Z << "\n";
+				//file << "Diffuse Color: " << curMesh.MeshMaterial.Kd.X << ", " << curMesh.MeshMaterial.Kd.Y << ", " << curMesh.MeshMaterial.Kd.Z << "\n";
+				//file << "Specular Color: " << curMesh.MeshMaterial.Ks.X << ", " << curMesh.MeshMaterial.Ks.Y << ", " << curMesh.MeshMaterial.Ks.Z << "\n";
+				//file << "Specular Exponent: " << curMesh.MeshMaterial.Ns << "\n";
+				//file << "Optical Density: " << curMesh.MeshMaterial.Ni << "\n";
+				//file << "Dissolve: " << curMesh.MeshMaterial.d << "\n";
+				//file << "Illumination: " << curMesh.MeshMaterial.illum << "\n";
+				//file << "Ambient Texture Map: " << curMesh.MeshMaterial.map_Ka << "\n";
+				//file << "Diffuse Texture Map: " << curMesh.MeshMaterial.map_Kd << "\n";
+				//file << "Specular Texture Map: " << curMesh.MeshMaterial.map_Ks << "\n";
+				//file << "Alpha Texture Map: " << curMesh.MeshMaterial.map_d << "\n";
+				//file << "Bump Map: " << curMesh.MeshMaterial.map_bump << "\n";
+				
+				GLCALL(glGenVertexArrays(1, &curMesh.VAO));
+				GLCALL(glGenBuffers(1, &curMesh.VBO));
+				GLCALL(glGenBuffers(1, &curMesh.EBO));
+
+
+				GLCALL(glBindVertexArray(curMesh.VAO));
+				{	
+
+					GLCALL(glBindBuffer(GL_ARRAY_BUFFER, curMesh.VBO));
+					glBufferData(GL_ARRAY_BUFFER, curMesh.Vertices.size() * sizeof(objl::Vertex), &curMesh.Vertices[0], GL_STATIC_DRAW);
+					{
+
+						GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(Vertex, Position)));
+						GLCALL(glEnableVertexAttribArray(0));
+
+						GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(Vertex, Normal)));
+						GLCALL(glEnableVertexAttribArray(1));
+
+						GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(Vertex, BiTangent)));
+						GLCALL(glEnableVertexAttribArray(2));
+
+						GLCALL(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(Vertex, TextureCoordinate)));
+						GLCALL(glEnableVertexAttribArray(3));
+					}
+
+					GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, curMesh.EBO));
+					glBufferData(GL_ELEMENT_ARRAY_BUFFER, curMesh.Indices.size() * sizeof(unsigned int), &curMesh.Indices[0], GL_STATIC_DRAW);
+					{
+						GLCALL(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)0));
+						GLCALL(glEnableVertexAttribArray(4));
+
+					}
 				}
 
-				if (tofData == "o") {
-					stream >> tofData;
-					SubMesh &m = AddSubMesh(tofData);
-					m.Read(file, actMat);
-					init += m.nIndices;
-				}
-				else if (tofData == "s")
-				{
-					stream >> buffer;
-
-					// if
-				}
-				//else if (tofData == "mtllib") {} already reading it at the beggining
+				GLCALL(glBindVertexArray(0));
+				// Leave a space to separate from the next mesh
+				file << "\n";
 			}
-			//DEBUG_PRINT(std::cout << "--------------------------" << std::endl);
-		}
 
-		size_t numVertex = pos.size();
-		for (iVec3& idx : iPos)
+			// Close File
+			//file.close();
+		}
+		// If not output an error
+		else
 		{
-			ProcessIndex(idx, numVertex);
+			file << "Failed to Load File. May have failed to find it or it was not an .obj file.\n";
 		}
-
-		numVertex = tempNormal.size();
-		for (iVec3& idx : tempiNormal)
-		{
-			ProcessIndex(idx, numVertex);
-		}
-
-		numVertex = tempUV.size();
-		for (iVec3& idx : tempiUV)
-		{
-			ProcessIndex(idx, numVertex);
-		}
-
-		GLCreate();
-	}
-	void Render(std::function<void(ShaderProgram&)> f) {
-		//glGenBuffers(1, &gl_BufferId);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId);
-
-		//glBufferData(
-		//	GL_ARRAY_BUFFER,
-		//	STL_BYTE_SIZE(pos, Vec3) + STL_BYTE_SIZE(iPos, iVec3),
-		//	0, GL_STATIC_DRAW);
-	}
-
-	static void TraverseMesh(const Mesh& m, std::function<void(int, int, int, int)>) {
-		//m.
 	}
 
 	static void ProcessIndex(iVec3 &f, const size_t numVertex) {
@@ -2074,178 +1917,8 @@ public:
 		}
 	}
 
-	static Vec3 CalcNormalOfTriangle(const Vec3 &v0, const Vec3 &v1, const Vec3 &v2) {
-		return glm::normalize(glm::cross(v1 - v0, v2 - v0));
-	}
-
-	/*
-	Retorna una matriz de aparicion de los vertices en los triangulos
-	contribution[vertice] = {tri1, tri2, ...}
-	*/
-	static std::vector<std::vector <size_t> > GetContibution(const std::vector<iVec3>& faces, size_t begin, size_t size) {
-		std::vector<std::vector <size_t> > contribution(size, std::vector<size_t>());
-
-		for (size_t ii = 0; ii < size; ii++)
-		{
-			const int idx = begin + ii;
-			const iVec3& face = faces[idx];
-
-			contribution[ii].push_back(idx);
-		}
-
-		return contribution;
-	}
-
-	//static Vec3 CalcBitangentOfTriangle(const Vec2& uv1, const Vec2& uv2, const Vec2& uv3, const Vec3& p1, const Vec3& p2, const Vec3& p3)
-	//{
-	//	float u3u1 = (u3 - u1);
-
-	//	return ((u3u1*(p2-p1)) - ((u2-u1)*(p3-p1))) / (((v2-v1)*u3u1) - ((u2-u1)*(v3-v1)));
-	//}
-
-
-	void GLCreate() {
-		for (RenderSpec& spec : materialOrderForRender)
-		{
-			const size_t nFaces = spec.quantityFaces;
-#pragma region PreprocessVertex
-			const size_t offFaces = spec.init;
-
-			std::vector<Vec3> matPos;
-			std::vector<Vec2> matTex;
-			std::vector<Vec3> matNorm;
-
-			for (size_t ii = offFaces, iiEnd = offFaces + nFaces; ii < iiEnd; ii++)
-			{
-				if (ii < iPos.size()) {
-					const iVec3& facePos = iPos[ii];
-					matPos.push_back(pos[facePos.x]);
-					matPos.push_back(pos[facePos.y]);
-					matPos.push_back(pos[facePos.z]);
-				}
-
-				if (ii < tempiUV.size()) {
-					const iVec3& faceTex = tempiUV[ii];
-					matTex.push_back(tempUV[faceTex.x]);
-					matTex.push_back(tempUV[faceTex.y]);
-				}
-
-				if (ii < tempiNormal.size()) {
-					const iVec3& faceNorm = tempiNormal[ii];
-					matNorm.push_back(tempNormal[faceNorm.x]);
-					matNorm.push_back(tempNormal[faceNorm.y]);
-					matNorm.push_back(tempNormal[faceNorm.z]);
-				}
-			}
-#pragma endregion
-
-			// tengo el array de posiciones
-			GLCALL(glGenVertexArrays(1, &spec.VAO));
-			GLCALL(glGenBuffers(1, &spec.VBO_POS));
-			GLCALL(glGenBuffers(1, &spec.VBO_NORM));
-			GLCALL(glGenBuffers(1, &spec.VBO_TEX));
-
-			GLCALL(glBindVertexArray(spec.VAO));
-			{
-				//LOCURAAAA(0, spec.VBO_POS, matPos, Vec3);
-				//LOCURAAAA(1, spec.VBO_NORM, matNorm, Vec3);
-				//LOCURAAAA(2, spec.VBO_TEX, matTex, Vec2);
-
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_POS));
-				{
-					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matPos, Vec3), matPos.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
-					GLCALL(glEnableVertexAttribArray(0));
-				}
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_NORM));
-				{
-					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matNorm, Vec3), matNorm.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vec3), (void*)0));
-					GLCALL(glEnableVertexAttribArray(1));
-				}
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_TEX));
-				{
-					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matTex, Vec2), matTex.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0));
-					GLCALL(glEnableVertexAttribArray(2));
-				}
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-			}
-
-			GLCALL(glBindVertexArray(0));
-		}
-
-#ifdef TODO_EN_UNO
-		GLCALL(glGenBuffers(1, &gl_BufferId));
-
-		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-
-		// guardo todo el objeto y submallados en un solo buffer
-		GLCALL(glBufferData(
-			GL_ARRAY_BUFFER,
-			// Vertex Data
-			STL_BYTE_SIZE(pos, Vec3) +
-			STL_BYTE_SIZE(tempNormal, Vec3) +
-			STL_BYTE_SIZE(tempUV, Vec2) +
-
-			// Index Data
-			STL_BYTE_SIZE(iPos, Vec3) +
-			STL_BYTE_SIZE(tempiNormal, Vec3) +
-			STL_BYTE_SIZE(tempiUV, Vec3),
-			0,
-			GL_STATIC_DRAW
-		));
-		size_t off = 0; //used on macro
-		size_t vecSize; //used on macro
-
-		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-
-		PF_SUBDATA(GL_ARRAY_BUFFER, pos, Vec3);
-		PF_SUBDATA(GL_ARRAY_BUFFER, tempNormal, Vec3);
-		PF_SUBDATA(GL_ARRAY_BUFFER, tempUV, Vec2);
-
-		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_BufferId));
-
-		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, iPos, iVec3);
-		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, tempiNormal, iVec3);
-		PF_SUBDATA(GL_ELEMENT_ARRAY_BUFFER, tempiUV, iVec3);
-
-		const int InitIndex = 3;
-
-		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
-		{
-			auto& mat = materialOrderForRender[ii];
-			GLCALL(glGenVertexArrays(1, &mat.VAO));
-			GLCALL(glBindVertexArray(mat.VAO));
-
-			size_t off = 0;
-			size_t vecSize = 0;
-
-			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, gl_BufferId));
-
-			SET_ATTRIB_POINTER(0, pos, Vec3, 3, GL_FLOAT);
-			SET_ATTRIB_POINTER(1, tempNormal, Vec3, 3, GL_FLOAT);
-			SET_ATTRIB_POINTER(2, tempUV, Vec2, 2, GL_FLOAT);
-
-			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_BufferId));
-
-			SET_ATTRIB_POINTER(InitIndex, iPos, Vec3, 3, GL_UNSIGNED_INT);
-			SET_ATTRIB_POINTER(InitIndex + 1, tempiNormal, Vec3, 3, GL_UNSIGNED_INT);
-			SET_ATTRIB_POINTER(InitIndex + 2, tempiUV, Vec3, 3, GL_UNSIGNED_INT);
-
-			GLCALL(glBindVertexArray(0));
-		}
-#endif // TODO_EN_UNO
-	}
 };
 
-void MeshRenderer::Render(const std::function<void(ShaderProgram&)> &f) {
-	mesh.Render(f);
-}
 
 Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 	SubMesh& mesh = *this;
@@ -2257,10 +1930,10 @@ Mesh& SubMesh::Read(std::istream& file, int &actMat) {
 	iVec3 ft;
 	iVec3 fn;
 	std::string tofData;
-	
+
 	int size = group.submesh.size();
-	if ((size-1) > 0) { // yo ya estoy agregado entonces me saco
-		nIndices = group.submesh[size-2]->nIndices; // como soy el ultimo busco el penultimo
+	if ((size - 1) > 0) { // yo ya estoy agregado entonces me saco
+		nIndices = group.submesh[size - 2]->nIndices; // como soy el ultimo busco el penultimo
 	}
 
 
@@ -2475,7 +2148,7 @@ void MeshRenderer::HandleEvent(const SDL_Event &e) {
 	//}
 }
 
-MeshRenderer::MeshRenderer(RENDERER_PARAMS, Mesh &m) : Renderer(o, t, "MeshRenderer"), mesh(m) {
+MeshRenderer::MeshRenderer(COMP_PARAMS, Mesh &m) INIT_COMP("mESH rENDEERER"), mesh(m) {
 	mesh.Register(this);
 }
 
@@ -2487,5 +2160,4 @@ bool Component::Enabled() {
 
 ShaderProgram* ActShader;
 MeshRenderer* ActRenderer;
-RenderSpec* ActSpec;
 

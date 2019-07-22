@@ -12,4 +12,4 @@
 	url = https://github.com/nothings/stb
 [submodule "dependencies/OBJ-Loader"]
 	path = dependencies/OBJ-Loader
-	url = https://github.com/Bly7/OBJ-Loader/
+	url = https://github.com/adrianjmejias/OBJ-Loader

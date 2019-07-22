@@ -45,6 +45,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PressF\src\main.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="dependencies\glm\glm\common.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
@@ -1149,17 +1155,10 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\main.h" />
-    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PressF\src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\defaults\utility.glsl" />
-    <None Include="assets\shaders\defaults\SHADOW_MAPPING.vert" />
-    <None Include="assets\shaders\defaults\SHADOW_MAPPING.frag" />
-    <None Include="assets\shaders\defaults\TRANSPARENT.vert" />
-    <None Include="assets\shaders\defaults\TRANSPARENT.frag" />
+    <ClCompile Include="PressF\src\main.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -145,7 +145,6 @@ void InitScene() {
 	}
 
 	GameObject *parent(new GameObject("CAJA FATHEEER"));
-	parent->AddComponent<Rotator>();
 	objects.push_back(parent);
 
 	for (int ii = 0; ii < 1; ii++)

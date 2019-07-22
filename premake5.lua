@@ -15,6 +15,7 @@ IncludeDir["Glad"] = "dependencies/Glad/include"
 IncludeDir["nuklear"] = "dependencies/nuklear"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
+IncludeDir["obj"] = "dependencies/OBJ-Loader/Source"
 
 
 group "Dependencies"
@@ -49,6 +50,7 @@ project "PressF"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.SDL}",
+		"%{IncludeDir.obj}",
 		"%{IncludeDir.stb}"
    }
 
