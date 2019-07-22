@@ -75,6 +75,15 @@ void Init() {
 ShaderProgram *basic;
 
 void InitShaders() {
+//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+
+
 	ShaderProgram* shader;
 
 #define INIT_SHADER(TT, mvp, Lit, Shadows, ViewDependant, func)										\
@@ -112,6 +121,12 @@ void InitShaders() {
 			draw();
 		}
 	);
+	INIT_SHADER(TRANSPARENCY, true, false, false, true,
+		HEADER_LAMBDA
+		{
+			draw();
+		}
+	);
 }
 
 void InitScene() {
@@ -119,6 +134,7 @@ void InitScene() {
 	Camera& cam = go1->AddComponent<Camera>();
 	objects.push_back(go1);
 
+	go1->transform.SetPosition(-27, 28, -12);
 	GameObject *go2(new GameObject("LUZ"));
 	Light& light1 = go2->AddComponent<Light>(LightType::DIRECTIONAL);
 	objects.push_back(go2);
@@ -132,7 +148,7 @@ void InitScene() {
 	parent->AddComponent<Rotator>();
 	objects.push_back(parent);
 
-	for (int ii = 0; ii < 10; ii++)
+	for (int ii = 0; ii < 1; ii++)
 	{
 		GameObject *go(new GameObject("Modelo"));
 		MeshRenderer& m = go->AddComponent<MeshRenderer>(*cajita);
@@ -219,11 +235,7 @@ int main(void)
 	InitShaders();
 	InitScene();
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
 	bool capture = false;
 
 	if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(capture)) == -1) {
@@ -308,7 +320,6 @@ int main(void)
 		}
 
 		//overview(ctx);
-	end:
 
 
 
@@ -325,6 +336,11 @@ int main(void)
 		}
 		nk_end(ctx);
 #pragma endregion
+
+
+
+		//std::sort(begin(callOrder), end(callorder), [])
+
 
 		Camera &cam = sRenderer->GetCamera();
 		auto view = cam.GetView();

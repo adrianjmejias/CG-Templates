@@ -290,6 +290,7 @@ enum class IllumModel {
 	COOK,
 	BLINN_PHONG,
 	DISPLACEMENT,
+	NO_SHADER,
 };
 
 enum class ClampType {
@@ -596,8 +597,15 @@ public:
 	static ShaderProgram* GetDefault(IllumModel model) {
 		ShaderProgram *a = shaders[static_cast<int>(model)];
 
-		if (a)
+		if (a) {
 			return a;
+		}
+
+		else {
+			PF_WARN("DEFUALT SHADER USED");
+			return shaders[static_cast<int>(IllumModel::COOK)];
+		}
+
 
 		__debugbreak();
 		throw std::exception("NOT RECOGNIZED SHADER");
@@ -1544,6 +1552,8 @@ public:
 	void HandleEvent(const SDL_Event &e) override;
 };
 
+
+
 class Texture {
 public:
 	unsigned int id;
@@ -2144,7 +2154,7 @@ public:
 				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_POS));
 				{
 					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matPos, Vec3), matPos.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(0, Vec3::length(), GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
+					GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
 					GLCALL(glEnableVertexAttribArray(0));
 				}
 				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -2152,15 +2162,15 @@ public:
 				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_NORM));
 				{
 					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matNorm, Vec3), matNorm.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(1, Vec3::length(), GL_FLOAT, GL_FALSE, sizeof(Vec3), (void*)0));
+					GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, sizeof(Vec3), (void*)0));
 					GLCALL(glEnableVertexAttribArray(1));
 				}
 				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
-				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_NORM));
+				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, spec.VBO_TEX));
 				{
 					GLCALL(glBufferData(GL_ARRAY_BUFFER, STL_BYTE_SIZE(matTex, Vec2), matTex.data(), GL_STATIC_DRAW));
-					GLCALL(glVertexAttribPointer(2, Vec2::length(), GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0));
+					GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2), (void*)0));
 					GLCALL(glEnableVertexAttribArray(2));
 				}
 				GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));

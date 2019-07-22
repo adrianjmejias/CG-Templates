@@ -1,6 +1,4 @@
 #version 330 core
-
-
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 #define v4(a) vec4(a,1)
 #define color vec4
@@ -8,56 +6,38 @@
 #define DIRECTIONAL 1
 #define SPOT 2
 
+layout (location = 0) in vec4 pos;
+layout (location = 1) in vec4 norm;
+layout (location = 2) in vec4 uv;
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
-
-uniform struct Material
-{
-	color kD;
-	color kA;
-	color kS;
-	color kE;
-	float IOR;
-	float shiny;
-} MAT;
-
-uniform struct Light
-{
-	int type;
-	vec3 position;
-	vec3 attenuation;
-	float innerAngle;
-	float outerAngle;
-	vec3 direction;
-	bool isOn;
-	color kD;
-	color kA;
-	color kS;
-} LIGHTS[1];
 
 uniform sampler2D tex_kD;
 uniform sampler2D tex_kS;
 uniform sampler2D tex_kA;
 uniform sampler2D tex_bump;
 
-
-in struct {
+out struct Obj{
 	vec4 m_pos;
 	vec4 w_pos;
 	vec4 norm;
 	vec4 uv;
 } OBJ;
 
-in vec3 n;
 
-
-out color fColor;
-
+out vec3 n;
 
 void main()
 {
-	vec3 normal = normalize(OBJ.norm.xyz);
+	OBJ.m_pos = model * pos;
+	OBJ.norm = norm;
+	OBJ.uv = uv;
 
-    fColor = v4(normal);
+
+	OBJ.w_pos = proj*(view*(OBJ.m_pos));
+    gl_Position = OBJ.w_pos;
 }
+
+

@@ -36,10 +36,6 @@ uniform struct Light
 	color kS;
 } LIGHTS[1];
 
-uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
 
 
 in struct {
@@ -55,9 +51,9 @@ in vec3 n;
 out color fColor;
 
 
+
+
 void main()
 {
-	vec3 normal = normalize(OBJ.norm.xyz);
-
-    fColor = v4(normal);
+    fColor = vec4(1,0,0,1);
 }
