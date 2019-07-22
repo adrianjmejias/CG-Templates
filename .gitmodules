@@ -13,3 +13,6 @@
 [submodule "dependencies/OBJ-Loader"]
 	path = dependencies/OBJ-Loader
 	url = https://github.com/adrianjmejias/OBJ-Loader
+[submodule "dependencies/tinyobjloader"]
+	path = dependencies/tinyobjloader
+	url = https://github.com/syoyo/tinyobjloader

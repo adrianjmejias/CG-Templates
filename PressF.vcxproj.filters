@@ -7,21 +7,6 @@
     <Filter Include="PressF\src">
       <UniqueIdentifier>{2F851734-1B3D-5981-8444-32DD701BF471}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PressF\src\ecs">
-      <UniqueIdentifier>{5905C0D1-45D3-B3D7-2E67-24FE1AD48F3C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PressF\src\ecs\assets">
-      <UniqueIdentifier>{3BC262D2-A72E-1ECD-7022-B62ADC4D4035}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PressF\src\ecs\components">
-      <UniqueIdentifier>{EE64ADDD-5A27-E167-A3D7-6FF40FD9B945}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PressF\src\ecs\framework">
-      <UniqueIdentifier>{36E5D5BB-220A-253C-4B55-0ACC37D9235A}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PressF\src\ecs\loaders">
-      <UniqueIdentifier>{727EE062-5E78-09B5-47E5-9FC5337E6F21}</UniqueIdentifier>
-    </Filter>
     <Filter Include="dependencies">
       <UniqueIdentifier>{8CAD9F58-7810-2FFD-2196-67B30DD8FA7F}</UniqueIdentifier>
     </Filter>
@@ -45,12 +30,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PressF\src\main.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
     <ClInclude Include="dependencies\glm\glm\common.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
@@ -1155,10 +1134,67 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\Application.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\GameObject.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Logger.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\main.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Model.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\OBJ_Loader.h" />
+    <ClInclude Include="PressF\src\Shader.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\ShaderProgram.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\types.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\UserInterface.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h" />
+    <ClInclude Include="PressF\src\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="PressF\src\Application.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\GameObject.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Logger.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\src\main.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\Model.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Shader.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\ShaderProgram.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\UserInterface.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
+    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="PressF\src\Window.cpp" />
   </ItemGroup>
 </Project>

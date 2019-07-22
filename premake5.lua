@@ -15,7 +15,7 @@ IncludeDir["Glad"] = "dependencies/Glad/include"
 IncludeDir["nuklear"] = "dependencies/nuklear"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
-IncludeDir["obj"] = "dependencies/OBJ-Loader/Source"
+IncludeDir["obj"] = "dependencies/OBJ-Loader"
 
 
 group "Dependencies"
