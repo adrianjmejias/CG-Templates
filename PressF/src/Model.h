@@ -1,5 +1,8 @@
 #pragma once
+#include "types.h"
 #include "OBJ_Loader.h"
+
+
 class Model 
 	: public objl::Loader
 {
@@ -8,3 +11,6 @@ public:
 	~Model();
 };
 
+//void GLModelCreate(Model &model) {
+//
+//}

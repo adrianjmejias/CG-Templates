@@ -1173,6 +1173,7 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1205,5 +1206,6 @@
     <ClCompile Include="PressF\src\main.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
 </Project>

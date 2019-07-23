@@ -12,3 +12,10 @@ public:
 #define PF_WARN(...)      spdlog::warn(__VA_ARGS__)
 #define PF_CRITICAL(...)  spdlog::critical(__VA_ARGS__)
 
+#define PF_ASSERT(x) if(!(x)){\
+	PF_ERROR("PF_ASSERT FAILED : {0}" , #x);\
+	PF_ERROR("LINE : {0}", __LINE__);\
+	PF_ERROR("FILE : {0}", __FILE__);\
+		__debugbreak();\
+	}\
+

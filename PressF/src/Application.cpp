@@ -7,19 +7,19 @@
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 
-void GLModelCreate(Model &model) {
 
-}
 
 
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::string>& shaderPaths)
 {
+
+	spdlog::set_pattern("[%M:%S %z] [%n] [%^---%L---%$] %v"); 
 	for each (std::string objPath in objPaths)
 	{
 		Model model;
 
 		if (!model.LoadFile(objPath)) {
-			//PF_ERROR("Failed to load model {0}", objPath);
+			PF_ERROR("Failed to load model {0}", objPath);
 			__debugbreak();
 		}
 
@@ -31,7 +31,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 		Model model;
 
 		if (!model.LoadFile(shaderPath)) {
-			//PF_ERROR("Failed to load model {0}", objPath);
+			PF_ERROR("Failed to load shader {0}", shaderPath);
 			__debugbreak();
 		}
 
@@ -39,13 +39,12 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	}
 
 
-	std::cin.ignore();
 }
 
 void Application::MainLoop()
 {
 	while (running) {
-		std::cout << "looping";
+		//std::cout << "looping";
 		SDL_GetWindowSize(win, &win_width, &win_heigth);
 		glViewport(0, 0, win_width, win_heigth);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
