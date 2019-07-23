@@ -16,7 +16,6 @@
 #ifndef NK_SDL_GL3_H_
 #define NK_SDL_GL3_H_
 
-
 NK_API struct nk_context*   nk_sdl_init(SDL_Window *win);
 NK_API void                 nk_sdl_font_stash_begin(struct nk_font_atlas **atlas);
 NK_API void                 nk_sdl_font_stash_end(void);
@@ -245,7 +244,7 @@ nk_sdl_render(enum nk_anti_aliasing AA, int max_vertex_buffer, int max_element_b
 			{ NK_VERTEX_LAYOUT_END }
 			};
 
-//#define NK_MEMSET(...) memset(__VA_ARGS__)
+			//#define NK_MEMSET(...) memset(__VA_ARGS__)
 
 			NK_MEMSET(&config, 0, sizeof(config));
 			config.vertex_layout = vertex_layout;
@@ -340,7 +339,6 @@ nk_sdl_font_stash_end(void)
 	nk_font_atlas_end(&sdl.atlas, nk_handle_id((int)sdl.ogl.font_tex), &sdl.ogl.null);
 	if (sdl.atlas.default_font)
 		nk_style_set_font(&sdl.ctx, &sdl.atlas.default_font->handle);
-
 }
 
 NK_API int

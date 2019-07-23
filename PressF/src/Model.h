@@ -3,7 +3,14 @@
 #include "OBJ_Loader.h"
 
 
-class Model 
+
+class Material 
+	: public objl::Material 
+{
+	unsigned int smap_kD;
+};
+
+class Model
 	: public objl::Loader
 {
 public:
@@ -11,6 +18,14 @@ public:
 	~Model();
 };
 
-//void GLModelCreate(Model &model) {
-//
-//}
+class Mesh : 
+	public objl::Mesh
+{
+public:
+	Material mat;
+	unsigned int VAO;
+	unsigned int nVertex;
+	unsigned int EBO;
+	unsigned int VBO;
+};
+

@@ -1174,6 +1174,7 @@
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Light.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1207,5 +1208,6 @@
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Light.cpp" />
   </ItemGroup>
 </Project>

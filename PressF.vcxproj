@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Light.h" />
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
     <ClInclude Include="PressF\src\Logger.h" />
@@ -511,6 +512,7 @@
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
     <ClCompile Include="PressF\src\GameObject.cpp" />
     <ClCompile Include="PressF\src\Logger.cpp" />

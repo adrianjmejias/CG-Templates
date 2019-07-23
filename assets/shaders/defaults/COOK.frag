@@ -8,6 +8,7 @@
 #define DIRECTIONAL 1
 #define SPOT 2
 
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
@@ -58,6 +59,5 @@ out color fColor;
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-
     fColor = v4(normal);
 }

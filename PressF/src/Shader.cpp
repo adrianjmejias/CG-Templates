@@ -1,7 +1,5 @@
 #include "Shader.h"
 
-
-
 Shader::Shader()
 {
 }
@@ -15,7 +13,7 @@ void Shader::ReCompile() {
 	SetFromFile(path, type);
 }
 
- Shader* Shader::FromPath(const std::string path, unsigned int type) {
+Shader* Shader::FromPath(const std::string path, unsigned int type) {
 	auto s = new Shader();
 	s->SetFromFile(path, type);
 	return s;
@@ -59,7 +57,7 @@ void Shader::SetFromString(const std::string salsa, unsigned int t) {
 
 		PF_ERROR("Failed to compile shader {0}", Shader::GetShaderName(type));
 		PF_ERROR(message);
-		__debugbreak();
+		//__debugbreak();
 	}
 	//std::cout << "shader compiled: " << name << std::endl;
 }

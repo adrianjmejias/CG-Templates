@@ -19,3 +19,7 @@ public:
 		__debugbreak();\
 	}\
 
+
+
+
+// Macros cant be at eof

@@ -1,7 +1,6 @@
 // OBJ_Loader.h
 //
 
-
 #ifndef LZZ_OBJ_Loader_h
 #define LZZ_OBJ_Loader_h
 
@@ -20,198 +19,197 @@
 // Math.h - STD math Library
 #include <math.h>
 
-
 #define LZZ_INLINE inline
 namespace objl
 {
-  struct Vector2
-  {
-    Vector2 ();
-    Vector2 (float X_, float Y_);
-    bool operator == (Vector2 const & other) const;
-    bool operator != (Vector2 const & other) const;
-    Vector2 operator + (Vector2 const & right) const;
-    Vector2 operator - (Vector2 const & right) const;
-    Vector2 operator * (float const & other) const;
-    float X;
-    float Y;
-  };
+	struct Vector2
+	{
+		Vector2();
+		Vector2(float X_, float Y_);
+		bool operator == (Vector2 const & other) const;
+		bool operator != (Vector2 const & other) const;
+		Vector2 operator + (Vector2 const & right) const;
+		Vector2 operator - (Vector2 const & right) const;
+		Vector2 operator * (float const & other) const;
+		float X;
+		float Y;
+	};
 }
 namespace objl
 {
-  struct Vector3
-  {
-    Vector3 ();
-    Vector3 (float X_, float Y_, float Z_);
-    bool operator == (Vector3 const & other) const;
-    bool operator != (Vector3 const & other) const;
-    Vector3 operator + (Vector3 const & right) const;
-    Vector3 operator - (Vector3 const & right) const;
-    Vector3 operator * (float const & other) const;
-    Vector3 operator / (float const & other) const;
-    float X;
-    float Y;
-    float Z;
-  };
+	struct Vector3
+	{
+		Vector3();
+		Vector3(float X_, float Y_, float Z_);
+		bool operator == (Vector3 const & other) const;
+		bool operator != (Vector3 const & other) const;
+		Vector3 operator + (Vector3 const & right) const;
+		Vector3 operator - (Vector3 const & right) const;
+		Vector3 operator * (float const & other) const;
+		Vector3 operator / (float const & other) const;
+		float X;
+		float Y;
+		float Z;
+	};
 }
 namespace objl
 {
-  struct Vertex
-  {
-    Vector3 Position;
-    Vector3 Normal;
-    Vector2 TextureCoordinate;
-  };
+	struct Vertex
+	{
+		Vector3 Position;
+		Vector3 Normal;
+		Vector2 TextureCoordinate;
+	};
 }
 namespace objl
 {
-  struct Material
-  {
-    Material ();
-    std::string name;
-    Vector3 Ka;
-    Vector3 Kd;
-    Vector3 Ks;
-    float Ns;
-    float Ni;
-    float d;
-    int illum;
-    std::string map_Ka;
-    std::string map_Kd;
-    std::string map_Ks;
-    std::string map_Ns;
-    std::string map_d;
-    std::string map_bump;
-  };
+	struct Material
+	{
+		Material();
+		std::string name;
+		Vector3 Ka;
+		Vector3 Kd;
+		Vector3 Ks;
+		float Ns;
+		float Ni;
+		float d;
+		int illum;
+		std::string map_Ka;
+		std::string map_Kd;
+		std::string map_Ks;
+		std::string map_Ns;
+		std::string map_d;
+		std::string map_bump;
+	};
 }
 namespace objl
 {
-  struct Mesh
-  {
-    Mesh ();
-    Mesh (std::vector <Vertex> & _Vertices, std::vector <unsigned int> & _Indices);
-    std::string MeshName;
-    std::vector <Vertex> Vertices;
-    std::vector <unsigned int> Indices;
-    Material MeshMaterial;
-  };
+	struct Mesh
+	{
+		Mesh();
+		Mesh(std::vector <Vertex> & _Vertices, std::vector <unsigned int> & _Indices);
+		std::string MeshName;
+		std::vector <Vertex> Vertices;
+		std::vector <unsigned int> Indices;
+		Material MeshMaterial;
+	};
 }
 namespace objl
 {
-  namespace math
-  {
-    Vector3 CrossV3 (Vector3 const a, Vector3 const b);
-  }
+	namespace math
+	{
+		Vector3 CrossV3(Vector3 const a, Vector3 const b);
+	}
 }
 namespace objl
 {
-  namespace math
-  {
-    float MagnitudeV3 (Vector3 const in);
-  }
+	namespace math
+	{
+		float MagnitudeV3(Vector3 const in);
+	}
 }
 namespace objl
 {
-  namespace math
-  {
-    float DotV3 (Vector3 const a, Vector3 const b);
-  }
+	namespace math
+	{
+		float DotV3(Vector3 const a, Vector3 const b);
+	}
 }
 namespace objl
 {
-  namespace math
-  {
-    float AngleBetweenV3 (Vector3 const a, Vector3 const b);
-  }
+	namespace math
+	{
+		float AngleBetweenV3(Vector3 const a, Vector3 const b);
+	}
 }
 namespace objl
 {
-  namespace math
-  {
-    Vector3 ProjV3 (Vector3 const a, Vector3 const b);
-  }
+	namespace math
+	{
+		Vector3 ProjV3(Vector3 const a, Vector3 const b);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    Vector3 operator * (float const & left, Vector3 const & right);
-  }
+	namespace algorithm
+	{
+		Vector3 operator * (float const & left, Vector3 const & right);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    bool SameSide (Vector3 p1, Vector3 p2, Vector3 a, Vector3 b);
-  }
+	namespace algorithm
+	{
+		bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    Vector3 GenTriNormal (Vector3 t1, Vector3 t2, Vector3 t3);
-  }
+	namespace algorithm
+	{
+		Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    bool inTriangle (Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3);
-  }
+	namespace algorithm
+	{
+		bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    void split (std::string const & in, std::vector <std::string> & out, std::string token);
-  }
+	namespace algorithm
+	{
+		void split(std::string const & in, std::vector <std::string> & out, std::string token);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    std::string tail (std::string const & in);
-  }
+	namespace algorithm
+	{
+		std::string tail(std::string const & in);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    std::string firstToken (std::string const & in);
-  }
+	namespace algorithm
+	{
+		std::string firstToken(std::string const & in);
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    template <typename T>
-    T const & getElement (std::vector <T> const & elements, std::string & index);
-  }
+	namespace algorithm
+	{
+		template <typename T>
+		T const & getElement(std::vector <T> const & elements, std::string & index);
+	}
 }
 namespace objl
 {
-  class Loader
-  {
-  public:
-    Loader ();
-    ~ Loader ();
-    bool LoadFile (std::string Path);
-    std::vector <Mesh> LoadedMeshes;
-    std::vector <Vertex> LoadedVertices;
-    std::vector <unsigned int> LoadedIndices;
-    std::vector <Material> LoadedMaterials;
-  private:
-    void GenVerticesFromRawOBJ (std::vector <Vertex> & oVerts, std::vector <Vector3> const & iPositions, std::vector <Vector2> const & iTCoords, std::vector <Vector3> const & iNormals, std::string icurline);
-    void VertexTriangluation (std::vector <unsigned int> & oIndices, std::vector <Vertex> const & iVerts);
-    bool LoadMaterials (std::string path);
-  };
+	class Loader
+	{
+	public:
+		Loader();
+		~Loader();
+		bool LoadFile(std::string Path);
+		std::vector <Mesh> LoadedMeshes;
+		std::vector <Vertex> LoadedVertices;
+		std::vector <unsigned int> LoadedIndices;
+		std::vector <Material> LoadedMaterials;
+	private:
+		void GenVerticesFromRawOBJ(std::vector <Vertex> & oVerts, std::vector <Vector3> const & iPositions, std::vector <Vector2> const & iTCoords, std::vector <Vector3> const & iNormals, std::string icurline);
+		void VertexTriangluation(std::vector <unsigned int> & oIndices, std::vector <Vertex> const & iVerts);
+		bool LoadMaterials(std::string path);
+	};
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    LZZ_INLINE void split (std::string const & in, std::vector <std::string> & out, std::string token)
-                {
+	namespace algorithm
+	{
+		LZZ_INLINE void split(std::string const & in, std::vector <std::string> & out, std::string token)
+		{
 			out.clear();
 
 			std::string temp;
@@ -245,14 +243,14 @@ namespace objl
 				}
 			}
 		}
-  }
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    LZZ_INLINE std::string tail (std::string const & in)
-                {
+	namespace algorithm
+	{
+		LZZ_INLINE std::string tail(std::string const & in)
+		{
 			size_t token_start = in.find_first_not_of(" \t");
 			size_t space_start = in.find_first_of(" \t", token_start);
 			size_t tail_start = in.find_first_not_of(" \t", space_start);
@@ -267,14 +265,14 @@ namespace objl
 			}
 			return "";
 		}
-  }
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    LZZ_INLINE std::string firstToken (std::string const & in)
-                {
+	namespace algorithm
+	{
+		LZZ_INLINE std::string firstToken(std::string const & in)
+		{
 			if (!in.empty())
 			{
 				size_t token_start = in.find_first_not_of(" \t");
@@ -290,15 +288,15 @@ namespace objl
 			}
 			return "";
 		}
-  }
+	}
 }
 namespace objl
 {
-  namespace algorithm
-  {
-    template <typename T>
-    LZZ_INLINE T const & getElement (std::vector <T> const & elements, std::string & index)
-                {
+	namespace algorithm
+	{
+		template <typename T>
+		LZZ_INLINE T const & getElement(std::vector <T> const & elements, std::string & index)
+		{
 			int idx = std::stoi(index);
 			if (idx < 0)
 				idx = int(elements.size()) + idx;
@@ -306,7 +304,7 @@ namespace objl
 				idx--;
 			return elements[idx];
 		}
-  }
+	}
 }
 #undef LZZ_INLINE
 #endif

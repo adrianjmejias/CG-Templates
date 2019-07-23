@@ -14,11 +14,9 @@
 
 //#include <microui.h>
 
-
 class UserInterface
 {
 public:
 	UserInterface();
 	~UserInterface();
 };
-

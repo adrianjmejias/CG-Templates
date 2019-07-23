@@ -1,7 +1,5 @@
 #include "ShaderProgram.h"
 
-
-
 ShaderProgram::ShaderProgram(std::vector<Shader* > li)
 	: std::vector<Shader* >(std::move(li))
 {
@@ -25,11 +23,9 @@ ShaderProgram* ShaderProgram::GetDefault(IllumModel model) {
 	//	return ShaderProgram::shaders[static_cast<int>(IllumModel::COOK)];
 	//}
 
-
 	__debugbreak();
 	throw std::exception("NOT RECOGNIZED SHADER");
 }
-
 
 void ShaderProgram::Compile() {
 	GLCALL(id = glCreateProgram());
@@ -101,16 +97,10 @@ void ShaderProgram::ReCompile() {
 	Compile();
 }
 
-unsigned int ShaderProgram::Get() {
-	return id;
-}
-
 void ShaderProgram::Use() const
 {
 	GLCALL(glUseProgram(id));
 }
-
-
 
 void ShaderProgram::SetUniform(const std::string &name, bool value) const
 {

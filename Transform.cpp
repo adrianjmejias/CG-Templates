@@ -2,10 +2,6 @@
 
 
 
-Transform::Transform()
-{
-}
-
 inline Vec3 Transform::GetRotation() { return rotation; }
 
 inline Vec3 Transform::GetScale() { return scale; }
@@ -141,7 +137,7 @@ inline Transform * Transform::SetParent(Transform * other) {
 	}
 
 	if (other->parent == this) {
-		throw std::exception("CICLO INFINITO POR GAFO EN LA JERARQU�A\n");
+		throw std::exception("CICLO INFINITO POR GAFO EN LA JERARQA\n");
 	}
 
 	//ponerme a mi de padre

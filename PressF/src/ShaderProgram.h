@@ -33,20 +33,17 @@ class ShaderProgram :
 	protected std::vector< Shader *>
 {
 public:
-	static ShaderProgram* shaders[30];
 	unsigned int id;
 	bool lit = true;
 	bool viewDependant = true;
 	bool MVP = true;
 	bool shadows = true;
-	
-	static ShaderProgram* GetDefault(IllumModel model);
 
 	ShaderProgram(std::vector<Shader* > li);
 
 	~ShaderProgram();
 
-	unsigned int Get();
+	static ShaderProgram* GetDefault(IllumModel model);
 	void ReCompile();
 	void AddShader(Shader* shader);
 	void Compile();
@@ -64,12 +61,11 @@ public:
 	void  SetUniform(const std::string &name, const glm::mat2 &mat) const;
 	void  SetUniform(const std::string &name, const glm::mat3 &mat) const;
 	void  SetUniform(const std::string &name, const glm::mat4 &mat) const;
-
 };
-
 
 // forcing shader variables to be the same as how access them in code
 #define SET_UNIFORM(SHADER, UNIFORM_VARIABLE)\
 	SHADER.SetUniform(#UNIFORM_VARIABLE, UNIFORM_VARIABLE)\
 
 
+// Macros cant be at eof

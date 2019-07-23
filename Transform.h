@@ -1,7 +1,8 @@
-﻿#pragma once
+﻿//#pragma once
 #include "types.h"
 
 
+class GameObject;
 
 enum class Dirty {
 	None,
@@ -11,7 +12,11 @@ enum class Dirty {
 
 class Transform {
 public:
-	Transform();
+
+	Transform(GameObject& go) : gameObject(go)
+	{
+	}
+	GameObject &gameObject;
 	Transform::~Transform();
 
 	Transform *parent = nullptr;

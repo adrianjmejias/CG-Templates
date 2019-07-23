@@ -1,19 +1,91 @@
 #include "Application.h"
 
-#define WINDOW_WIDTH 1200
-#define WINDOW_HEIGHT 800
-
-#define MAX_VERTEX_MEMORY 512 * 1024
-#define MAX_ELEMENT_MEMORY 128 * 1024
 
 
+Mesh Application::GLCreate(objl::Mesh &model) {
+	Mesh curMesh;
+
+	//nasty way of copying attributes
+	*dynamic_cast<objl::Material*>(&curMesh.mat) = model.MeshMaterial;
+	curMesh.nVertex = model.Vertices.size();
+
+
+	GLCALL(glGenVertexArrays(1, &curMesh.VAO));
+	GLCALL(glGenBuffers(1, &curMesh.VBO));
+	GLCALL(glGenBuffers(1, &curMesh.EBO));
+
+	GLCALL(glBindVertexArray(curMesh.VAO));
+	{
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, curMesh.VBO));
+		glBufferData(GL_ARRAY_BUFFER, model.Vertices.size() * sizeof(objl::Vertex), &model.Vertices[0], GL_STATIC_DRAW);
+		{
+			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, Position)));
+			GLCALL(glEnableVertexAttribArray(0));
+
+			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, Normal)));
+			GLCALL(glEnableVertexAttribArray(1));
+
+			GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, TextureCoordinate)));
+			GLCALL(glEnableVertexAttribArray(2));
+		}
+
+		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, curMesh.EBO));
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.Indices.size() * sizeof(unsigned int), &model.Indices[0], GL_STATIC_DRAW);
+		{
+			GLCALL(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(unsigned int) * 9, (void*)0));
+			GLCALL(glEnableVertexAttribArray(4));
+		}
+	}
+
+	GLCALL(glBindVertexArray(0));
 
 
 
-void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::string>& shaderPaths)
+
+	return curMesh;
+}
+
+void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
+	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
+	
+	const std::string baseShaderFolder = "assets/shaders/defaults/";
+	for(int ii= 0; ii < shaderPaths.size(); ii++)
+	{
+		auto tupleName = shaderPaths[ii];
 
-	spdlog::set_pattern("[%M:%S %z] [%n] [%^---%L---%$] %v"); 
+		auto vertName = std::get<0>(tupleName);
+		auto fragName = std::get<1>(tupleName);
+
+		Shader *vert = nullptr;
+		Shader *frag = nullptr;
+
+
+		try
+		{
+			vert = shadersLoaded.at(vertName);
+		}
+		catch (const std::exception&)
+		{
+			vert = Shader::FromPath(baseShaderFolder + vertName, GL_VERTEX_SHADER);
+			shadersLoaded[vertName] = vert;
+		}
+
+
+		try
+		{
+			frag = shadersLoaded.at(fragName);
+		}
+		catch (const std::exception&)
+		{
+			frag = Shader::FromPath(baseShaderFolder + fragName, GL_FRAGMENT_SHADER);
+			shadersLoaded[fragName] = frag;
+		}
+
+
+		shaders[ii] = new ShaderProgram({vert, frag});
+	}
+
 	for each (std::string objPath in objPaths)
 	{
 		Model model;
@@ -23,22 +95,12 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 			__debugbreak();
 		}
 
-		models.push_back(model);
-	}
-
-	for each (std::string shaderPath in shaderPaths)
-	{
-		Model model;
-
-		if (!model.LoadFile(shaderPath)) {
-			PF_ERROR("Failed to load shader {0}", shaderPath);
-			__debugbreak();
+		for each (objl::Mesh mesh in model.LoadedMeshes)
+		{
+			meshes.push_back(GLCreate(mesh));
 		}
-
-		models.push_back(model);
 	}
-
-
+																				
 }
 
 void Application::MainLoop()
@@ -60,6 +122,8 @@ void Application::MainLoop()
 
 		//std::sort(begin(callOrder), end(callorder), [])
 
+		RenderLoop();
+
 		SDL_GL_SwapWindow(win);
 
 		NOW = SDL_GetPerformanceCounter();
@@ -73,12 +137,9 @@ void Application::MainLoop()
 
 void Application::HandleEvents()
 {
-
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
-
-
 		if (e.type == SDL_QUIT) {
 			running = false;
 			break;
@@ -121,14 +182,12 @@ void Application::HandleEvents()
 				break;
 			}
 		}
-
 	}
 	//nk_input_end(ctx);
 }
 
 void Application::UILoop()
 {
-
 	////overview(ctx);
 	//if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
 	//	NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
@@ -144,9 +203,6 @@ void Application::UILoop()
 
 void Application::UpdateLoop()
 {
-
-
-
 	/* process frame */
 	//process_frame(ctx);
 
@@ -178,88 +234,93 @@ void Application::RenderLoop()
 	//	//	light->ShadowPass();
 	//	//}
 	//
-	//	for each (Mesh* m in meshes)
-	//	{
-	//		PF_ASSERT(m && "Mesh is not null");
-	//
-	//		Mesh& mesh = *m;
-	//		auto &materialOrderForRender = mesh.materialOrderForRender;
-	//
-	//		for (size_t ii = 0; ii < materialOrderForRender.size(); ii++)
-	//		{
-	//			const Material &MAT = materialOrderForRender[ii].mat;
-	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
-	//			ShaderProgram &shader = *MAT.shader;
-	//			iVec3 lightsPlaced{ 0,0,0 };
-	//
-	//			ActShader = &shader;
-	//			ActSpec = &materialOrderForRender[ii];
-	//
-	//			shader.use();
-	//			GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
-	//
-	//			const std::vector<std::string > nameMapping = {
-	//				"tex_kA", /*MapType::AMBIENT*/
-	//				"tex_kD", /*MapType::DIFFUSE*/
-	//				"tex_kS", /*MapType::SPECULAR*/
-	//				"tex_bump", /*MapType::BUMP*/
-	//				"tex_cubemap", /*MapType::CUBEMAP*/
-	//				"", /*MapType::SHINY*/
-	//				"", /*MapType::DISPLACEMENT*/
-	//				"", /*MapType::DECAL*/
-	//				"", /*MapType::REFLECTION*/
-	//				"", /*MapType::DISSOLVE*/
-	//			};
-	//
-	//			// ponemos texturas
-	//			for each (auto pair in MAT.maps)
-	//			{
-	//				Texture &tex = *pair.second;
-	//				int type = static_cast<int>(tex.type);
-	//				glActiveTexture(GL_TEXTURE0 + type);
-	//				glBindTexture(GL_TEXTURE_2D, tex.id);
-	//				shader.setInt(nameMapping[type], tex.id);
-	//			}
-	//
-	//			// pasamos toda la data de las luces
-	//			if (shader.lit) {
-	//				for each (Light* light in lights)
-	//				{
-	//					light->Bind(lightsPlaced, shader);
-	//				}
-	//			}
-	//
-	//			// pasamos toda la data del material
-	//#define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
-	//
-	//			SET_SHADER_PROP(MAT.kA);
-	//			SET_SHADER_PROP(MAT.kD);
-	//			SET_SHADER_PROP(MAT.kS);
-	//			SET_SHADER_PROP(MAT.kE);
-	//
-	//			shader.setFloat("MAT.IOR", MAT.refractionIndex);
-	//			shader.setFloat("MAT.shiny", MAT.shiny);
-	//
-	//			shader.setMat4("view", view);
-	//			shader.setMat4("proj", proj);
-	//
-	//			int nVertex = nElem * 3;
-	//			for (MeshRenderer* ren : mesh.registered)
-	//			{
-	//				PF_ASSERT(ren && "Renderer is null");
-	//				if (ren->Enabled()) {
-	//					ActRenderer = ren;
-	//					Transform &transform = ren->transform;
-	//					shader.setMat4("model", transform.GetAccumulated());
-	//
-	//					shader.preReq([&]() {
-	//						GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
-	//					});
-	//				}
-	//			}
-	//			GLCALL(glBindVertexArray(0));
-	//		}
-	//	}
+	for each (const Mesh& mesh in meshes)
+	{
+		
+		iVec3 lightsPlaced{ 0,0,0 };
+		const Material& MAT = mesh.mat;
+
+		shaders[MAT.illum]->Use();
+		GLCALL(glBindVertexArray(mesh.VAO));
+
+
+		GLCALL(glDrawArrays(GL_TRIANGLES, 0, mesh.nVertex));
+
+		GLCALL(glBindVertexArray(0));
+
+
+		//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
+		//			ShaderProgram &shader = *MAT.shader;
+		//			iVec3 lightsPlaced{ 0,0,0 };
+		//
+		//			ActShader = &shader;
+		//			ActSpec = &materialOrderForRender[ii];
+		//
+		//			shader.use();
+		//			GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
+		//
+		//			const std::vector<std::string > nameMapping = {
+		//				"tex_kA", /*MapType::AMBIENT*/
+		//				"tex_kD", /*MapType::DIFFUSE*/
+		//				"tex_kS", /*MapType::SPECULAR*/
+		//				"tex_bump", /*MapType::BUMP*/
+		//				"tex_cubemap", /*MapType::CUBEMAP*/
+		//				"", /*MapType::SHINY*/
+		//				"", /*MapType::DISPLACEMENT*/
+		//				"", /*MapType::DECAL*/
+		//				"", /*MapType::REFLECTION*/
+		//				"", /*MapType::DISSOLVE*/
+		//			};
+		//
+		//			// ponemos texturas
+		//			for each (auto pair in MAT.maps)
+		//			{
+		//				Texture &tex = *pair.second;
+		//				int type = static_cast<int>(tex.type);
+		//				glActiveTexture(GL_TEXTURE0 + type);
+		//				glBindTexture(GL_TEXTURE_2D, tex.id);
+		//				shader.setInt(nameMapping[type], tex.id);
+		//			}
+		//
+		//			// pasamos toda la data de las luces
+		//			if (shader.lit) {
+		//				for each (Light* light in lights)
+		//				{
+		//					light->Bind(lightsPlaced, shader);
+		//				}
+		//			}
+		//
+		//			// pasamos toda la data del material
+		//#define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
+		//
+		//			SET_SHADER_PROP(MAT.kA);
+		//			SET_SHADER_PROP(MAT.kD);
+		//			SET_SHADER_PROP(MAT.kS);
+		//			SET_SHADER_PROP(MAT.kE);
+		//
+		//			shader.setFloat("MAT.IOR", MAT.refractionIndex);
+		//			shader.setFloat("MAT.shiny", MAT.shiny);
+		//
+		//			shader.setMat4("view", view);
+		//			shader.setMat4("proj", proj);
+		//
+		//			int nVertex = nElem * 3;
+		//			for (MeshRenderer* ren : mesh.registered)
+		//			{
+		//				PF_ASSERT(ren && "Renderer is null");
+		//				if (ren->Enabled()) {
+		//					ActRenderer = ren;
+		//					Transform &transform = ren->transform;
+		//					shader.setMat4("model", transform.GetAccumulated());
+		//
+		//					shader.preReq([&]() {
+		//						GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
+		//					});
+		//				}
+		//			}
+		//			GLCALL(glBindVertexArray(0));
+		//		}
+	}
 	//	//cubemap->Render();
 	//
 	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
@@ -279,7 +340,7 @@ Application::Application()
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	win = SDL_CreateWindow("PressF",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+		win_width, win_heigth, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 	glContext = SDL_GL_CreateContext(win);
 	SDL_GetWindowSize(win, &win_width, &win_heigth);
 
@@ -293,8 +354,7 @@ Application::Application()
 	std::cout << "OpenGL version loaded: " << GLVersion.major << "."
 		<< GLVersion.minor << std::endl;
 	/* OpenGL setup */
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+	glViewport(0, 0, win_width, win_heigth);
 
 	//ctx = malloc(sizeof(mu_Context));
 	//mu_init(ctx);
@@ -313,9 +373,7 @@ Application::Application()
 	//	nk_style_load_all_cursors(ctx, atlas->cursors);
 	//	//nk_style_set_font(ctx, &roboto->handle);
 	//}
-
 }
-
 
 Application::~Application()
 {

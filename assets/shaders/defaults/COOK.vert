@@ -38,6 +38,11 @@ void main()
 
 	OBJ.w_pos = proj*(view*(OBJ.m_pos));
     gl_Position = OBJ.w_pos;
+
+
+
+    gl_Position = pos;
+
 }
 
 
