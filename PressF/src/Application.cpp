@@ -1,7 +1,7 @@
 #include "Application.h"
 
 extern double deltaTime = 0;
-
+extern unsigned int GLOBAL_ID = 1;
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
 	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
@@ -26,7 +26,7 @@ void Application::SetupScene()
 	GameObject *go = new GameObject();
 	go->AddComponent < Camera >();
 	objects.push_back(go);
-
+	go->transform.SetPosition(0, 0, -10);
 	for (Model &model : models) {
 
 		for (Mesh &mesh : model) {
@@ -48,6 +48,41 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 			__debugbreak();
 		}
 		GLCreate(model);
+
+
+		//cargar texturas
+#define ADD_MAP(NAME)\
+		if (!mat.NAME.empty() && (texturesLoaded.find(mat.NAME) == texturesLoaded.end())) {\
+			texturesLoaded[mat.NAME] = Texture::TextureFromFile(mat.NAME.c_str(), basePath);\
+		}\
+
+
+		const std::string basePath = objPath.substr(0, objPath.find_last_of("/"));
+		for (objl::Material& mat : model.LoadedMaterials) {
+			ADD_MAP(map_bump);
+			ADD_MAP(map_Ka);
+			ADD_MAP(map_Kd);
+			ADD_MAP(map_Ks);
+			ADD_MAP(map_d);
+
+		}
+	}
+
+
+	for (Model& myModel : models) {
+#define ADD_MAP_TO_MATERIAL(NAME)\
+	if (!mesh.mat.NAME.empty()) {\
+		mesh.mat.s##NAME = texturesLoaded.at(mesh.mat.NAME);\
+	}\
+
+		for (Mesh& mesh : myModel) {
+			PF_DEBUG("", mesh.EBO);
+			ADD_MAP_TO_MATERIAL(map_bump);
+			ADD_MAP_TO_MATERIAL(map_Ka);
+			ADD_MAP_TO_MATERIAL(map_Kd);
+			ADD_MAP_TO_MATERIAL(map_Ks);
+			ADD_MAP_TO_MATERIAL(map_d);
+		}
 	}
 }
 
@@ -87,8 +122,6 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 		shaders[ii] = new ShaderProgram({ vert, frag });
 	}
 }
-
-
 
 
 void Application::LoopMain()
@@ -155,14 +188,12 @@ void Application::LoopRender()
 	Mat4 view = cam.GetView();
 
 	for (const Model& model : models) {
-		glBindVertexArray(model.VAO);
-
-
 		for (const Mesh &mesh : model) {
 			iVec3 lightsPlaced{ 0,0,0 };
 			const Material &MAT = mesh.mat;
 			const ShaderProgram &shader = *shaders[MAT.illum];
 			shader.Use();
+			glBindVertexArray(mesh.VAO);
 
 			if (shader.usesMaterial) {
 				SET_UNIFORM(shader, MAT.kA);
@@ -196,7 +227,7 @@ void Application::LoopRender()
 				PF_ASSERT(obj && "Renderer is null");
 				Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, (void*)mesh.offset);
+				glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0);
 			}
 		}
 		glBindVertexArray(0);
@@ -285,99 +316,70 @@ void Application::LoopRender()
 
 void Application::GLCreate(objl::Loader &fullModel) {
 	Model model;
-	glGenVertexArrays(1, &model.VAO);
-	glGenBuffers(1, &model.EBO);
-	glGenBuffers(1, &model.VBO);
-
-	std::vector<Vertex> vertex;
-	vertex.reserve(fullModel.LoadedVertices.size());
-
-	for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
-		vertex.push_back(Vertex(oVertex));
-	}
-
-	// Ill do it in the fragment
-		//std::vector<std::vector<unsigned int> > vertexContribution{ vertex.size(), std::vector<unsigned int>() }; //stores in pos ii,  all the triangle ids he's in
-		//std::vector< Vec3 > triTan; //triangle tangent
-		//std::vector< Vec3 > triBiTan; //triangeBitangent
-		//const int u = 0;
-		//const int v = 1;
-		//for (size_t indx = 0, tri = 0; indx < fullModel.LoadedIndices.size(); tri++, indx += 3)
-		//{
-		//	unsigned int id_1 = fullModel.LoadedIndices[indx];
-		//	unsigned int id_2 = fullModel.LoadedIndices[indx + 1];
-		//	unsigned int id_3 = fullModel.LoadedIndices[indx + 2];
-
-		//	Vertex &v1 = vertex[id_1];
-		//	Vertex &v2 = vertex[id_2];
-		//	Vertex &v3 = vertex[id_3];
-
-		//	Vec3 p1 = v1.pos;
-		//	Vec3 p2 = v2.pos;
-		//	Vec3 p3 = v3.pos;
-
-		//	Vec2 uv1 = v1.uv;
-		//	Vec2 uv2 = v2.uv;
-		//	Vec2 uv3 = v3.uv;
-
-		//	float u3v1 = 
-		//	
-		//	
-		//	vertexContribution[id_1].push_back(tri);
-		//	vertexContribution[id_2].push_back(tri);
-		//	vertexContribution[id_3].push_back(tri);
-		//}
 
 
-	GLCALL(glBindVertexArray(model.VAO));
-	{
-		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, model.VBO));
-		glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW);
+	//data transform
+	//std::vector<Vertex> vertex;
+	//vertex.reserve(fullModel.LoadedVertices.size());
+	//for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
+	//	vertex.push_back(Vertex(oVertex));
+	//}
 
+
+	GLsizei totalIndices = 0;
+	model.reserve(fullModel.LoadedMeshes.size());
+	for (int ii = 0; ii < fullModel.LoadedMeshes.size(); ii++) {
+		objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
+		Mesh myMesh;
+
+		std::vector<Vertex> vertex;
+		vertex.reserve(fullModel.LoadedVertices.size());
+
+		for (const objl::Vertex& oVertex : objlMesh.Vertices) {
+			vertex.push_back(Vertex(oVertex));
+		}
+
+		myMesh.mat = objlMesh.MeshMaterial;
+		myMesh.nElem = objlMesh.Indices.size();
+		myMesh.offset = totalIndices;
+
+		totalIndices += myMesh.nElem;
+
+		glGenVertexArrays(1, &myMesh.VAO);
+		glGenBuffers(1, &myMesh.EBO);
+		glGenBuffers(1, &myMesh.VBO);
+
+		GLCALL(glBindVertexArray(myMesh.VAO));
 		{
-			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
-			GLCALL(glEnableVertexAttribArray(0));
+			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
+			glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW);
 
-			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-			GLCALL(glEnableVertexAttribArray(1));
+			{
+				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
+				GLCALL(glEnableVertexAttribArray(0));
 
-			GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
-			GLCALL(glEnableVertexAttribArray(2));
+				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+				GLCALL(glEnableVertexAttribArray(1));
 
-			GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-			GLCALL(glEnableVertexAttribArray(3));
+				GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				GLCALL(glEnableVertexAttribArray(2));
 
-			GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
-			GLCALL(glEnableVertexAttribArray(4));
+				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+				GLCALL(glEnableVertexAttribArray(3));
+
+				GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
+				GLCALL(glEnableVertexAttribArray(4));
+			}
+
+
+			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW);
 		}
-
-		unsigned long int totalIndices = 0;
-		model.reserve(fullModel.LoadedMeshes.size());
-		for (objl::Mesh& objlMesh : fullModel.LoadedMeshes) {
-			Mesh myMesh;
-
-			myMesh.mat = objlMesh.MeshMaterial;
-			myMesh.nElem = objlMesh.Indices.size();
-			myMesh.offset = totalIndices;
-
-			totalIndices += myMesh.nElem;
-			model.push_back(myMesh);
-		}
-
-		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.EBO));
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalIndices * sizeof(unsigned int), 0, GL_STATIC_DRAW);
-
-		for (int ii = 0; ii < model.size(); ii++ ) {
-			objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
-			Mesh& myMesh = model[ii];
-		
-			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, myMesh.offset, myMesh.nElem, objlMesh.Indices.data());
-		}
+		GLCALL(glBindVertexArray(0));
+		model.push_back(myMesh);
 
 	}
-	GLCALL(glBindVertexArray(0));
 	models.push_back(model);
-
 }
 
 void Application::HandleEvents()

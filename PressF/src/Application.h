@@ -19,7 +19,7 @@ class Application
 {
 public:
 	//Every object created must have a new id
-	unsigned int GLOBAL_ID;
+	//unsigned int GLOBAL_ID; //replaced with extern
 
 	SDL_Window *win;
 	SDL_GLContext glContext;

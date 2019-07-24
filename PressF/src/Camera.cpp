@@ -20,8 +20,8 @@ Camera::~Camera()
 
 void Camera::Update() {
 
-	PF_INFO("CAMERA POS , ROT");
-	std::cout << transform.GetPosition() << "/ " << transform.GetRotation()<<std::endl;
+	//PF_INFO("CAMERA POS , ROT");
+	//std::cout << transform.GetPosition() << "/ " << transform.GetRotation()<<std::endl;
 }
 
 // Inherited via Component

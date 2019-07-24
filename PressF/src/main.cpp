@@ -11,7 +11,7 @@ int main() {
 
 	app.Setup(
 		{
-			"assets/models/cuboPower/cuboPower.obj"
+			"assets/models/cuboPower/clown.obj"
 		}, {
 			// Cook
 			std::make_tuple("COOK.vert", "COOK.frag"),

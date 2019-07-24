@@ -17,7 +17,7 @@ public:
 	float sensitivity = 0.3f;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
-	float farClippingPlane = 200.0f;
+	float farClippingPlane = 300.0f;
 
 	glm::vec3 Front;
 	glm::vec3 Up;
@@ -50,6 +50,5 @@ public:
 
 	void updateCameraVectors();
 	virtual Mat4& GetView();
-
 	virtual Mat4& GetProjection(ProjectionType type, int w, int h);
 };

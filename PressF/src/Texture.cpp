@@ -2,7 +2,12 @@
 
 
 
-inline Texture* Texture::TextureFromFile(const char * path, const std::string & directory, bool gamma)
+Texture::Texture()
+{
+}
+
+
+Texture * Texture::TextureFromFile(const char * path, const std::string & directory)
 {
 	std::string filename = std::string(path);
 	filename = directory + '/' + filename;
@@ -41,11 +46,6 @@ inline Texture* Texture::TextureFromFile(const char * path, const std::string & 
 
 	return tex;
 }
-
-Texture::Texture()
-{
-}
-
 
 Texture::~Texture()
 {

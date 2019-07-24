@@ -6,6 +6,7 @@ class Component;
 class GameObject
 {
 	friend class Application;
+	unsigned int id = 0;
 	std::vector<Component*> components;
 public:
 	Transform transform;

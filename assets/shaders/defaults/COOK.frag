@@ -59,5 +59,5 @@ out color fColor;
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-    fColor = LIGHTS[0].kD;
+    fColor = vec4(1,1,0,1);
 }

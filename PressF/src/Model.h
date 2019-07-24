@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
 #include "OBJ_Loader.h"
-
+#include "Texture.h"
 class MeshRenderer;
 void Assign(Vec3& a, const objl::Vector3& b);
 void Assign(Vec2& a, const objl::Vector2& b);
@@ -35,7 +35,12 @@ public:
 	std::string map_Ns;
 	std::string map_d;
 	std::string map_bump;
-	unsigned int smap_kD = 0;
+	Texture* smap_Ka = nullptr;
+	Texture* smap_Kd = nullptr;
+	Texture* smap_Ks = nullptr;
+	Texture* smap_Ns = nullptr;
+	Texture* smap_d = nullptr;
+	Texture* smap_bump = nullptr;
 	Material();
 	Material(const objl::Material& m);
 	Material& operator = (const objl::Material &m)
@@ -62,7 +67,8 @@ class Mesh
 	: public std::vector<MeshRenderer*>
 {
 public:
-	unsigned long int offset, nElem;
+	unsigned int VAO = 0, EBO= 0, VBO=0;
+	GLsizei offset, nElem;
 	Material mat;
 };
 
@@ -71,7 +77,6 @@ class Model
 {
 public:
 	unsigned int VAO, EBO, VBO;
-
 	Model();
 	~Model();
 };
