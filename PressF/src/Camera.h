@@ -6,12 +6,14 @@ enum class ProjectionType {
 	ORTHO,
 	CAM_SETUP
 };
+class Camera;
 
+extern Camera* mainCamera;
 
 class Camera : public Component{
 
 public:
-	int power = 10000;
+	int power = 0;
 	int isPerspective = true;
 	float speed = 25.f;
 	float sensitivity = 0.3f;

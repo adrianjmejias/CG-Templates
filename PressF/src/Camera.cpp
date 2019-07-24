@@ -27,6 +27,7 @@ void Camera::Update() {
 // Inherited via Component
 
 void Camera::HandleEvent(const SDL_Event & e) {
+	if (mainCamera != this) return;
 	if (!SDL_GetRelativeMouseMode()) return;
 	if (e.type == SDL_EventType::SDL_KEYDOWN) {
 		//if (e.key.keysym.mod == SDL_Scancode::SDL_SCANCODE_LSHIFT)

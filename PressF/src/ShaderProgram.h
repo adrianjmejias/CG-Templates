@@ -67,7 +67,6 @@ public:
 
 // forcing shader variables to be the same as how access them in code
 #define SET_UNIFORM(SHADER, UNIFORM_VARIABLE)\
-	SHADER.SetUniform(#UNIFORM_VARIABLE, UNIFORM_VARIABLE)\
-
+	GLCALL(SHADER.SetUniform(#UNIFORM_VARIABLE, UNIFORM_VARIABLE)) \
 
 // Macros cant be at eof

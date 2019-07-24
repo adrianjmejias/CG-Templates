@@ -11,18 +11,18 @@ void Light::Bind(iVec3 & countLights, const ShaderProgram & shader) {
 
 	std::string name = "LIGHTS[" + std::to_string(myCount) + "]";
 
-	shader.SetUniform(name + ".type", myCount);
-	shader.SetUniform(name + ".position", transform.GetPosition());
-	shader.SetUniform(name + ".attenuation", attenuation);
-	shader.SetUniform(name + ".innerAngle", glm::radians(innerAngle));
-	shader.SetUniform(name + ".outerAngle", glm::radians(outterAngle));
+	GLCALL(shader.SetUniform(name + ".type", myCount));
+	GLCALL(shader.SetUniform(name + ".position", transform.GetPosition()));
+	GLCALL(shader.SetUniform(name + ".attenuation", attenuation));
+	GLCALL(shader.SetUniform(name + ".innerAngle", glm::radians(innerAngle)));
+	GLCALL(shader.SetUniform(name + ".outerAngle", glm::radians(outterAngle)));
 
-	shader.SetUniform(name + ".direction", transform.front);
-	shader.SetUniform(name + ".isOn", (bool)enabled);
+	GLCALL(shader.SetUniform(name + ".direction", transform.front));
+	GLCALL(shader.SetUniform(name + ".isOn", (bool)enabled));
 
-	shader.SetUniform(name + ".kA", kA);
-	shader.SetUniform(name + ".kD", kD);
-	shader.SetUniform(name + ".kS", kS);
+	GLCALL(shader.SetUniform(name + ".kA", kA));
+	GLCALL(shader.SetUniform(name + ".kD", kD));
+	GLCALL(shader.SetUniform(name + ".kS", kS));
 
 	myCount++;
 }

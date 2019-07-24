@@ -10,8 +10,8 @@ class Vertex {
 public:
 	Vec3 pos;
 	Vec3 normal;
-	Vec3 bitan;
-	Vec3 tan;
+	//Vec3 bitan;
+	//Vec3 tan;
 	Vec2 uv;
 	Vertex(const objl::Vertex& v);
 };

@@ -2,6 +2,7 @@
 
 extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
+extern Camera* mainCamera = nullptr;
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
 	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
@@ -138,7 +139,25 @@ void Application::LoopMain()
 
 		LoopUpdate();
 
-		//std::sort(begin(callOrder), end(callorder), [])
+
+		std::sort(begin(orderedCameras), end(orderedCameras), [](Camera* a, Camera* b)
+		{
+			return a->power > b->power;
+		}); // keep cameras ordered
+
+
+		const Camera& cam = *orderedCameras[0];
+		const Vec3& camPos = cam.transform.GetPosition();
+
+
+
+
+		std::sort(begin(renderers), end(renderers), [&](const MeshRenderer* a, const MeshRenderer* b) {
+			float distCamToA = glm::length(a->transform.GetPosition() - camPos);
+			float distCamToB = glm::length(b->transform.GetPosition() - camPos);
+
+			return distCamToA > distCamToB;
+		});
 
 		LoopRender();
 
@@ -177,13 +196,17 @@ void Application::LoopUpdate()
 		{
 			PF_ASSERT(comp && "component is null");
 			comp->Update();
+			
 		}
+		go->transform.TryGetClean();
 	}
 }
 
 void Application::LoopRender()
 {
-	Camera &cam = *cameras.top();
+
+
+	Camera &cam = *orderedCameras[0];
 	Mat4 projection = cam.GetProjection(ProjectionType::CAM_SETUP, win_width, win_heigth);
 	Mat4 view = cam.GetView();
 
@@ -193,7 +216,7 @@ void Application::LoopRender()
 			const Material &MAT = mesh.mat;
 			const ShaderProgram &shader = *shaders[MAT.illum];
 			shader.Use();
-			glBindVertexArray(mesh.VAO);
+			GLCALL(glBindVertexArray(mesh.VAO));
 
 			if (shader.usesMaterial) {
 				SET_UNIFORM(shader, MAT.kA);
@@ -204,7 +227,15 @@ void Application::LoopRender()
 			}
 
 			if (shader.usesTextures) {
+				if (MAT.smap_Ka)
+				{
+					shader.SetUniform("map_kD", MAT.smap_Kd);
+				}
 
+				if (MAT.smap_bump)
+				{
+					shader.SetUniform("map_bump", MAT.smap_bump);
+				}
 			}
 
 			if (shader.lit) {
@@ -215,7 +246,7 @@ void Application::LoopRender()
 			}
 
 			if (shader.viewDependant) {
-				shader.SetUniform("CAM.position", cam.transform.GetPosition());
+				GLCALL(shader.SetUniform("CAM.position", cam.transform.GetPosition()));
 			}
 
 			if (shader.MVP) {
@@ -227,10 +258,10 @@ void Application::LoopRender()
 				PF_ASSERT(obj && "Renderer is null");
 				Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0);
+				GLCALL(glDrawArrays(GL_TRIANGLES, 0, mesh.nElem));
 			}
 		}
-		glBindVertexArray(0);
+		GLCALL(glBindVertexArray(0));
 	}
 
 	//	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
@@ -328,6 +359,7 @@ void Application::GLCreate(objl::Loader &fullModel) {
 
 	GLsizei totalIndices = 0;
 	model.reserve(fullModel.LoadedMeshes.size());
+
 	for (int ii = 0; ii < fullModel.LoadedMeshes.size(); ii++) {
 		objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
 		Mesh myMesh;
@@ -340,40 +372,44 @@ void Application::GLCreate(objl::Loader &fullModel) {
 		}
 
 		myMesh.mat = objlMesh.MeshMaterial;
-		myMesh.nElem = objlMesh.Indices.size();
+		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
 		myMesh.offset = totalIndices;
 
 		totalIndices += myMesh.nElem;
 
-		glGenVertexArrays(1, &myMesh.VAO);
-		glGenBuffers(1, &myMesh.EBO);
-		glGenBuffers(1, &myMesh.VBO);
+		GLCALL(glGenVertexArrays(1, &myMesh.VAO));
+		GLCALL(glGenBuffers(1, &myMesh.EBO));
+		GLCALL(glGenBuffers(1, &myMesh.VBO));
 
 		GLCALL(glBindVertexArray(myMesh.VAO));
 		{
 			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
-			glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW);
+			GLCALL(glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW));
 
 			{
-				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
+				size_t off = 0;
+				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
 				GLCALL(glEnableVertexAttribArray(0));
 
-				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+				off += 3 * sizeof(Vec3);
+				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
 				GLCALL(glEnableVertexAttribArray(1));
 
-				GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				off += 3 * sizeof(Vec3);
+				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
 				GLCALL(glEnableVertexAttribArray(2));
 
-				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-				GLCALL(glEnableVertexAttribArray(3));
+				//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				//GLCALL(glEnableVertexAttribArray(2));
 
-				GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
-				GLCALL(glEnableVertexAttribArray(4));
+				//GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+				//GLCALL(glEnableVertexAttribArray(3));
+
 			}
 
 
 			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW);
+			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
 		}
 		GLCALL(glBindVertexArray(0));
 		model.push_back(myMesh);
@@ -396,7 +432,9 @@ void Application::HandleEvents()
 		}
 
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			switch (e.key.keysym.scancode)
+
+			auto keyPressed = e.key.keysym.scancode;
+			switch (keyPressed)
 			{
 			case SDL_Scancode::SDL_SCANCODE_ESCAPE:
 				running = false;
@@ -418,6 +456,26 @@ void Application::HandleEvents()
 				captureMouse = !captureMouse;
 				break;
 
+			case SDL_Scancode::SDL_SCANCODE_1:
+			case SDL_Scancode::SDL_SCANCODE_2:
+			case SDL_Scancode::SDL_SCANCODE_3:
+			case SDL_Scancode::SDL_SCANCODE_4:
+			case SDL_Scancode::SDL_SCANCODE_5:
+			{
+				int newCam = static_cast<int>(keyPressed) - static_cast<int>(SDL_Scancode::SDL_SCANCODE_1);
+				if (actCam != newCam) {
+					PF_INFO("Swapping Camera to {0}", newCam);
+					if (newCam < cameras.size()) {
+						std::swap(cameras[actCam]->power, cameras[newCam]->power); // explota si no está y no hay side effects
+						actCam = newCam;
+						mainCamera = cameras[actCam];
+					}
+					else {
+						PF_WARN("Camera {0} not available", newCam);
+					}
+				}
+			}
+				break;
 			default:
 				break;
 			}
@@ -450,7 +508,12 @@ void Application::Steal(Component *comp)
 	}
 
 	if (Camera * cam = dynamic_cast<Camera*>(comp)) {
-		cameras.push(cam);
+		if (cameras.size() < 1) {
+			mainCamera = cam;
+			mainCamera->power = 1;
+		}
+		orderedCameras.push_back(cam);
+		cameras.push_back(cam);
 	}
 
 	if (MeshRenderer* ren = dynamic_cast<MeshRenderer*>(comp)) {

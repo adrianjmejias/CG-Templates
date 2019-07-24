@@ -7,6 +7,7 @@ enum class Dirty {
 	Acum,
 	Model,
 };
+class Application;
 
 class Transform {
 public:
@@ -63,6 +64,7 @@ public:
 	static Mat4 GenRotMat(const Vec3 &rotation);
 
 private:
+	friend class Application;
 	/*
 	Returs true if it was dirty.
 	Cleans accumulated matrix

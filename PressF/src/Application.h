@@ -6,13 +6,7 @@
 #include "Light.h"
 #include "MeshRenderer.h"
 
-struct CameraCompare
-{
-	bool operator() (Camera* a, Camera* b)
-	{
-		return a->power < b->power;
-	}
-};
+
 
 
 class Application
@@ -40,10 +34,11 @@ public:
 	bool KeyPressed[256];
 	Vec4 bgColor{0.396,0.313,0.686, 1};
 
-
+	int actCam = 0;
 	ShaderProgram* shaders[30]{nullptr};
 	std::vector<Light*> LIGHTS;
-	std::priority_queue < Camera*, std::vector<Camera*>, CameraCompare> cameras;
+	std::vector < Camera*> orderedCameras;
+	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
 	std::vector<Model> models;
 	std::vector<GameObject *> objects;

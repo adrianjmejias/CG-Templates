@@ -74,9 +74,9 @@
 bool Transform::TryGetClean()
 {
 	if (dirty == Dirty::None) return false;
-	//PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up", gameobject.name);
-	//std::cout << position << " " << rotation << " " << scale << std::endl;
-	//std::cout << front << " " << right << " " << up << std::endl;
+	PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up");
+	std::cout << position << " " << rotation << " " << scale << std::endl;
+	std::cout << front << " " << right << " " << up << std::endl;
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 

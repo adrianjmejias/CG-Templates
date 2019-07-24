@@ -59,5 +59,5 @@ out color fColor;
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-    fColor = vec4(1,1,0,1);
+    fColor = texture(tex_bump, OBJ.uv.xy);
 }

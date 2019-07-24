@@ -26,7 +26,6 @@ out struct Obj{
 	vec4 uv;
 } OBJ;
 
-
 out vec3 n;
 
 void main()
@@ -38,7 +37,7 @@ void main()
 
 	OBJ.w_pos = proj*(view*(OBJ.m_pos));
 	
-    gl_Position = OBJ.m_pos;
+    gl_Position = OBJ.w_pos;
 
 }
 
