@@ -41,7 +41,7 @@ public:
 	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
 	std::vector<Model> models;
-	std::vector<GameObject *> objects;
+	std::vector<GameObject *> rootNodes;
 	std::map<std::string, Shader*> shadersLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
 	
@@ -59,11 +59,14 @@ public:
 	void SetupModels(const std::vector<std::string>& objPathsp);
 	void SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths);
 
+	//void RenderFrame() {
+
+	//}
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();
 	void LoopRender();
-
+	void DrawFrame(Transform t);
 	Application();
 	~Application();
 };

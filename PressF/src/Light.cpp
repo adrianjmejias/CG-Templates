@@ -2,6 +2,8 @@
 
 
 
+Light::Light(GameObject & go, Transform & t, LightType ty) : Component(go, t), type(ty) {}
+
 Light::~Light()
 {
 }
@@ -34,6 +36,4 @@ void Light::HandleEvent(const SDL_Event & e)
 void Light::Update()
 {
 }
-
-Light::Light(GameObject & go, Transform & t) : Component(go, t) {}
 

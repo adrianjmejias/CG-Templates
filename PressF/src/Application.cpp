@@ -3,6 +3,31 @@
 extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
+
+
+static void Traverse(const std::vector<GameObject*> objects, std::function<void(GameObject*)> beforefgo, std::function<void(GameObject*)> afterfgo, std::function<void(Component*)> fcomp) {
+	std::queue<GameObject*, std::deque<GameObject *>> q(std::deque<GameObject*>(objects.begin(), objects.end()));
+	while (!q.empty()) {
+		GameObject *go = q.front();
+		q.pop();
+		PF_ASSERT(go && "game object is null");
+
+		beforefgo(go);
+		for (Component* comp : go->components) {
+			PF_ASSERT(comp && "component is null");
+
+			fcomp(comp);
+		}
+		afterfgo(go);
+
+		for (Transform* t : go->transform.children) {
+			PF_ASSERT(t && "Children is null");
+
+			q.push(&t->gameObject);
+		}
+	}
+}
+
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
 	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
@@ -11,31 +36,66 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupScene();
 
 	// Sets up shit. maybe not the best way but it's what came to me
-	for (auto go : objects) {
-		PF_ASSERT(go && "NULL GAMEOBJECT MOSCAAAA");
 
-		for (auto comp : go->components) {
-			PF_ASSERT(comp && "NULL COMPONENT MOSCAAAA");
-
+	Traverse(rootNodes,
+		[](GameObject* go) {
+			PF_ASSERT(go && "GameObject is null");
+		},
+		[&](GameObject* go) {
+		},
+		[&](Component* comp) {
 			Steal(comp);
 		}
-	}
+	);
+	
 }
 
 void Application::SetupScene()
 {
-	GameObject *go = new GameObject();
-	go->AddComponent < Camera >();
-	objects.push_back(go);
-	go->transform.SetPosition(0, 0, -10);
-	for (Model &model : models) {
+	{
+		GameObject *go = new GameObject();
+		go->AddComponent < Camera >();
+		go->transform.SetPosition(0, 0, -10);
+		rootNodes.push_back(go);
 
-		for (Mesh &mesh : model) {
-			GameObject *go = new GameObject();
-			MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
-			mesh.push_back(ren);
-		}
 	}
+
+	{
+		GameObject *go = new GameObject();
+		go->AddComponent < Camera >();
+		go->transform.SetPosition(0, 0, 10);
+		rootNodes.push_back(go);
+	}
+
+	{
+		GameObject *go = new GameObject();
+		go->AddComponent < Light >(LightType::DIRECTIONAL);
+		go->transform.SetPosition(0, 10, 0);
+		rootNodes.push_back(go);
+	}
+
+	{
+		GameObject *go = new GameObject();
+		go->AddComponent < Light >(LightType::POINT);
+		go->transform.SetPosition(0, -10, 0);
+		rootNodes.push_back(go);
+	}
+
+
+	for (size_t ii = 0; ii < 3; ii++)
+		for (Model &model : models) {
+			GameObject *papa = new GameObject();
+			for (Mesh &mesh : model) {
+				GameObject *go = new GameObject();
+				MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
+				mesh.push_back(ren);
+
+				go->transform.SetParent(&papa->transform);
+				go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
+
+			}
+			rootNodes.push_back(papa);
+		}
 }
 
 void Application::SetupModels(const std::vector<std::string>& objPaths)
@@ -69,12 +129,12 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 		}
 	}
 
-
-	for (Model& myModel : models) {
 #define ADD_MAP_TO_MATERIAL(NAME)\
 	if (!mesh.mat.NAME.empty()) {\
 		mesh.mat.s##NAME = texturesLoaded.at(mesh.mat.NAME);\
 	}\
+
+	for (Model& myModel : models) {
 
 		for (Mesh& mesh : myModel) {
 			PF_DEBUG("", mesh.EBO);
@@ -130,8 +190,7 @@ void Application::LoopMain()
 	while (running) {
 		//std::cout << "looping";
 		glViewport(0, 0, win_width, win_heigth);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+
 
 		HandleEvents();
 
@@ -174,38 +233,26 @@ void Application::LoopMain()
 
 void Application::LoopUI()
 {
-	////overview(ctx);
-	//if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
-	//	NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-	//	NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
-	//{
-	//	//for each (auto go in objects)
-	//	//{
-	//	//	go->UI();
-	//	//}
-	//}
-	//nk_end(ctx);
+	Traverse(rootNodes,
+		[](GameObject* go) {},
+		[](GameObject* go) {},
+		[](Component* comp) {comp->Update(); }
+	);
 }
 
 void Application::LoopUpdate()
 {
-	for (GameObject* go : objects)
-	{
-		PF_ASSERT(go && "game object is null");
-		for (Component* comp : go->components)
-		{
-			PF_ASSERT(comp && "component is null");
-			comp->Update();
-			
-		}
-		go->transform.TryGetClean();
-	}
+	Traverse(rootNodes,
+		[](GameObject* go) {},
+		[](GameObject* go) { go->transform.TryGetClean(); },
+		[](Component* comp) {comp->Update(); }
+	);
 }
 
 void Application::LoopRender()
 {
-
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 	Camera &cam = *orderedCameras[0];
 	Mat4 projection = cam.GetProjection(ProjectionType::CAM_SETUP, win_width, win_heigth);
 	Mat4 view = cam.GetView();
@@ -229,12 +276,12 @@ void Application::LoopRender()
 			if (shader.usesTextures) {
 				if (MAT.smap_Ka)
 				{
-					shader.SetUniform("map_kD", MAT.smap_Kd);
+					shader.SetUniform("map_kD", static_cast<int>(MAT.smap_Kd->id));
 				}
 
 				if (MAT.smap_bump)
 				{
-					shader.SetUniform("map_bump", MAT.smap_bump);
+					shader.SetUniform("map_bump", static_cast<int>(MAT.smap_bump->id));
 				}
 			}
 
@@ -246,7 +293,7 @@ void Application::LoopRender()
 			}
 
 			if (shader.viewDependant) {
-				GLCALL(shader.SetUniform("CAM.position", cam.transform.GetPosition()));
+				GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
 			}
 
 			if (shader.MVP) {
@@ -258,7 +305,7 @@ void Application::LoopRender()
 				PF_ASSERT(obj && "Renderer is null");
 				Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				GLCALL(glDrawArrays(GL_TRIANGLES, 0, mesh.nElem));
+				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 		GLCALL(glBindVertexArray(0));
@@ -342,6 +389,10 @@ void Application::LoopRender()
 	//
 }
 
+void Application::DrawFrame(Transform t)
+{
+}
+
 
 
 
@@ -386,6 +437,9 @@ void Application::GLCreate(objl::Loader &fullModel) {
 			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
 			GLCALL(glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW));
 
+			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
+			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
+
 			{
 				size_t off = 0;
 				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
@@ -407,9 +461,6 @@ void Application::GLCreate(objl::Loader &fullModel) {
 
 			}
 
-
-			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
-			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
 		}
 		GLCALL(glBindVertexArray(0));
 		model.push_back(myMesh);
@@ -475,7 +526,7 @@ void Application::HandleEvents()
 					}
 				}
 			}
-				break;
+			break;
 			default:
 				break;
 			}
@@ -492,7 +543,7 @@ void Application::HandleEvents()
 			}
 		}
 
-		for (auto go : objects)
+		for (auto go : rootNodes)
 		{
 			for (auto comp : go->components) {
 				comp->HandleEvent(e);

@@ -8,13 +8,13 @@ enum class Dirty {
 	Model,
 };
 class Application;
-
+class GameObject;
 class Transform {
 public:
 
-	Transform();
+	Transform(GameObject& go);
 	Transform::~Transform();
-
+	GameObject& gameObject;
 	Transform *parent = nullptr;
 	std::vector<Transform *> children;
 

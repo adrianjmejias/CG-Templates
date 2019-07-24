@@ -2,10 +2,24 @@
 
 
 
+
+Texture::Texture(int width, int height, ColorFormat format)
+{
+	
+	this->width = width;
+	this->height = height;
+	this->format = format;
+
+	glGenTextures(1, &id);
+	glBindTexture(GL_TEXTURE_2D, id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, static_cast<int>(format), GL_UNSIGNED_BYTE, NULL);
+
+}
+
+
 Texture::Texture()
 {
 }
-
 
 Texture * Texture::TextureFromFile(const char * path, const std::string & directory)
 {
@@ -15,20 +29,26 @@ Texture * Texture::TextureFromFile(const char * path, const std::string & direct
 	Texture* tex = new Texture();
 	glGenTextures(1, &tex->id);
 
-	int width, height, nrComponents;
-	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+	unsigned char *data = stbi_load(filename.c_str(), &tex->width, &tex->height, &tex->nrComponents, 0);
 	if (data)
 	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
+		switch (tex->nrComponents)
+		{
+		case 1:
+			tex->format = static_cast<ColorFormat>(GL_RED);
+			break;
+		case 3:
+			tex->format = static_cast<ColorFormat>(GL_RGB);
+			break;
+		case 4:
+			tex->format = static_cast<ColorFormat>(GL_RGBA);
+			break;
+		default:
+			break;
+		}
 
 		glBindTexture(GL_TEXTURE_2D, tex->id);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, static_cast<int>(tex->format), tex->width, tex->height, 0, static_cast<int>(tex->format), GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -45,6 +65,10 @@ Texture * Texture::TextureFromFile(const char * path, const std::string & direct
 	}
 
 	return tex;
+}
+
+inline void Texture::Resize(int width, int height) {
+	glTexImage2D(id, 0, GL_RGB, width, height, 0, static_cast<int>(format), GL_FLOAT, NULL);
 }
 
 Texture::~Texture()

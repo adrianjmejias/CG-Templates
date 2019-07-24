@@ -22,21 +22,11 @@ public:
 	float innerAngle = 15.f;
 	float outterAngle = 20.f;
 
-	virtual void Update();
-	Light(GameObject& go, Transform& t);
+	Light(GameObject& go, Transform& t, LightType ty);
 	~Light();
 
+	virtual void Update();
 	void Bind(iVec3& countLights, const ShaderProgram &shader);
-//	
-//	
-	//void Update() override {
-	//}
-
-
-	// Inherited via Component
-
-
-	// Inherited via Component
 	virtual void HandleEvent(const SDL_Event & e) override;
 
 	//void UI() override {

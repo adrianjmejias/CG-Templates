@@ -127,14 +127,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\Camera.h" />
     <ClInclude Include="PressF\src\Component.h" />
     <ClInclude Include="PressF\src\core.h" />
+    <ClInclude Include="PressF\src\FrameBuffer.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
     <ClInclude Include="PressF\src\Light.h" />
     <ClInclude Include="PressF\src\Logger.h" />
+    <ClInclude Include="PressF\src\MeshRenderer.h" />
     <ClInclude Include="PressF\src\Model.h" />
     <ClInclude Include="PressF\src\OBJ_Loader.h" />
     <ClInclude Include="PressF\src\Shader.h" />
@@ -517,13 +518,14 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
     <ClCompile Include="PressF\src\Camera.cpp" />
     <ClCompile Include="PressF\src\Component.cpp" />
+    <ClCompile Include="PressF\src\FrameBuffer.cpp" />
     <ClCompile Include="PressF\src\GameObject.cpp" />
     <ClCompile Include="PressF\src\Light.cpp" />
     <ClCompile Include="PressF\src\Logger.cpp" />
+    <ClCompile Include="PressF\src\MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\Model.cpp" />
     <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
     <ClCompile Include="PressF\src\Shader.cpp" />

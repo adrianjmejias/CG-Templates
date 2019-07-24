@@ -19,7 +19,7 @@ public:
 	float sensitivity = 0.3f;
 	float fov = 45;
 	float nearClippingPlane = 0.1f;
-	float farClippingPlane = 300.0f;
+	float farClippingPlane = 400.f;
 
 	glm::vec3 Front;
 	glm::vec3 Up;

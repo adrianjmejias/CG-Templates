@@ -6,7 +6,6 @@ Camera::Camera(GameObject & go, Transform & t) : Component(go, t)
 {
 	Pitch = -48.05f;
 	Yaw = 12.88f;
-	transform.SetPosition({ 9.42f, -1.24, 5.14 });
 	sensitivity = 0.10f;
 	fov = 70;
 	updateCameraVectors();
@@ -19,9 +18,6 @@ Camera::~Camera()
 // Inherited via Component
 
 void Camera::Update() {
-
-	//PF_INFO("CAMERA POS , ROT");
-	//std::cout << transform.GetPosition() << "/ " << transform.GetRotation()<<std::endl;
 }
 
 // Inherited via Component
@@ -47,7 +43,6 @@ void Camera::HandleEvent(const SDL_Event & e) {
 			}
 		}
 	}
-
 	if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
 		float movX = sensitivity * e.motion.xrel * static_cast<float>(deltaTime);
 		float movY = sensitivity * e.motion.yrel * static_cast<float>(deltaTime);

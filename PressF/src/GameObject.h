@@ -7,10 +7,12 @@ class GameObject
 {
 	friend class Application;
 	unsigned int id = 0;
-	std::vector<Component*> components;
+	std::string name = "No name";
 public:
+	std::vector<Component*> components;
 	Transform transform;
 	GameObject();
+	GameObject(const std::string n);
 	~GameObject();
 
 	template <typename TT, typename ...Args>

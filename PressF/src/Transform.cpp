@@ -74,9 +74,8 @@
 bool Transform::TryGetClean()
 {
 	if (dirty == Dirty::None) return false;
-	PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up");
-	std::cout << position << " " << rotation << " " << scale << std::endl;
-	std::cout << front << " " << right << " " << up << std::endl;
+
+
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 
@@ -95,7 +94,7 @@ bool Transform::TryGetClean()
 		right = glm::normalize(right);
 		front = glm::normalize(front);
 
-		model = Transform::GenModel(scale, position, rotMat);
+		model = Transform::GenModel(scale, position, rotation);
 		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
 	}
 
@@ -168,6 +167,7 @@ bool Transform::TryGetClean()
 	Mat4 model = Mat4(1);
 	model = glm::scale(model, scale);
 	model = glm::translate(model, position);
+	 //TODO: poner rotacion con mat4
 	model = rotation * model;
 	return model;
 }
@@ -180,9 +180,7 @@ bool Transform::TryGetClean()
 }
 
 
-Transform::Transform()
-{
-}
+Transform::Transform(GameObject & go) : gameObject(go) {}
 
 Transform::~Transform()
 {

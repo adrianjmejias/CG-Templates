@@ -6,12 +6,11 @@ Model::Model()
 
 Model::~Model()
 {
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 }
 
-//Vertex::Vertex(objl::Vertex v)
-//{
-//
-//}
 Material::Material(){
 	name;
 	Ns = 0.0f;

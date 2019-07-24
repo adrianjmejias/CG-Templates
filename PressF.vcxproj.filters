@@ -1179,7 +1179,8 @@
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\core.h" />
-    <ClInclude Include="MeshRenderer.h" />
+    <ClInclude Include="PressF\src\FrameBuffer.h" />
+    <ClInclude Include="PressF\src\MeshRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1217,6 +1218,7 @@
     <ClCompile Include="PressF\src\Light.cpp" />
     <ClCompile Include="PressF\src\Texture.cpp" />
     <ClCompile Include="PressF\src\Transform.cpp" />
-    <ClCompile Include="MeshRenderer.cpp" />
+    <ClCompile Include="PressF\src\MeshRenderer.cpp" />
+    <ClCompile Include="PressF\src\FrameBuffer.cpp" />
   </ItemGroup>
 </Project>
