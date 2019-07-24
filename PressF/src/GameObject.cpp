@@ -1,9 +1,10 @@
 #include "GameObject.h"
 
-GameObject::GameObject() : transform(*this)
+GameObject::GameObject()
 {
 }
 
 GameObject::~GameObject()
 {
+	delete[] components.data();
 }

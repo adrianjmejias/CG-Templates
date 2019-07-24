@@ -1,7 +1,7 @@
 #include "ShaderProgram.h"
 
 ShaderProgram::ShaderProgram(std::vector<Shader* > li)
-	: std::vector<Shader* >(std::move(li))
+	: std::vector<Shader* >(li)
 {
 	Compile();
 };
@@ -89,9 +89,10 @@ void ShaderProgram::AddShader(Shader* shader) {
 }
 
 void ShaderProgram::ReCompile() {
-	for (size_t ii = 0; ii < size(); ii++)
+	for (int ii = 0; ii < size(); ii++)
 	{
-		Shader &shader = *at(ii);
+		PF_ASSERT(at(ii) && "Composing shader is null");
+		Shader &shader = *this->at(ii);
 		shader.ReCompile();
 	}
 	Compile();

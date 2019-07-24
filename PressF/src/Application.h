@@ -1,11 +1,9 @@
 #pragma once
 
-#include "types.h"
-
-#include "Model.h"
+#include "core.h"
+#include "Camera.h"
 #include "Light.h"
-#include "GameObject.h"
-#include "ShaderProgram.h"
+
 
 class Application
 {
@@ -18,31 +16,39 @@ public:
 	int win_width = 800;
 	int win_heigth = 600;
 
+	//static double deltaTime;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
 	int mouse_deltaX;
 	int mouse_deltaY;
 
 	unsigned long long NOW, LAST;
-	double deltaTime;
 
 	bool running;
 	bool captureMouse = false;
 
 	bool KeyPressed[256];
 
-	ShaderProgram* shaders[30];
-	std::vector<Light> LIGHTS[3];
+
+
+	ShaderProgram* shaders[30]{nullptr};
+	std::vector<Light*> LIGHTS[3];
+	std::vector<Camera*> cameras;
 	std::vector<Mesh> meshes;
-
-
+	std::vector<GameObject *> objects;
 	std::map<std::string, Shader*> shadersLoaded;
+	std::map<std::string, Texture*> texturesLoaded;
 	
 public:
 
-	Mesh GLCreate(objl::Mesh & model);
 
+
+	//static double DeltaTime() { return deltaTime; }
+	Mesh GLCreate(objl::Mesh & model);
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
+	void SetupScene();
+	void SetupModels(const std::vector<std::string>& objPathsp);
+	void SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths);
 	void MainLoop();
 	void HandleEvents();
 	void UILoop();

@@ -2,13 +2,13 @@
 
 
 
-inline Vec3 Transform::GetRotation() { return rotation; }
+ Vec3 Transform::GetRotation() { return rotation; }
 
-inline Vec3 Transform::GetScale() { return scale; }
+ Vec3 Transform::GetScale() { return scale; }
 
-inline Vec3 Transform::GetPosition() { return position; }
+ Vec3 Transform::GetPosition() { return position; }
 
-inline Transform * Transform::SetRotation(const Vec3 & val) {
+ Transform * Transform::SetRotation(const Vec3 & val) {
 	SetDirty(Dirty::Model);
 	rotation = val;
 
@@ -23,51 +23,51 @@ inline Transform * Transform::SetRotation(const Vec3 & val) {
 	return this;
 }
 
-inline Transform * Transform::SetScale(const Vec3 & val) { SetDirty(Dirty::Model); scale = val; return this; }
+ Transform * Transform::SetScale(const Vec3 & val) { SetDirty(Dirty::Model); scale = val; return this; }
 
-inline Transform * Transform::SetPosition(const Vec3 & val) { SetDirty(Dirty::Model); position = val; return this; }
+ Transform * Transform::SetPosition(const Vec3 & val) { SetDirty(Dirty::Model); position = val; return this; }
 
-inline Transform * Transform::SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
+ Transform * Transform::SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
 
-inline Transform * Transform::SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
+ Transform * Transform::SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
 
-inline Transform * Transform::SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
+ Transform * Transform::SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
 
-inline Transform * Transform::Translate(const Vec3 & val) { return SetPosition(position + val); }
+ Transform * Transform::Translate(const Vec3 & val) { return SetPosition(position + val); }
 
-inline Transform * Transform::Rotate(const Vec3 & val) { return SetRotation(rotation + val); }
+ Transform * Transform::Rotate(const Vec3 & val) { return SetRotation(rotation + val); }
 
-inline Transform * Transform::Scale(const Vec3 & val) { return SetScale(scale + val); }
+ Transform * Transform::Scale(const Vec3 & val) { return SetScale(scale + val); }
 
-inline Transform * Transform::Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
+ Transform * Transform::Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
 
-inline Transform * Transform::Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
+ Transform * Transform::Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
 
-inline Transform * Transform::Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
+ Transform * Transform::Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
 
-inline Vec3 Transform::Front() { return front; }
+ Vec3 Transform::Front() { return front; }
 
-inline Vec3 Transform::Right() { return right; }
+ Vec3 Transform::Right() { return right; }
 
-inline Vec3 Transform::Up() { return up; }
+ Vec3 Transform::Up() { return up; }
 
-inline Vec3 Transform::WorldFront() {
+ Vec3 Transform::WorldFront() {
 	return Vec3{ 0,0,1 };
 }
 
-inline Vec3 Transform::WorldRight() {
+ Vec3 Transform::WorldRight() {
 	return Vec3{ 1,0,0 };
 }
 
-inline Vec3 Transform::WorldUp() {
+ Vec3 Transform::WorldUp() {
 	return Vec3{ 0,1,0 };
 }
 
-inline Vec3 Transform::RotatePoint(Vec3 point, Vec3 rotation) {
+ Vec3 Transform::RotatePoint(Vec3 point, Vec3 rotation) {
 	return  RotatePoint(point, GenRotMat(rotation));
 }
 
-inline Vec3 Transform::RotatePoint(Vec3 point, Mat4 rotation) {
+ Vec3 Transform::RotatePoint(Vec3 point, Mat4 rotation) {
 	return  rotation * Vec4(point, 1);
 }
 
@@ -118,14 +118,14 @@ bool Transform::TryGetClean()
 	return true;
 }
 
-inline Transform * Transform::SetDirty(Dirty newVal) {
+ Transform * Transform::SetDirty(Dirty newVal) {
 	if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
 		dirty = newVal;
 	}
 	return this;
 }
 
-inline Transform * Transform::SetParent(Transform * other) {
+ Transform * Transform::SetParent(Transform * other) {
 	if (!other) {
 		// poner como root node porque estoy es quitando el padre
 		throw std::exception("Not implemented yet");
@@ -150,21 +150,21 @@ inline Transform * Transform::SetParent(Transform * other) {
 	return this;
 }
 
-inline Mat4 & Transform::GetAccumulated() {
+ Mat4 & Transform::GetAccumulated() {
 	TryGetClean();
 	return acum;
 }
 
-inline Mat4 & Transform::GetModel() {
+ Mat4 & Transform::GetModel() {
 	TryGetClean();
 	return model;
 }
 
-inline Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 & rotation) {
+ Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 & rotation) {
 	return Transform::GenModel(scale, position, GenRotMat(rotation));
 }
 
-inline Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
+ Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
 	Mat4 model = Mat4(1);
 	model = glm::scale(model, scale);
 	model = glm::translate(model, position);
@@ -172,11 +172,16 @@ inline Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const
 	return model;
 }
 
-inline Mat4 Transform::GenRotMat(const Vec3 & rotation) {
+ Mat4 Transform::GenRotMat(const Vec3 & rotation) {
 	Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), Vec3(1, 0, 0));
 	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
 	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
 	return rot;
+}
+
+
+Transform::Transform()
+{
 }
 
 Transform::~Transform()

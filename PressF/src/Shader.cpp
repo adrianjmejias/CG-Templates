@@ -11,6 +11,7 @@ void Shader::Compile() {
 void Shader::ReCompile() {
 	//PF_INFO("Recompiling {0}", name);
 	SetFromFile(path, type);
+
 }
 
 Shader* Shader::FromPath(const std::string path, unsigned int type) {

@@ -12,6 +12,7 @@
 #include <tuple>
 #include "Logger.h"
 
+
 bool GLLogCall(const char* function, const char* file, int line);
 
 #define GLASSERT(x) if (!(x)) __debugbreak();
@@ -49,8 +50,6 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 	return true;
 }
 
-#include "Window.h"
-#include "UserInterface.h"
 
 #define STL_BYTE_SIZE(cont, type) (cont.size() * sizeof(type))
 
@@ -61,13 +60,3 @@ using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
 using Mat4 = glm::mat4;
 
-//std::ostream& operator<<(std::ostream& os, const Vec3& v)
-//{
-//	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-//	return os;
-//}
-//std::istream& operator>> (std::istream& is, Vec3& v)
-//{
-//	is >> v.x >> v.y >> v.z;
-//	return is;
-//}

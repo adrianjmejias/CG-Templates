@@ -127,14 +127,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Light.h" />
     <ClInclude Include="PressF\src\Application.h" />
+    <ClInclude Include="PressF\src\Camera.h" />
+    <ClInclude Include="PressF\src\Component.h" />
+    <ClInclude Include="PressF\src\core.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
+    <ClInclude Include="PressF\src\Light.h" />
     <ClInclude Include="PressF\src\Logger.h" />
     <ClInclude Include="PressF\src\Model.h" />
     <ClInclude Include="PressF\src\OBJ_Loader.h" />
     <ClInclude Include="PressF\src\Shader.h" />
     <ClInclude Include="PressF\src\ShaderProgram.h" />
+    <ClInclude Include="PressF\src\Texture.h" />
+    <ClInclude Include="PressF\src\Transform.h" />
     <ClInclude Include="PressF\src\UserInterface.h" />
     <ClInclude Include="PressF\src\Window.h" />
     <ClInclude Include="PressF\src\main.h" />
@@ -509,21 +514,23 @@
     <ClInclude Include="dependencies\glm\glm\vec3.hpp" />
     <ClInclude Include="dependencies\glm\glm\vec4.hpp" />
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
-    <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Light.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
+    <ClCompile Include="PressF\src\Camera.cpp" />
+    <ClCompile Include="PressF\src\Component.cpp" />
     <ClCompile Include="PressF\src\GameObject.cpp" />
+    <ClCompile Include="PressF\src\Light.cpp" />
     <ClCompile Include="PressF\src\Logger.cpp" />
     <ClCompile Include="PressF\src\Model.cpp" />
     <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
     <ClCompile Include="PressF\src\Shader.cpp" />
     <ClCompile Include="PressF\src\ShaderProgram.cpp" />
+    <ClCompile Include="PressF\src\Texture.cpp" />
+    <ClCompile Include="PressF\src\Transform.cpp" />
     <ClCompile Include="PressF\src\UserInterface.cpp" />
     <ClCompile Include="PressF\src\Window.cpp" />
     <ClCompile Include="PressF\src\main.cpp" />
-    <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">

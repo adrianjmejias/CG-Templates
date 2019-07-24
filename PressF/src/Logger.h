@@ -1,5 +1,6 @@
 #pragma once
 #include <spdlog\spdlog.h>
+#include <ostream>
 class Logger
 {
 public:
@@ -19,6 +20,16 @@ public:
 		__debugbreak();\
 	}\
 
+//std::ostream& operator<<(std::ostream& os, const Vec3& v)
+//{
+//	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+//	return os;
+//}
+//std::istream& operator>> (std::istream& is, Vec3& v)
+//{
+//	is >> v.x >> v.y >> v.z;
+//	return is;
+//}
 
 
 

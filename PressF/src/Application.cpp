@@ -1,5 +1,6 @@
 #include "Application.h"
 
+extern double deltaTime = 0;
 
 
 Mesh Application::GLCreate(objl::Mesh &model) {
@@ -7,7 +8,28 @@ Mesh Application::GLCreate(objl::Mesh &model) {
 
 	//nasty way of copying attributes
 	*dynamic_cast<objl::Material*>(&curMesh.mat) = model.MeshMaterial;
-	curMesh.nVertex = model.Vertices.size();
+
+
+
+	for (size_t ii = 0; ii < model.Indices.size(); ii += 3)
+	{
+		curMesh.indices.push_back({ model.Indices[ii],model.Indices[ii + 1], model.Indices[ii + 2] });
+	}
+
+
+	for (size_t ii = 0; ii < model.Vertices.size(); ii++)
+	{
+		Vertex v;
+		objl::Vertex b = model.Vertices[ii];
+
+		Assign(v.pos, b.Position);
+		Assign(v.normal, b.Normal);
+		Assign(v.uv, b.TextureCoordinate);
+
+
+
+		curMesh.vertex.push_back(v);
+	}
 
 
 	GLCALL(glGenVertexArrays(1, &curMesh.VAO));
@@ -17,40 +39,73 @@ Mesh Application::GLCreate(objl::Mesh &model) {
 	GLCALL(glBindVertexArray(curMesh.VAO));
 	{
 		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, curMesh.VBO));
-		glBufferData(GL_ARRAY_BUFFER, model.Vertices.size() * sizeof(objl::Vertex), &model.Vertices[0], GL_STATIC_DRAW);
-		{
-			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, Position)));
-			GLCALL(glEnableVertexAttribArray(0));
+		glBufferData(GL_ARRAY_BUFFER, curMesh.vertex.size() * sizeof(Vertex), &curMesh.vertex[0], GL_STATIC_DRAW);
 
-			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, Normal)));
-			GLCALL(glEnableVertexAttribArray(1));
-
-			GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(objl::Vertex), (void*)offsetof(objl::Vertex, TextureCoordinate)));
-			GLCALL(glEnableVertexAttribArray(2));
-		}
 
 		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, curMesh.EBO));
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.Indices.size() * sizeof(unsigned int), &model.Indices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, curMesh.indices.size() * sizeof(iVec3), &curMesh.indices[0], GL_STATIC_DRAW);
+
 		{
-			GLCALL(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(unsigned int) * 9, (void*)0));
+			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
+			GLCALL(glEnableVertexAttribArray(0));
+
+			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+			GLCALL(glEnableVertexAttribArray(1));
+
+			GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+			GLCALL(glEnableVertexAttribArray(2));
+
+			GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+			GLCALL(glEnableVertexAttribArray(3));
+
+			GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
 			GLCALL(glEnableVertexAttribArray(4));
 		}
 	}
-
 	GLCALL(glBindVertexArray(0));
-
-
-
-
 	return curMesh;
 }
 
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
+
 	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
-	
+	SetupShaders(shaderPaths);
+	SetupModels(objPaths);
+	SetupScene();
+}
+
+void Application::SetupScene()
+{
+	GameObject *go = new GameObject();
+	go->AddComponent < Light >();
+	go->AddComponent < Camera >();
+	objects.push_back(go);
+
+}
+
+void Application::SetupModels(const std::vector<std::string>& objPaths)
+{
+	for each (std::string objPath in objPaths)
+	{
+		Model model;
+
+		if (!model.LoadFile(objPath)) {
+			PF_ERROR("Failed to load model {0}", objPath);
+			__debugbreak();
+		}
+
+		for each (objl::Mesh mesh in model.LoadedMeshes)
+		{
+			meshes.push_back(GLCreate(mesh));
+		}
+	}
+}
+
+void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
+{
 	const std::string baseShaderFolder = "assets/shaders/defaults/";
-	for(int ii= 0; ii < shaderPaths.size(); ii++)
+	for (int ii = 0; ii < shaderPaths.size(); ii++)
 	{
 		auto tupleName = shaderPaths[ii];
 
@@ -83,36 +138,18 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 		}
 
 
-		shaders[ii] = new ShaderProgram({vert, frag});
+		shaders[ii] = new ShaderProgram({ vert, frag });
 	}
-
-	for each (std::string objPath in objPaths)
-	{
-		Model model;
-
-		if (!model.LoadFile(objPath)) {
-			PF_ERROR("Failed to load model {0}", objPath);
-			__debugbreak();
-		}
-
-		for each (objl::Mesh mesh in model.LoadedMeshes)
-		{
-			meshes.push_back(GLCreate(mesh));
-		}
-	}
-																				
 }
 
 void Application::MainLoop()
 {
 	while (running) {
 		//std::cout << "looping";
-		SDL_GetWindowSize(win, &win_width, &win_heigth);
 		glViewport(0, 0, win_width, win_heigth);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(1, 1, 0, 1);
-		LAST = NOW;
-		SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
+
 
 		HandleEvents();
 
@@ -137,6 +174,9 @@ void Application::MainLoop()
 
 void Application::HandleEvents()
 {
+	SDL_GetWindowSize(win, &win_width, &win_heigth);
+	LAST = NOW;
+	SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
@@ -146,31 +186,36 @@ void Application::HandleEvents()
 		}
 
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			if (e.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_ESCAPE) {
-				running = false;
-			}
-		}
-		//	if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_C) {
-		//		//PF_INFO("capture {0}", capture);
-		//		if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
-		//			__debugbreak();
-		//		}
-		//		captureMouse = !captureMouse;
-		//	}
-		//	if (evt.key.keysym.scancode == SDL_Scancode::SDL_SCANCODE_R) {
-		//	/*	for each (auto pair in meshes)
-		//		{
-		//			for (auto mat : pair->mtl->materials) {
-		//				mat.second->shader->ReCompile();
-		//			}
-		//		}*/
-		//	}
-		//}
 
-	/*	for each (auto go in callOrder)
-		{
-			go->HandleEvent(evt);
-		}*/
+			switch (e.key.keysym.scancode)
+			{
+			case SDL_Scancode::SDL_SCANCODE_ESCAPE:
+				running = false;
+				break;
+			case SDL_Scancode::SDL_SCANCODE_R:
+				PF_INFO("Recompiling");
+				for (size_t ii = 0; ii < 15; ii++)
+				{
+					auto shader = shaders[ii];
+					if (shader) {
+
+						shader->ReCompile();
+					}
+				}
+				break;
+			case SDL_Scancode::SDL_SCANCODE_C:
+				if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
+					__debugbreak();
+				}
+				captureMouse = !captureMouse;
+				break;
+
+
+			default:
+				break;
+			}
+
+		}
 
 		if (e.window.type == SDL_EventType::SDL_WINDOWEVENT) {
 			switch (e.window.event) {
@@ -182,8 +227,15 @@ void Application::HandleEvents()
 				break;
 			}
 		}
+
+		for (auto go : objects)
+		{
+			for (auto comp : go->components) {
+				comp->HandleEvent(e);
+			}
+		}
+
 	}
-	//nk_input_end(ctx);
 }
 
 void Application::UILoop()
@@ -203,21 +255,17 @@ void Application::UILoop()
 
 void Application::UpdateLoop()
 {
-	/* process frame */
-	//process_frame(ctx);
+	
+	for(GameObject* go : objects)
+	{
+		PF_ASSERT(go && "game object is null");
+		for (Component* comp : go->components)
+		{
+			PF_ASSERT(comp && "component is null");
+			comp->Update();
 
-	/* render */
-	//r_clear(mu_color(bg[0], bg[1], bg[2], 255));
-	/*mu_Command *cmd = NULL;
-	while (mu_next_command(ctx, &cmd)) {
-		switch (cmd->type) {
-		case MU_COMMAND_TEXT: r_draw_text(cmd->text.str, cmd->text.pos, cmd->text.color); break;
-		case MU_COMMAND_RECT: r_draw_rect(cmd->rect.rect, cmd->rect.color); break;
-		case MU_COMMAND_ICON: r_draw_icon(cmd->icon.id, cmd->icon.rect, cmd->icon.color); break;
-		case MU_COMMAND_CLIP: r_set_clip_rect(cmd->clip.rect); break;
 		}
 	}
-	r_present();*/
 }
 
 void Application::RenderLoop()
@@ -236,7 +284,7 @@ void Application::RenderLoop()
 	//
 	for each (const Mesh& mesh in meshes)
 	{
-		
+
 		iVec3 lightsPlaced{ 0,0,0 };
 		const Material& MAT = mesh.mat;
 
@@ -244,7 +292,7 @@ void Application::RenderLoop()
 		GLCALL(glBindVertexArray(mesh.VAO));
 
 
-		GLCALL(glDrawArrays(GL_TRIANGLES, 0, mesh.nVertex));
+		GLCALL(glDrawElements(GL_TRIANGLES, mesh.nIndices, GL_UNSIGNED_INT, 0));
 
 		GLCALL(glBindVertexArray(0));
 
