@@ -11,7 +11,7 @@ void Light::Bind(iVec3 & countLights, const ShaderProgram & shader) {
 
 	std::string name = "LIGHTS[" + std::to_string(myCount) + "]";
 
-	shader.SetUniform(name + ".type", static_cast<int>(type));
+	shader.SetUniform(name + ".type", myCount);
 	shader.SetUniform(name + ".position", transform.GetPosition());
 	shader.SetUniform(name + ".attenuation", attenuation);
 	shader.SetUniform(name + ".innerAngle", glm::radians(innerAngle));
@@ -33,7 +33,6 @@ void Light::HandleEvent(const SDL_Event & e)
 
 void Light::Update()
 {
-	PF_INFO("UPDATe LIGHT {0}", transform.GetPosition().x);
 }
 
 Light::Light(GameObject & go, Transform & t) : Component(go, t) {}

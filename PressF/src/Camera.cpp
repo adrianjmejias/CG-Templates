@@ -1,9 +1,6 @@
 #include "Camera.h"
 
-
 extern double deltaTime;
-
-
 
 Camera::Camera(GameObject & go, Transform & t) : Component(go, t)
 {
@@ -23,7 +20,6 @@ Camera::~Camera()
 
 void Camera::Update() {
 }
-
 
 // Inherited via Component
 
@@ -49,11 +45,11 @@ void Camera::HandleEvent(const SDL_Event & e) {
 	}
 
 	if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
-		float movX = sensitivity * e.motion.xrel * deltaTime;
-		float movY = sensitivity * e.motion.yrel* deltaTime;
+		float movX = sensitivity * e.motion.xrel * static_cast<float>(deltaTime);
+		float movY = sensitivity * e.motion.yrel * static_cast<float>(deltaTime);
 
 		float xoffset = e.motion.xrel* sensitivity;
-		float yoffset = e.motion.yrel*sensitivity;
+		float yoffset = e.motion.yrel* sensitivity;
 
 		Yaw += xoffset;
 		Pitch += yoffset;
@@ -94,14 +90,21 @@ Mat4 & Camera::GetView() {
 	return view;
 }
 
-Mat4 & Camera::GetProjection(int w, int h) {
-
-	if (isPerspective)
-	{
-		projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+Mat4 & Camera::GetProjection(ProjectionType type, int w, int h) {
+	if (type == ProjectionType::CAM_SETUP) {
+		type = (isPerspective) ? ProjectionType::PERSPECTIVE : ProjectionType::ORTHO;
 	}
-	else {
+
+	switch (type)
+	{
+	case ProjectionType::PERSPECTIVE:
+		projection = glm::perspective(glm::radians(fov), static_cast<float>(w) / h, nearClippingPlane, farClippingPlane);
+		break;
+	case ProjectionType::ORTHO:
 		projection = glm::ortho(0.f, static_cast<float>(w), 0.f, static_cast<float>(h), nearClippingPlane, farClippingPlane);
+		break;
+	default:
+		break;
 	}
 
 	return projection;

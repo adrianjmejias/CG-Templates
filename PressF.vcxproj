@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\Camera.h" />
     <ClInclude Include="PressF\src\Component.h" />
@@ -516,6 +517,7 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
     <ClCompile Include="PressF\src\Camera.cpp" />
     <ClCompile Include="PressF\src\Component.cpp" />

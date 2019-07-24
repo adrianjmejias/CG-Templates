@@ -5,4 +5,4 @@
 #include "ShaderProgram.h"
 #include "Model.h"
 #include "Texture.h"
-//#include "GameObject.h"
+#include "Component.h"

@@ -1,6 +1,13 @@
 #pragma once
 #include "core.h"
-#include "Component.h"
+
+enum class ProjectionType {
+	PERSPECTIVE,
+	ORTHO,
+	CAM_SETUP
+};
+
+
 class Camera : public Component{
 
 public:
@@ -25,7 +32,6 @@ public:
 	Camera(GameObject& go, Transform& t);
 	Camera::~Camera();
 
-public:
 	// Inherited via Component
 	virtual void Update() override;
 
@@ -45,5 +51,5 @@ public:
 	void updateCameraVectors();
 	virtual Mat4& GetView();
 
-	virtual Mat4& GetProjection(int w, int h);
+	virtual Mat4& GetProjection(ProjectionType type, int w, int h);
 };

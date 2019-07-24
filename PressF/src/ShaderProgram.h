@@ -35,6 +35,8 @@ class ShaderProgram :
 public:
 	unsigned int id;
 	bool lit = true;
+	bool usesMaterial = true;
+	bool usesTextures = true;
 	bool viewDependant = true;
 	bool MVP = true;
 	bool shadows = true;

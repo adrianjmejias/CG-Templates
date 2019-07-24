@@ -1,8 +1,18 @@
 #pragma once
 
 #include "core.h"
+
 #include "Camera.h"
 #include "Light.h"
+#include "MeshRenderer.h"
+
+struct CameraCompare
+{
+	bool operator() (Camera* a, Camera* b)
+	{
+		return a->power < b->power;
+	}
+};
 
 
 class Application
@@ -28,13 +38,14 @@ public:
 	bool captureMouse = false;
 
 	bool KeyPressed[256];
-
+	Vec4 bgColor{0.396,0.313,0.686, 1};
 
 
 	ShaderProgram* shaders[30]{nullptr};
-	std::vector<Light*> LIGHTS[3];
-	std::vector<Camera*> cameras;
-	std::vector<Mesh> meshes;
+	std::vector<Light*> LIGHTS;
+	std::priority_queue < Camera*, std::vector<Camera*>, CameraCompare> cameras;
+	std::vector<MeshRenderer*> renderers;
+	std::vector<Model*> models;
 	std::vector<GameObject *> objects;
 	std::map<std::string, Shader*> shadersLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
@@ -44,7 +55,7 @@ public:
 
 
 	//static double DeltaTime() { return deltaTime; }
-	Mesh GLCreate(objl::Mesh & model);
+	void GLCreate(objl::Loader & model);
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
 	void SetupModels(const std::vector<std::string>& objPathsp);
@@ -54,6 +65,7 @@ public:
 	void UILoop();
 	void UpdateLoop();
 	void RenderLoop();
+	void Steal(Component *);
 	Application();
 	~Application();
 };
