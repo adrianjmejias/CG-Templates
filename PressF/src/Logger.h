@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 #include <spdlog\spdlog.h>
 #include <ostream>
 class Logger
@@ -20,17 +21,17 @@ public:
 		__debugbreak();\
 	}\
 
-//std::ostream& operator<<(std::ostream& os, const Vec3& v)
-//{
-//	os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
-//	return os;
-//}
-//std::istream& operator>> (std::istream& is, Vec3& v)
-//{
-//	is >> v.x >> v.y >> v.z;
-//	return is;
-//}
+bool GLLogCall(const char* function, const char* file, int line);
 
+#define GLASSERT(x) if (!(x)) __debugbreak();
+#define GLCALL(x) GLClearError();\
+	x;\
+	GLASSERT(GLLogCall(#x, __FILE__, __LINE__))\
+
+void GLClearError();
+
+std::ostream& operator<<(std::ostream& os, const Vec3& v);
+std::istream& operator>> (std::istream& is, Vec3& v);
 
 
 // Macros cant be at eof

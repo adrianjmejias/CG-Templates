@@ -35,7 +35,7 @@ int main() {
 
 		});
 
-	app.MainLoop();
+	app.LoopMain();
 
 	return 0;
 }

@@ -19,6 +19,9 @@ Camera::~Camera()
 // Inherited via Component
 
 void Camera::Update() {
+
+	PF_INFO("CAMERA POS , ROT");
+	std::cout << transform.GetPosition() << "/ " << transform.GetRotation()<<std::endl;
 }
 
 // Inherited via Component
@@ -62,7 +65,7 @@ void Camera::HandleEvent(const SDL_Event & e) {
 			if (Pitch < -89.0f)
 				Pitch = -89.0f;
 		}
-
+		
 		transform.SetRotation(glm::degrees(Front));
 		// Update Front, Right and Up Vectors using the updated Euler angles
 		updateCameraVectors();

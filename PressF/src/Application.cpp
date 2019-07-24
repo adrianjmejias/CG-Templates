@@ -2,67 +2,6 @@
 
 extern double deltaTime = 0;
 
-void Application::GLCreate(objl::Loader &fullModel) {
-	Model model;
-	glGenVertexArrays(1, &model.VAO);
-	glGenBuffers(1, &model.EBO);
-	glGenBuffers(1, &model.VBO);
-
-	//Mesh curMesh;
-
-	////nasty way of copying attributes
-	//*dynamic_cast<objl::Material*>(&curMesh.mat) = model.MeshMaterial;
-
-	////for (size_t ii = 0; ii < model.Indices.size(); ii += 3)
-	////{
-	////	curMesh.indices.push_back({ model.Indices[ii],model.Indices[ii + 1], model.Indices[ii + 2] });
-	////}
-
-	////for (size_t ii = 0; ii < model.Vertices.size(); ii++)
-	////{
-	////	Vertex v;
-	////	objl::Vertex b = model.Vertices[ii];
-
-	////	Assign(v.pos, b.Position);
-	////	Assign(v.normal, b.Normal);
-	////	Assign(v.uv, b.TextureCoordinate);
-
-	////	curMesh.vertex.push_back(v);
-	////}
-
-	//GLCALL(glGenVertexArrays(1, &curMesh.VAO));
-	//GLCALL(glGenBuffers(1, &curMesh.VBO));
-	//GLCALL(glGenBuffers(1, &curMesh.EBO));
-
-	//GLCALL(glBindVertexArray(curMesh.VAO));
-	//{
-	//	GLCALL(glBindBuffer(GL_ARRAY_BUFFER, curMesh.VBO));
-	//	glBufferData(GL_ARRAY_BUFFER, curMesh.vertex.size() * sizeof(Vertex), &curMesh.vertex[0], GL_STATIC_DRAW);
-
-	//	GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, curMesh.EBO));
-	//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, curMesh.indices.size() * sizeof(iVec3), &curMesh.indices[0], GL_STATIC_DRAW);
-
-	//	{
-	//		GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
-	//		GLCALL(glEnableVertexAttribArray(0));
-
-	//		GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-	//		GLCALL(glEnableVertexAttribArray(1));
-
-	//		GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
-	//		GLCALL(glEnableVertexAttribArray(2));
-
-	//		GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-	//		GLCALL(glEnableVertexAttribArray(3));
-
-	//		GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
-	//		GLCALL(glEnableVertexAttribArray(4));
-	//	}
-	//}
-	//GLCALL(glBindVertexArray(0));
-	//return curMesh;
-}
-
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
 	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
@@ -88,11 +27,13 @@ void Application::SetupScene()
 	go->AddComponent < Camera >();
 	objects.push_back(go);
 
-	for(Model* model : models)
-	for (Mesh &mesh : *model) {
-		GameObject *go = new GameObject();
-		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
-		mesh.push_back(ren);
+	for (Model &model : models) {
+
+		for (Mesh &mesh : model) {
+			GameObject *go = new GameObject();
+			MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
+			mesh.push_back(ren);
+		}
 	}
 }
 
@@ -147,7 +88,10 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 	}
 }
 
-void Application::MainLoop()
+
+
+
+void Application::LoopMain()
 {
 	while (running) {
 		//std::cout << "looping";
@@ -157,13 +101,13 @@ void Application::MainLoop()
 
 		HandleEvents();
 
-		UILoop();
+		LoopUI();
 
-		UpdateLoop();
+		LoopUpdate();
 
 		//std::sort(begin(callOrder), end(callorder), [])
 
-		RenderLoop();
+		LoopRender();
 
 		SDL_GL_SwapWindow(win);
 
@@ -176,68 +120,7 @@ void Application::MainLoop()
 	}
 }
 
-void Application::HandleEvents()
-{
-	SDL_GetWindowSize(win, &win_width, &win_heigth);
-	LAST = NOW;
-	SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
-	SDL_Event e;
-	while (SDL_PollEvent(&e))
-	{
-		if (e.type == SDL_QUIT) {
-			running = false;
-			break;
-		}
-
-		if (e.type == SDL_EventType::SDL_KEYDOWN) {
-			switch (e.key.keysym.scancode)
-			{
-			case SDL_Scancode::SDL_SCANCODE_ESCAPE:
-				running = false;
-				break;
-			case SDL_Scancode::SDL_SCANCODE_R:
-				PF_INFO("Recompiling");
-				for (size_t ii = 0; ii < 15; ii++)
-				{
-					auto shader = shaders[ii];
-					if (shader) {
-						shader->ReCompile();
-					}
-				}
-				break;
-			case SDL_Scancode::SDL_SCANCODE_C:
-				if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
-					__debugbreak();
-				}
-				captureMouse = !captureMouse;
-				break;
-
-			default:
-				break;
-			}
-		}
-
-		if (e.window.type == SDL_EventType::SDL_WINDOWEVENT) {
-			switch (e.window.event) {
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				SDL_Log("Window %d size changed to %dx%d",
-					e.window.windowID,
-					e.window.data1,
-					e.window.data2);
-				break;
-			}
-		}
-
-		for (auto go : objects)
-		{
-			for (auto comp : go->components) {
-				comp->HandleEvent(e);
-			}
-		}
-	}
-}
-
-void Application::UILoop()
+void Application::LoopUI()
 {
 	////overview(ctx);
 	//if (nk_begin(ctx, "Hierarchy", nk_rect(0, 50, 250, 500),
@@ -252,7 +135,7 @@ void Application::UILoop()
 	//nk_end(ctx);
 }
 
-void Application::UpdateLoop()
+void Application::LoopUpdate()
 {
 	for (GameObject* go : objects)
 	{
@@ -265,18 +148,17 @@ void Application::UpdateLoop()
 	}
 }
 
-void Application::RenderLoop()
+void Application::LoopRender()
 {
 	Camera &cam = *cameras.top();
 	Mat4 projection = cam.GetProjection(ProjectionType::CAM_SETUP, win_width, win_heigth);
 	Mat4 view = cam.GetView();
 
-	for (const Model* model : models) {
-		PF_ASSERT(model && "model can't be null");
-		glBindVertexArray(model->VAO);
+	for (const Model& model : models) {
+		glBindVertexArray(model.VAO);
 
 
-		for (const Mesh &mesh : *model) {
+		for (const Mesh &mesh : model) {
 			iVec3 lightsPlaced{ 0,0,0 };
 			const Material &MAT = mesh.mat;
 			const ShaderProgram &shader = *shaders[MAT.illum];
@@ -314,7 +196,7 @@ void Application::RenderLoop()
 				PF_ASSERT(obj && "Renderer is null");
 				Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, (void*) mesh.offset);
+				glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, (void*)mesh.offset);
 			}
 		}
 		glBindVertexArray(0);
@@ -396,6 +278,167 @@ void Application::RenderLoop()
 	//
 	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 	//
+}
+
+
+
+
+void Application::GLCreate(objl::Loader &fullModel) {
+	Model model;
+	glGenVertexArrays(1, &model.VAO);
+	glGenBuffers(1, &model.EBO);
+	glGenBuffers(1, &model.VBO);
+
+	std::vector<Vertex> vertex;
+	vertex.reserve(fullModel.LoadedVertices.size());
+
+	for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
+		vertex.push_back(Vertex(oVertex));
+	}
+
+	// Ill do it in the fragment
+		//std::vector<std::vector<unsigned int> > vertexContribution{ vertex.size(), std::vector<unsigned int>() }; //stores in pos ii,  all the triangle ids he's in
+		//std::vector< Vec3 > triTan; //triangle tangent
+		//std::vector< Vec3 > triBiTan; //triangeBitangent
+		//const int u = 0;
+		//const int v = 1;
+		//for (size_t indx = 0, tri = 0; indx < fullModel.LoadedIndices.size(); tri++, indx += 3)
+		//{
+		//	unsigned int id_1 = fullModel.LoadedIndices[indx];
+		//	unsigned int id_2 = fullModel.LoadedIndices[indx + 1];
+		//	unsigned int id_3 = fullModel.LoadedIndices[indx + 2];
+
+		//	Vertex &v1 = vertex[id_1];
+		//	Vertex &v2 = vertex[id_2];
+		//	Vertex &v3 = vertex[id_3];
+
+		//	Vec3 p1 = v1.pos;
+		//	Vec3 p2 = v2.pos;
+		//	Vec3 p3 = v3.pos;
+
+		//	Vec2 uv1 = v1.uv;
+		//	Vec2 uv2 = v2.uv;
+		//	Vec2 uv3 = v3.uv;
+
+		//	float u3v1 = 
+		//	
+		//	
+		//	vertexContribution[id_1].push_back(tri);
+		//	vertexContribution[id_2].push_back(tri);
+		//	vertexContribution[id_3].push_back(tri);
+		//}
+
+
+	GLCALL(glBindVertexArray(model.VAO));
+	{
+		GLCALL(glBindBuffer(GL_ARRAY_BUFFER, model.VBO));
+		glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW);
+
+		{
+			GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
+			GLCALL(glEnableVertexAttribArray(0));
+
+			GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+			GLCALL(glEnableVertexAttribArray(1));
+
+			GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+			GLCALL(glEnableVertexAttribArray(2));
+
+			GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+			GLCALL(glEnableVertexAttribArray(3));
+
+			GLCALL(glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
+			GLCALL(glEnableVertexAttribArray(4));
+		}
+
+		unsigned long int totalIndices = 0;
+		model.reserve(fullModel.LoadedMeshes.size());
+		for (objl::Mesh& objlMesh : fullModel.LoadedMeshes) {
+			Mesh myMesh;
+
+			myMesh.mat = objlMesh.MeshMaterial;
+			myMesh.nElem = objlMesh.Indices.size();
+			myMesh.offset = totalIndices;
+
+			totalIndices += myMesh.nElem;
+			model.push_back(myMesh);
+		}
+
+		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.EBO));
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalIndices * sizeof(unsigned int), 0, GL_STATIC_DRAW);
+
+		for (int ii = 0; ii < model.size(); ii++ ) {
+			objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
+			Mesh& myMesh = model[ii];
+		
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, myMesh.offset, myMesh.nElem, objlMesh.Indices.data());
+		}
+
+	}
+	GLCALL(glBindVertexArray(0));
+	models.push_back(model);
+
+}
+
+void Application::HandleEvents()
+{
+	SDL_GetWindowSize(win, &win_width, &win_heigth);
+	LAST = NOW;
+	SDL_GetMouseState(&mouse_lastPosX, &mouse_lastPosY);
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+	{
+		if (e.type == SDL_QUIT) {
+			running = false;
+			break;
+		}
+
+		if (e.type == SDL_EventType::SDL_KEYDOWN) {
+			switch (e.key.keysym.scancode)
+			{
+			case SDL_Scancode::SDL_SCANCODE_ESCAPE:
+				running = false;
+				break;
+			case SDL_Scancode::SDL_SCANCODE_R:
+				PF_INFO("Recompiling");
+				for (size_t ii = 0; ii < 15; ii++)
+				{
+					auto shader = shaders[ii];
+					if (shader) {
+						shader->ReCompile();
+					}
+				}
+				break;
+			case SDL_Scancode::SDL_SCANCODE_C:
+				if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
+					__debugbreak();
+				}
+				captureMouse = !captureMouse;
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		if (e.window.type == SDL_EventType::SDL_WINDOWEVENT) {
+			switch (e.window.event) {
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				SDL_Log("Window %d size changed to %dx%d",
+					e.window.windowID,
+					e.window.data1,
+					e.window.data2);
+				break;
+			}
+		}
+
+		for (auto go : objects)
+		{
+			for (auto comp : go->components) {
+				comp->HandleEvent(e);
+			}
+		}
+	}
 }
 
 void Application::Steal(Component *comp)

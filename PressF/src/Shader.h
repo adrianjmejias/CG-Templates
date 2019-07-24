@@ -1,5 +1,5 @@
 #pragma once
-#include "types.h"
+#include "Logger.h"
 
 class Shader {
 public:

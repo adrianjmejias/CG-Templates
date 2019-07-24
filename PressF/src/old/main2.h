@@ -87,14 +87,6 @@ enum class TexInterpolation {
 
 
 
-kA;
-kD;
-kS;
-Ns;
-Ni;
-d;
-illum;
-
 
 
 

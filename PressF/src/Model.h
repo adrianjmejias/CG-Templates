@@ -6,12 +6,14 @@ class MeshRenderer;
 void Assign(Vec3& a, const objl::Vector3& b);
 void Assign(Vec2& a, const objl::Vector2& b);
 
-struct Vertex {
+class Vertex {
+public:
 	Vec3 pos;
 	Vec3 normal;
-	Vec2 uv;
 	Vec3 bitan;
 	Vec3 tan;
+	Vec2 uv;
+	Vertex(const objl::Vertex& v);
 };
 
 
@@ -20,13 +22,13 @@ class Material
 {
 public:
 	std::string name;
-	Vec3 kA;
-	Vec3 kD;
-	Vec3 kS;
+	Vec3 kA{1,0,0};
+	Vec3 kD{0,0,1};
+	Vec3 kS{0,1,0};
 	float Ns;
 	float Ni;
 	float d;
-	int illum;
+	int illum = 0;
 	std::string map_Ka;
 	std::string map_Kd;
 	std::string map_Ks;
@@ -60,9 +62,7 @@ class Mesh
 	: public std::vector<MeshRenderer*>
 {
 public:
-	unsigned int offset, nElem;
-	std::vector<Vertex> vertex;
-	std::vector<glm::uvec3> indices;
+	unsigned long int offset, nElem;
 	Material mat;
 };
 

@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "types.h"
-
+#include "Logger.h"
 
 enum class Dirty {
 	None,

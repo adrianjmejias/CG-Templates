@@ -45,7 +45,7 @@ public:
 	std::vector<Light*> LIGHTS;
 	std::priority_queue < Camera*, std::vector<Camera*>, CameraCompare> cameras;
 	std::vector<MeshRenderer*> renderers;
-	std::vector<Model*> models;
+	std::vector<Model> models;
 	std::vector<GameObject *> objects;
 	std::map<std::string, Shader*> shadersLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
@@ -56,16 +56,19 @@ public:
 
 	//static double DeltaTime() { return deltaTime; }
 	void GLCreate(objl::Loader & model);
+	void Steal(Component *);
+	void HandleEvents();
+
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
 	void SetupModels(const std::vector<std::string>& objPathsp);
 	void SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths);
-	void MainLoop();
-	void HandleEvents();
-	void UILoop();
-	void UpdateLoop();
-	void RenderLoop();
-	void Steal(Component *);
+
+	void LoopMain();
+	void LoopUI();
+	void LoopUpdate();
+	void LoopRender();
+
 	Application();
 	~Application();
 };
