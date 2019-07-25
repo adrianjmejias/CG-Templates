@@ -1181,7 +1181,6 @@
     <ClInclude Include="PressF\src\core.h" />
     <ClInclude Include="PressF\src\FrameBuffer.h" />
     <ClInclude Include="PressF\src\MeshRenderer.h" />
-    <ClInclude Include="CameraGL.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1221,7 +1220,6 @@
     <ClCompile Include="PressF\src\Transform.cpp" />
     <ClCompile Include="PressF\src\MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\FrameBuffer.cpp" />
-    <ClCompile Include="CameraGL.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\defaults\BASIC.vert" />
