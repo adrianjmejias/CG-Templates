@@ -39,6 +39,11 @@ bool Transform::TryGetClean()
 		right = RotatePoint(WorldRight(), rotMat);
 		front = RotatePoint(WorldFront(), rotMat);
 
+		up = glm::normalize(up);
+		right = glm::normalize(right);
+		front = glm::normalize(front);
+
+
 		if (parent) {
 			const Mat4& parentRot = parent->rotMat;
 			up = RotatePoint(up, parentRot);
@@ -46,9 +51,8 @@ bool Transform::TryGetClean()
 			front = RotatePoint(front, parentRot);
 		}
 
-		up = glm::normalize(up);
-		right = glm::normalize(right);
-		front = glm::normalize(front);
+
+
 
 		model = Transform::GenModel(scale, position, rotMat);
 		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
@@ -93,9 +97,10 @@ bool Transform::TryGetClean()
 }
 
  Mat4 Transform::GenRotMat(const Vec3 & rotation) {
-	Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), Vec3(1, 0, 0));
-	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
+	 Mat4 rot = Mat4(1);
 	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
+	rot = glm::rotate(rot, glm::radians(rotation.x), Vec3(1, 0, 0));
+	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
 	return rot;
 }
 

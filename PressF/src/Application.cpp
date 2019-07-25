@@ -383,7 +383,7 @@ void Application::DummySetup() {
 
 void Application::DummyLoop() {
 
-	auto view = Transform::GetView(cam->t);
+	auto view = Transform::GetViewExp(cam->t);
 	auto projection = Transform::GetProjection(cam->t, true, win_width / static_cast<float>(win_heigth));
 
 	ShaderProgram &shader = *triShader;

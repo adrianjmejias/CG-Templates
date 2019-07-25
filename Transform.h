@@ -10,7 +10,9 @@ class Transform {
 public:
 	static Mat4 GetProjection(const Transform& t, bool isPerspective, float aspectRatio);
 	static Mat4 GetView(const Transform& t);
-
+	static Mat4 GetViewExp(const Transform t) {
+		return Transform::GenModel(t.scale,-t.position, t.rotation);
+	}
 	Transform();
 	Transform::~Transform();
 

@@ -21,8 +21,14 @@ void FlyingController::HandleEvent(SDL_Event e) {
 		t.Rotate(deltaMouse.y, deltaMouse.x, 0);
 
 		Vec3 rotation = t.GetRotation();
+		Vec3 front = t.Front();
+		Vec3 right = t.Right();
+		Vec3 up = t.Up();
 
 		PF_INFO("cam rotation {0}, {1}, {2}", rotation.x, rotation.y, rotation.z);
+		PF_INFO("cam front {0}, {1}, {2}", front.x, front.y, front.z);
+		PF_INFO("cam right {0}, {1}, {2}", right.x, right.y, right.z);
+		PF_INFO("cam up {0}, {1}, {2}", up.x, up.y, up.z);
 		t.TryGetClean();
 	}
 
