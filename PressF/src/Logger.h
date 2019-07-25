@@ -2,6 +2,8 @@
 #include "types.h"
 #include <spdlog\spdlog.h>
 #include <ostream>
+#include <spdlog/fmt/ostr.h>
+
 class Logger
 {
 public:

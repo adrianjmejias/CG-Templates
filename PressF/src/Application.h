@@ -3,6 +3,7 @@
 #include "core.h"
 
 #include "Camera.h"
+#include "CameraGL.h"
 #include "Light.h"
 #include "MeshRenderer.h"
 
@@ -14,7 +15,7 @@ class Application
 public:
 	//Every object created must have a new id
 	//unsigned int GLOBAL_ID; //replaced with extern
-
+	CameraGL *cam;
 	SDL_Window *win;
 	SDL_GLContext glContext;
 	int win_width = 800;
@@ -32,7 +33,7 @@ public:
 	bool captureMouse = false;
 
 	bool KeyPressed[256];
-	Vec4 bgColor{0.396,0.313,0.686, 1};
+	Vec4 bgColor{0.2f,0.2f,0.2f, 1};
 
 	int actCam = 0;
 	ShaderProgram* shaders[30]{nullptr};
@@ -62,6 +63,11 @@ public:
 	//void RenderFrame() {
 
 	//}
+
+
+	unsigned int VBO, VAO, EBO;
+	ShaderProgram* shaderTri;
+	void SetupDummy();
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();

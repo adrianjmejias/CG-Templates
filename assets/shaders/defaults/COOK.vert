@@ -12,7 +12,7 @@ layout (location = 2) in vec4 uv;
 
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 projection;
 
 uniform sampler2D tex_kD;
 uniform sampler2D tex_kS;
@@ -35,9 +35,9 @@ void main()
 	OBJ.uv = uv;
 
 
-	OBJ.w_pos = proj*(view*(OBJ.m_pos));
+//	OBJ.w_pos = proj*(view*(OBJ.m_pos));
 	
-    gl_Position = OBJ.w_pos;
+    gl_Position =  model *pos;
 
 }
 

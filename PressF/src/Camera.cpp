@@ -2,12 +2,17 @@
 
 extern double deltaTime;
 
-Camera::Camera(GameObject & go, Transform & t) : Component(go, t)
+
+Camera::Camera(GameObject & go, Transform & t, Vec3 position, Vec3 up, float yaw, float pitch)
+	: Component(go, t),
+	Front(Vec3(0.0f, 0.0f, -1.0f)),
+	speed(SPEED), sensitivity(SENSITIVITY),
+	fov(ZOOM)
 {
-	Pitch = -48.05f;
-	Yaw = 12.88f;
-	sensitivity = 0.10f;
-	fov = 70;
+	transform.SetPosition(position);
+	WorldUp = up;
+	Yaw = yaw;
+	Pitch = pitch;
 	updateCameraVectors();
 }
 

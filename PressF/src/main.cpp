@@ -34,6 +34,7 @@ int main() {
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// NORMAL_MAPPING
 			std::make_tuple("COOK.vert", "COOK.frag"),
+			std::make_tuple("BASIC.vert", "BASIC.frag"),
 
 
 		});

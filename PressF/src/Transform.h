@@ -62,6 +62,7 @@ public:
 	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Vec3 &rotation);
 	static Mat4 GenModel(const Vec3 &scale, const Vec3 &position, const Mat4 &rotation);
 	static Mat4 GenRotMat(const Vec3 &rotation);
+	Mat4& ApplyRotation(const Vec3 & rotation, Mat4& model);
 
 private:
 	friend class Application;

@@ -8,6 +8,22 @@ enum class ProjectionType {
 };
 class Camera;
 
+enum Camera_Movement {
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT
+};
+
+// Default camera values
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 2.5f;
+const float SENSITIVITY = 0.1f;
+const float ZOOM = 45.0f;
+
+
+
 extern Camera* mainCamera;
 
 class Camera : public Component{
@@ -24,6 +40,7 @@ public:
 	glm::vec3 Front;
 	glm::vec3 Up;
 	glm::vec3 Right;
+	glm::vec3 WorldUp;
 
 	float Yaw;
 	float Pitch;
@@ -31,7 +48,11 @@ public:
 	Mat4 projection;
 	Mat4 view;
 
-	Camera(GameObject& go, Transform& t);
+
+	Camera::Camera(GameObject & go, Transform & t,
+		Vec3 position = Vec3(0.0f, 0.0f, 0.0f), Vec3 up = Vec3(0.0f, 1.0f, 0.0f),
+		float yaw = YAW, float pitch = PITCH);;
+
 	Camera::~Camera();
 
 	// Inherited via Component

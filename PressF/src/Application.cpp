@@ -34,20 +34,21 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupShaders(shaderPaths);
 	SetupModels(objPaths);
 	SetupScene();
+	SetupDummy();
 
 	// Sets up shit. maybe not the best way but it's what came to me
 
 	Traverse(rootNodes,
 		[](GameObject* go) {
-			PF_ASSERT(go && "GameObject is null");
-		},
+		PF_ASSERT(go && "GameObject is null");
+	},
 		[&](GameObject* go) {
-		},
+	},
 		[&](Component* comp) {
-			Steal(comp);
-		}
+		Steal(comp);
+	}
 	);
-	
+
 }
 
 void Application::SetupScene()
@@ -55,6 +56,8 @@ void Application::SetupScene()
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Camera >();
+		cam = &go->AddComponent<CameraGL>();
+
 		go->transform.SetPosition(0, 0, -10);
 		rootNodes.push_back(go);
 
@@ -90,8 +93,9 @@ void Application::SetupScene()
 				MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
 				mesh.push_back(ren);
 
+				go->transform.SetPosition(0, 0, 0);
 				go->transform.SetParent(&papa->transform);
-				go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
+				//go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
 
 			}
 			rootNodes.push_back(papa);
@@ -185,6 +189,49 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 }
 
 
+void Application::SetupDummy() {
+
+
+	shaderTri = shaders[9];
+
+
+	float vertices[] = {
+		0.5f,  0.5f, 0.0f,  // top right
+		0.5f, -0.5f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  // bottom left
+		-0.5f,  0.5f, 0.0f   // top left 
+	};
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
+	};
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+	glBindVertexArray(0);
+}
+
 void Application::LoopMain()
 {
 	while (running) {
@@ -253,9 +300,10 @@ void Application::LoopRender()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-	Camera &cam = *orderedCameras[0];
-	Mat4 projection = cam.GetProjection(ProjectionType::CAM_SETUP, win_width, win_heigth);
-	Mat4 view = cam.GetView();
+	//Camera &cam = *orderedCameras[0];
+
+	Mat4 projection = glm::perspective(glm::radians(70.f), (float)win_width / (float)win_heigth, 0.1f, 300.f);;//cam->GetProjection(n_width, win_heigth);
+	Mat4 view = cam->GetViewMatrix();
 
 	for (const Model& model : models) {
 		for (const Mesh &mesh : model) {
@@ -293,7 +341,7 @@ void Application::LoopRender()
 			}
 
 			if (shader.viewDependant) {
-				GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
+				GLCALL(shader.SetUniform("viewPos", cam->transform.GetPosition()));
 			}
 
 			if (shader.MVP) {
@@ -305,11 +353,27 @@ void Application::LoopRender()
 				PF_ASSERT(obj && "Renderer is null");
 				Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+				//GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 		GLCALL(glBindVertexArray(0));
 	}
+
+
+	shaderTri->Use();
+	ShaderProgram &s = *shaderTri;
+	glBindVertexArray(VAO);
+
+	SET_UNIFORM(s, view);
+	SET_UNIFORM(s, projection);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+	glBindVertexArray(0);
+
+
+
 
 	//	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
 	//	//			ShaderProgram &shader = *MAT.shader;

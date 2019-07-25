@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CameraGL.h" />
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\Camera.h" />
     <ClInclude Include="PressF\src\Component.h" />
@@ -518,6 +519,7 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CameraGL.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
     <ClCompile Include="PressF\src\Camera.cpp" />
     <ClCompile Include="PressF\src\Component.cpp" />
@@ -540,6 +542,10 @@
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\defaults\BASIC.frag" />
+    <None Include="assets\shaders\defaults\BASIC.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -75,7 +75,7 @@ bool Transform::TryGetClean()
 {
 	if (dirty == Dirty::None) return false;
 
-
+	PF_INFO("{0} / {1} / {2}", position, rotation, scale);
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 
@@ -172,10 +172,18 @@ bool Transform::TryGetClean()
 	return model;
 }
 
+
+ Mat4& Transform::ApplyRotation(const Vec3 & rotation, Mat4& model) {
+	 glm::rotate(model, glm::radians(rotation.x), WorldRight());
+	 glm::rotate(model, glm::radians(rotation.y), WorldUp());
+	 glm::rotate(model, glm::radians(rotation.z), WorldFront());
+	 return model;
+ }
+
  Mat4 Transform::GenRotMat(const Vec3 & rotation) {
-	Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), Vec3(1, 0, 0));
-	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
-	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
+	Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), WorldRight());
+	rot = glm::rotate(rot, glm::radians(rotation.y),WorldUp());
+	rot = glm::rotate(rot, glm::radians(rotation.z), WorldFront());
 	return rot;
 }
 
