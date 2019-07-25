@@ -19,7 +19,7 @@ int main() {
 			// Cook
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// Transparency 
-			std::make_tuple("COOK.vert", "COOK.frag"),
+			std::make_tuple("TRANSPARENCY.vert", "TRANSPARENCY.frag"),
 			// Reflection
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// Refraction
@@ -29,7 +29,7 @@ int main() {
 			// SHADOW SECOND PASS
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// Cubemap
-			std::make_tuple("COOK.vert", "COOK.frag"),
+			std::make_tuple("CUBEMAP.vert", "CUBEMAP.frag"),
 			// PARALLAX_MAPPING
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// NORMAL_MAPPING

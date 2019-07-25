@@ -45,7 +45,7 @@ public:
 	std::vector<GameObject *> rootNodes;
 	std::map<std::string, Shader*> shadersLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
-	
+	CubeMap *cubeMap;
 public:
 
 
@@ -54,7 +54,7 @@ public:
 	void GLCreate(objl::Loader & model);
 	void Steal(Component *);
 	void HandleEvents();
-
+	unsigned int VBO, VAO, EBO;
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
 	void SetupModels(const std::vector<std::string>& objPathsp);
@@ -68,6 +68,7 @@ public:
 	unsigned int VBO, VAO, EBO;
 	ShaderProgram* shaderTri;
 	void SetupDummy();
+	void DummyLoop();
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();
