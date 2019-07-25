@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
@@ -512,6 +513,7 @@
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="PressF\src\Application.cpp" />
     <ClCompile Include="PressF\src\GameObject.cpp" />
@@ -529,6 +531,24 @@
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\defaults\COOK.frag" />
+    <None Include="assets\shaders\defaults\COOK.vert" />
+    <None Include="assets\shaders\defaults\COOK2.frag" />
+    <None Include="assets\shaders\defaults\COOK2.vert" />
+    <None Include="assets\shaders\defaults\CUBEMAP.frag" />
+    <None Include="assets\shaders\defaults\CUBEMAP.vert" />
+    <None Include="assets\shaders\defaults\REFLECTION.frag" />
+    <None Include="assets\shaders\defaults\REFLECTION.vert" />
+    <None Include="assets\shaders\defaults\REFRACTION.frag" />
+    <None Include="assets\shaders\defaults\REFRACTION.vert" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.frag" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.vert" />
+    <None Include="assets\shaders\defaults\TRANSPARENCY.frag" />
+    <None Include="assets\shaders\defaults\TRANSPARENCY.vert" />
+    <None Include="assets\shaders\defaults\TRANSPARENT.frag" />
+    <None Include="assets\shaders\defaults\TRANSPARENT.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
