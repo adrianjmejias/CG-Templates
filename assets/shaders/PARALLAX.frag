@@ -1,12 +1,10 @@
 #version 330 core
-
-
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 #define v4(a) vec4(a,1)
-#define color vec4
 #define POINT 0
 #define DIRECTIONAL 1
 #define SPOT 2
+
 
 uniform mat4 model;
 uniform mat4 view;
@@ -14,10 +12,10 @@ uniform mat4 proj;
 
 uniform struct Material
 {
-	color kD;
-	color kA;
-	color kS;
-	color kE;
+	vec3 kD;
+	vec3 kA;
+	vec3 kS;
+	vec3 kE;
 	float IOR;
 	float shiny;
 } MAT;
@@ -31,11 +29,16 @@ uniform struct Light
 	float outerAngle;
 	vec3 direction;
 	bool isOn;
-	color kD;
-	color kA;
-	color kS;
+	vec3 kD;
+	vec3 kA;
+	vec3 kS;
 } LIGHTS[1];
 
+uniform sampler2D tex_kD;
+uniform sampler2D tex_kS;
+uniform sampler2D tex_kA;
+uniform sampler2D tex_bump;
+uniform samplerCube skybox;
 
 
 in struct {
@@ -48,12 +51,11 @@ in struct {
 in vec3 n;
 
 
-out color fColor;
-
-
+out vec3 fvec3;
 
 
 void main()
 {
-    fColor = vec4(1,0,0,1);
+	vec3 normal = normalize(OBJ.norm.xyz);
+    fvec3 = normal;
 }

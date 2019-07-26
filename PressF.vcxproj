@@ -542,24 +542,30 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\defaults\BASIC.frag" />
-    <None Include="assets\shaders\defaults\BASIC.vert" />
-    <None Include="assets\shaders\defaults\COOK.frag" />
-    <None Include="assets\shaders\defaults\COOK.vert" />
-    <None Include="assets\shaders\defaults\COOK2.frag" />
-    <None Include="assets\shaders\defaults\COOK2.vert" />
-    <None Include="assets\shaders\defaults\CUBEMAP.frag" />
-    <None Include="assets\shaders\defaults\CUBEMAP.vert" />
-    <None Include="assets\shaders\defaults\REFLECTION.frag" />
-    <None Include="assets\shaders\defaults\REFLECTION.vert" />
-    <None Include="assets\shaders\defaults\REFRACTION.frag" />
-    <None Include="assets\shaders\defaults\REFRACTION.vert" />
-    <None Include="assets\shaders\defaults\SHADOW_MAPPING.frag" />
-    <None Include="assets\shaders\defaults\SHADOW_MAPPING.vert" />
-    <None Include="assets\shaders\defaults\TRANSPARENCY.frag" />
-    <None Include="assets\shaders\defaults\TRANSPARENCY.vert" />
-    <None Include="assets\shaders\defaults\TRANSPARENT.frag" />
-    <None Include="assets\shaders\defaults\TRANSPARENT.vert" />
+    <None Include="assets\shaders\BASIC.frag" />
+    <None Include="assets\shaders\BASIC.vert" />
+    <None Include="assets\shaders\COOK.frag" />
+    <None Include="assets\shaders\COOK.vert" />
+    <None Include="assets\shaders\COOK2.frag" />
+    <None Include="assets\shaders\COOK2.vert" />
+    <None Include="assets\shaders\CUBEMAP.frag" />
+    <None Include="assets\shaders\CUBEMAP.vert" />
+    <None Include="assets\shaders\DEPTH.frag" />
+    <None Include="assets\shaders\DEPTH.vert" />
+    <None Include="assets\shaders\NORMAL.frag" />
+    <None Include="assets\shaders\NORMAL.vert" />
+    <None Include="assets\shaders\PARALLAX.frag" />
+    <None Include="assets\shaders\PARALLAX.vert" />
+    <None Include="assets\shaders\REFLECTION.frag" />
+    <None Include="assets\shaders\REFLECTION.vert" />
+    <None Include="assets\shaders\REFRACTION.frag" />
+    <None Include="assets\shaders\REFRACTION.vert" />
+    <None Include="assets\shaders\SHADOW_MAPPING.frag" />
+    <None Include="assets\shaders\SHADOW_MAPPING.vert" />
+    <None Include="assets\shaders\TRANSPARENCY.frag" />
+    <None Include="assets\shaders\TRANSPARENCY.vert" />
+    <None Include="assets\shaders\TRANSPARENT.frag" />
+    <None Include="assets\shaders\TRANSPARENT.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

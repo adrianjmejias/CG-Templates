@@ -3,7 +3,7 @@
 #define M_PI 3.14
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 
-struct LightColor{
+struct Lightvec3{
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -13,13 +13,13 @@ struct Point{
 	bool isOn;
 	vec3 position;
 	vec3 attenuation;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 struct Directional{
 	bool isOn;
 	vec3 direction;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 struct Spot{
@@ -29,7 +29,7 @@ struct Spot{
 	vec3 attenuation;
 	float innerAngle;
 	float outerAngle;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 
@@ -50,7 +50,7 @@ uniform Directional directionals[1];
 uniform Spot spots[1];
 uniform float albedo;
 
-out vec4 color;
+out vec4 vec3;
 
 
 uniform vec3 cameraPos;
@@ -89,8 +89,8 @@ float Geometric(vec3 normal, vec3 halfwayDir, vec3 viewDir, vec3 lightDir){
 	return min(1.f, min(2*NH*sdot(normal, viewDir)/VH   ,2*NH*sdot(normal, lightDir)/VH));
 }
 
-LightColor PointLight(vec3 normal, vec3 viewDir){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 PointLight(vec3 normal, vec3 viewDir){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 
 	int ii=0;
@@ -107,12 +107,12 @@ float attenuation =1;
 			// );
 			
 			
-			re.ambient+= (attenuation * points[ii].color.ambient *kA);
+			re.ambient+= (attenuation * points[ii].vec3.ambient *kA);
 
 			vec3 lightDir = normalize(points[ii].position - o_pos);
   
 			float diff = sdot(normal, lightDir);
-			re.diffuse+= ( diff * attenuation * points[ii].color.diffuse);
+			re.diffuse+= ( diff * attenuation * points[ii].vec3.diffuse);
 			// re.diffuse += diff;
 
 			if(diff>0.f)
@@ -121,7 +121,7 @@ float attenuation =1;
 				// float spec = pow(sdot(normal, halfwayDir),shininess);
 				float spec = 1;
 				float RS = Fresnel(halfwayDir,viewDir) * RoughnessFactor(normal, halfwayDir) * Geometric(normal, halfwayDir, viewDir, lightDir) / dot(normal, viewDir);
-				re.specular+= (attenuation * points[ii].color.specular * spec) *RS* diff;
+				re.specular+= (attenuation * points[ii].vec3.specular * spec) *RS* diff;
 			}
 
 
@@ -136,8 +136,8 @@ float attenuation =1;
 
 
 
-LightColor SpotLight(vec3 normal, vec3 viewDir ){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 SpotLight(vec3 normal, vec3 viewDir ){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 	// if(spots[0].isOn){
 	// 	float distance = length(spots[0].position - o_pos);
@@ -150,7 +150,7 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 	// 	);
 
 
-	// 	re.ambient += attenuation * spots[0].color.ambient;
+	// 	re.ambient += attenuation * spots[0].vec3.ambient;
 
 	// 	vec3 lightDir = normalize(spots[0].position - o_pos);
 
@@ -160,14 +160,14 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 
 
 	// 	float diff = sdot(normal, lightDir);
-	// 	re.diffuse += diff *spots[0].color.diffuse *intensity*attenuation;
+	// 	re.diffuse += diff *spots[0].vec3.diffuse *intensity*attenuation;
 
 	// 	if(diff > 0.f)
 	// 	{
 	// 		vec3 halfwayDir = normalize(lightDir + viewDir);
 	// 		float spec = pow(sdot(halfwayDir, normal), shininess);	
 	// 		float RS = Fresnel(halfwayDir,viewDir) * RoughnessFactor(normal, halfwayDir) * Geometric(normal, halfwayDir, viewDir, lightDir) / dot(normal, viewDir);
-	// 		re.specular+= spec * intensity * attenuation * spots[0].color.specular*RS*diff;
+	// 		re.specular+= spec * intensity * attenuation * spots[0].vec3.specular*RS*diff;
 	// 	}
 	// }
 	return re;
@@ -176,18 +176,18 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 
 
 
-LightColor DirectionalLight(vec3 normal, vec3 viewDir){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 DirectionalLight(vec3 normal, vec3 viewDir){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 	
-	// vec3 ambient=directionals[0].color.ambient;
+	// vec3 ambient=directionals[0].vec3.ambient;
 	// re.ambient+=ambient *sdot(normal,directionals[0].direction);
 	
 	// // Direction to the light (Directional Light)
 	// vec3 lightDir = normalize(-directionals[0].direction);
 	// // Lambert cos(angle(Normal, Light))
 	// float diff=sdot(normal,lightDir);
-	// vec3 diffuse=diff*directionals[0].color.diffuse;
+	// vec3 diffuse=diff*directionals[0].vec3.diffuse;
 	// re.diffuse+= diff;
 
 
@@ -197,7 +197,7 @@ LightColor DirectionalLight(vec3 normal, vec3 viewDir){
     //     vec3 halfwayDir=normalize(lightDir+viewDir);
     //     float spec=pow(sdot(normal,halfwayDir),shininess);
 	// 	float RS = Fresnel(halfwayDir,viewDir) * RoughnessFactor(normal, halfwayDir) * Geometric(normal, halfwayDir, viewDir, lightDir) / dot(normal, viewDir);
-    //     re.specular+= directionals[0].color.specular*spec*RS*diff;
+    //     re.specular+= directionals[0].vec3.specular*spec*RS*diff;
     // }
 
 
@@ -212,9 +212,9 @@ void main()
 	vec3 normal = normalize(v_norm);
 	vec3 viewDir = normalize( cameraPos - o_pos);
 
-	LightColor IPoints = PointLight(normal, viewDir);
-	LightColor IDirectionals = DirectionalLight(normal,  viewDir);
-	LightColor ISpots = SpotLight(normal, viewDir);
+	Lightvec3 IPoints = PointLight(normal, viewDir);
+	Lightvec3 IDirectionals = DirectionalLight(normal,  viewDir);
+	Lightvec3 ISpots = SpotLight(normal, viewDir);
 	
 	vec3 ambient = IPoints.ambient + IDirectionals.ambient + ISpots.ambient;
 	vec3 specular = IPoints.specular + IDirectionals.specular + ISpots.specular;
@@ -223,9 +223,9 @@ void main()
 
 
 	// vec3 halfwayDir = normalize(lightDir + viewDir)
-	// color = vec4(ambient + specular+ diffuse, 1);
-	color = vec4(v_norm, 1);
+	// vec3 = vec4(ambient + specular+ diffuse, 1);
+	vec3 = vec4(v_norm, 1);
 
-	// color = vec4(kD,0);
-	// color = vec4(spots[0].color.ambient,1);
+	// vec3 = vec4(kD,0);
+	// vec3 = vec4(spots[0].vec3.ambient,1);
 }

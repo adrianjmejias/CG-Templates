@@ -1,7 +1,7 @@
 #version 330 core
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 #define v4(a) vec4(a,1)
-#define color vec4
+#define vec3 vec3
 #define POINT 0
 #define DIRECTIONAL 1
 #define SPOT 2
@@ -12,7 +12,7 @@ layout (location = 2) in vec4 uv;
 
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 proj;
+uniform mat4 projection;
 
 uniform sampler2D tex_kD;
 uniform sampler2D tex_kS;
@@ -26,7 +26,6 @@ out struct Obj{
 	vec4 uv;
 } OBJ;
 
-
 out vec3 n;
 
 void main()
@@ -36,8 +35,10 @@ void main()
 	OBJ.uv = uv;
 
 
-	OBJ.w_pos = proj*(view*(OBJ.m_pos));
-    gl_Position = OBJ.w_pos;
+	OBJ.w_pos = projection*(view*(OBJ.m_pos));
+	
+    gl_Position =  OBJ.w_pos;
+
 }
 
 

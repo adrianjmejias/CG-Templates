@@ -10,9 +10,9 @@ class Vertex {
 public:
 	Vec3 pos;
 	Vec3 normal;
+	Vec2 uv;
 	//Vec3 bitan;
 	//Vec3 tan;
-	Vec2 uv;
 	Vertex(const objl::Vertex& v);
 };
 
@@ -58,6 +58,7 @@ public:
 		map_Ns = m.map_Ns;
 		map_d = m.map_d;
 		map_bump = m.map_bump;
+		name = m.name;
 		return *this;
 	}
 };

@@ -7,7 +7,7 @@ Ka 0.000000 0.000000 0.000000
 Kd 0.8 0.8 0.8
 Ks 0.8 0.8 0.8
 d 1
-illum 2
+illum 1
 
 newmtl albedo_red
 Ns 96.078431
@@ -17,7 +17,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 1
 map_Kd bricks2.jpg
 
 newmtl disp_blue
@@ -28,7 +28,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 1
 map_Kd bricks2_normal.jpg
 
 newmtl full
@@ -39,7 +39,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 1
 map_Bump bricks2_normal.jpg
 map_Kd bricks2.jpg
 map_Ks bricks2_disp.jpg
@@ -52,8 +52,10 @@ Ks 0.720859 0.720859 0.720859
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-map_Kd bricks2_normal.jpg
+illum 1
+map_Bump bricks2_normal.jpg
+map_Kd bricks2.jpg
+map_Ks bricks2_disp.jpg
 
 newmtl parallax_mapping
 Ns 96.078431
@@ -63,8 +65,10 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 7
-map_Kd bricks2_normal.jpg
+illum 1
+map_Bump bricks2_normal.jpg
+map_Kd bricks2.jpg
+map_Ks bricks2_disp.jpg
 
 newmtl planar_shadow
 Ns 96.078431
@@ -74,7 +78,8 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 1
+map_KA transparent.png
 
 newmtl reflect
 Ns 96.078431
@@ -84,7 +89,8 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 1
+map_KA transparent.png
 
 newmtl refract
 Ns 96.078431
@@ -94,4 +100,6 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 3
+illum 1
+map_KA transparent.png
+

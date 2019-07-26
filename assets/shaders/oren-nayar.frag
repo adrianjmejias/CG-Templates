@@ -3,7 +3,7 @@
 #define NUM_POINT 3
 
 
-struct LightColor{
+struct Lightvec3{
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -13,13 +13,13 @@ struct Point{
 	bool isOn;
 	vec3 position;
 	vec3 attenuation;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 struct Directional{
 	bool isOn;
 	vec3 direction;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 struct Spot{
@@ -29,7 +29,7 @@ struct Spot{
 	vec3 attenuation;
 	float innerAngle;
 	float outerAngle;
-	LightColor color;
+	Lightvec3 vec3;
 };
 
 in vec3 o_pos;
@@ -52,7 +52,7 @@ uniform vec3 kD;
 uniform vec3 kS;
 uniform vec3 kA;
 
-out vec4 color;
+out vec4 vec3;
 
 float Oren(vec3 normal, vec3 viewDir, vec3 lightDir){
 	float A = 1.0f - (0.5f * ((roughness*roughness)/((roughness*roughness) +0.57f)));
@@ -67,8 +67,8 @@ float Oren(vec3 normal, vec3 viewDir, vec3 lightDir){
 	return A + max(0.f, dot(normalize((viewDir - normal) * dot(viewDir, normal)), normalize((lightDir-normal) * dot(lightDir, normal)))) *B * sin(alpha) *sin(beta);
 }
 
-LightColor PointLight(vec3 normal, vec3 viewDir){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 PointLight(vec3 normal, vec3 viewDir){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 	for(int ii = 0; ii < NUM_POINT; ii++){
 		if(points[ii].isOn){
@@ -82,12 +82,12 @@ LightColor PointLight(vec3 normal, vec3 viewDir){
 			);
 			
 			
-			re.ambient+= (kA* attenuation * points[ii].color.ambient);
+			re.ambient+= (kA* attenuation * points[ii].vec3.ambient);
 
 			vec3 lightDir = normalize(points[ii].position - o_pos);
   
 			float diff = max(dot(normal, lightDir), 0.f) * Oren(normal, viewDir, lightDir);
-			re.diffuse+= ( kD* diff * attenuation * points[ii].color.diffuse);
+			re.diffuse+= ( kD* diff * attenuation * points[ii].vec3.diffuse);
 
 		}
 	}
@@ -96,8 +96,8 @@ LightColor PointLight(vec3 normal, vec3 viewDir){
 }
 
 
-LightColor SpotLight(vec3 normal, vec3 viewDir ){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 SpotLight(vec3 normal, vec3 viewDir ){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 	if(spots[0].isOn){
 		float distance = length(spots[0].position - o_pos);
@@ -110,7 +110,7 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 		);
 
 
-		re.ambient += kA* attenuation * spots[0].color.ambient;
+		re.ambient += kA* attenuation * spots[0].vec3.ambient;
 
 		vec3 lightDir = normalize(spots[0].position - o_pos);
 
@@ -120,13 +120,13 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 
 
 		float diff = max(dot(normal, lightDir),0.f) ;
-		re.diffuse += kD* diff *spots[0].color.diffuse *intensity*attenuation* Oren(normal, viewDir, lightDir);
+		re.diffuse += kD* diff *spots[0].vec3.diffuse *intensity*attenuation* Oren(normal, viewDir, lightDir);
 
 		if(diff > 0.f)
 		{
 			vec3 halfwayDir = normalize(lightDir + viewDir);
 			float spec = pow(max(dot(halfwayDir, normal), 0.f), shininess);	
-			re.specular+= spec * intensity * attenuation * spots[0].color.specular;
+			re.specular+= spec * intensity * attenuation * spots[0].vec3.specular;
 		}
 	}
 	return re;
@@ -135,18 +135,18 @@ LightColor SpotLight(vec3 normal, vec3 viewDir ){
 
 
 
-LightColor DirectionalLight(vec3 normal, vec3 viewDir){
-	LightColor re = LightColor(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
+Lightvec3 DirectionalLight(vec3 normal, vec3 viewDir){
+	Lightvec3 re = Lightvec3(vec3(0,0,0), vec3(0,0,0), vec3(0,0,0));
 
 
-	vec3 ambient=directionals[0].color.ambient;
+	vec3 ambient=directionals[0].vec3.ambient;
 	re.ambient+=ambient *kA;
 	
 	// Direction to the light (Directional Light)
 	vec3 lightDir = normalize(-directionals[0].direction);
 	// Lambert cos(angle(Normal, Light))
 	float diff=max(dot(normal,lightDir),0.f) * Oren(normal, viewDir, lightDir);
-	vec3 diffuse=kD*diff*directionals[0].color.diffuse;
+	vec3 diffuse=kD*diff*directionals[0].vec3.diffuse;
 	re.diffuse+= diff;
 
 	return re;
@@ -159,14 +159,14 @@ void main()
 	vec3 normal = normalize(v_norm);
 	vec3 viewDir = normalize( cameraPos - o_pos);
 
-	LightColor IPoints = PointLight(normal, viewDir);
-	LightColor IDirectionals = DirectionalLight(normal,  viewDir);
-	LightColor ISpots = SpotLight(normal, viewDir);
+	Lightvec3 IPoints = PointLight(normal, viewDir);
+	Lightvec3 IDirectionals = DirectionalLight(normal,  viewDir);
+	Lightvec3 ISpots = SpotLight(normal, viewDir);
 	
 	vec3 ambient = IPoints.ambient + IDirectionals.ambient + ISpots.ambient;
 	vec3 specular = IPoints.specular + IDirectionals.specular + ISpots.specular;
 	vec3 diffuse = IPoints.diffuse + IDirectionals.diffuse + ISpots.diffuse;
 
-	color = vec4(ambient + diffuse, 1);
-	// color = vec4(vec3(roughness), 1);
+	vec3 = vec4(ambient + diffuse, 1);
+	// vec3 = vec4(vec3(roughness), 1);
 }

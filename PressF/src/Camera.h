@@ -14,6 +14,7 @@ class FlyingController : public Component
 {
 	float speed = 0.5f;
 	float sensitivity = 0.2f;
+	bool blockRotation = true;
 public:
 	FlyingController(GameObject& go, Transform& t);
 

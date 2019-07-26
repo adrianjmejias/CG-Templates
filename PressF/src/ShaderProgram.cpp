@@ -78,7 +78,7 @@ void ShaderProgram::Compile() {
 		PF_ERROR("Failed to compile program {0} :(", at(0)->path);
 		PF_ERROR(message);
 
-		__debugbreak();
+		//__debugbreak();
 	}
 
 	//std::cout << "Program loaded --------------------------------------------------------" << std::endl;

@@ -1,7 +1,7 @@
 #version 330 core
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 #define v4(a) vec4(a,1)
-#define color vec4
+#define vec3 vec4
 #define POINT 0
 #define DIRECTIONAL 1
 #define SPOT 2
@@ -15,11 +15,11 @@ float LinearizeDepth(float depth)
     return (2.0 * near * far) / (far + near - z * (far - near));	
 }
 
-out color fColor;
+out vec3 fvec3;
 
 void main()
 {
 
    float depth = LinearizeDepth(gl_FragCoord.z) / far; // divide by far for demonstration
-    fColor = vec4(vec3(depth), 1.0);
+    fvec3 = vec4(vec3(depth), 1.0);
 }

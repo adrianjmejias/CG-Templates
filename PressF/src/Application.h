@@ -28,7 +28,7 @@ public:
 	unsigned long long NOW, LAST;
 
 	bool running;
-	bool captureMouse = false;
+	bool captureMouse = true;
 
 	bool KeyPressed[256];
 	Vec4 bgColor{0.2f,0.2f,0.2f, 1};

@@ -38,14 +38,15 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 
 	glEnable(GL_DEPTH_TEST);
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Sets up shit. maybe not the best way but it's what came to me
 
 	Traverse(rootNodes,
 		[](GameObject* go) {
 		PF_ASSERT(go && "GameObject is null");
 	},
-		[&](GameObject* go) {
+		[](GameObject* go) {
 	},
 		[&](Component* comp) {
 		Steal(comp);
@@ -133,7 +134,6 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 			ADD_MAP(map_Kd);
 			ADD_MAP(map_Ks);
 			ADD_MAP(map_d);
-
 		}
 	}
 
@@ -145,7 +145,6 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 	for (Model& myModel : models) {
 
 		for (Mesh& mesh : myModel) {
-			PF_DEBUG("", mesh.EBO);
 			ADD_MAP_TO_MATERIAL(map_bump);
 			ADD_MAP_TO_MATERIAL(map_Ka);
 			ADD_MAP_TO_MATERIAL(map_Kd);
@@ -157,7 +156,7 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
-	const std::string baseShaderFolder = "assets/shaders/defaults/";
+	const std::string baseShaderFolder = "assets/shaders/";
 	for (int ii = 0; ii < shaderPaths.size(); ii++)
 	{
 		auto tupleName = shaderPaths[ii];
@@ -264,29 +263,7 @@ void Application::DummyLoop() {
 
 
 
-	glDepthFunc(GL_LEQUAL);
-	{
 
-		cubeMap->shader->Use();
-		ShaderProgram &shader = *cubeMap->shader;
-		glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
-
-		shader.SetUniform("view", viewSkybox);
-		SET_UNIFORM(shader, projection);
-
-
-		glBindVertexArray(cubeMap->skyboxVAO);
-		{
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
-
-
-	}
-	glDepthFunc(GL_LESS);
 
 
 	// glBindVertexArray(0); // no need to unbind it every time
@@ -304,8 +281,6 @@ void Application::LoopMain()
 		LoopUI();
 
 		LoopUpdate();
-
-
 
 		// no need to order the cameras over power. we select the one we want
 		//std::sort(begin(orderedCameras), end(orderedCameras), [](Camera* a, Camera* b)
@@ -381,15 +356,30 @@ void Application::LoopRender()
 				SET_UNIFORM(shader, MAT.Ni);
 			}
 
-			if (shader.usesTextures) {
-				if (MAT.smap_Ka)
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
+
+			if (shader.usesTextures)
+			{
+				if (MAT.smap_Kd)
 				{
-					shader.SetUniform("map_kD", static_cast<int>(MAT.smap_Kd->id));
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
+					shader.SetUniform("tex_kD", static_cast<int>(MAT.smap_Kd->id));
+				}
+
+				if (MAT.smap_Ks)
+				{
+					glActiveTexture(GL_TEXTURE2);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ks->id);
+					shader.SetUniform("tex_kS", static_cast<int>(MAT.smap_Ks->id));
 				}
 
 				if (MAT.smap_bump)
 				{
-					shader.SetUniform("map_bump", static_cast<int>(MAT.smap_bump->id));
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id);
+					shader.SetUniform("tex_bump", static_cast<int>(MAT.smap_bump->id));
 				}
 			}
 
@@ -409,6 +399,10 @@ void Application::LoopRender()
 				SET_UNIFORM(shader, view);
 			}
 
+
+
+
+
 			for (auto obj : mesh) {
 				PF_ASSERT(obj && "Renderer is null");
 				const Mat4 &model = obj->transform.GetAccumulated();
@@ -418,6 +412,31 @@ void Application::LoopRender()
 		}
 		GLCALL(glBindVertexArray(0));
 	}
+
+
+	glDepthFunc(GL_LEQUAL);
+	{
+
+		cubeMap->shader->Use();
+		ShaderProgram &shader = *cubeMap->shader;
+		glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
+
+		shader.SetUniform("view", viewSkybox);
+		SET_UNIFORM(shader, projection);
+
+
+		glBindVertexArray(cubeMap->skyboxVAO);
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		glBindVertexArray(0);
+
+
+	}
+	glDepthFunc(GL_LESS);
 
 
 	DummyLoop();
@@ -510,14 +529,12 @@ void Application::DrawFrame(Transform t)
 void Application::GLCreate(objl::Loader &fullModel) {
 	Model model;
 
-
 	//data transform
 	//std::vector<Vertex> vertex;
 	//vertex.reserve(fullModel.LoadedVertices.size());
 	//for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
 	//	vertex.push_back(Vertex(oVertex));
 	//}
-
 
 	GLsizei totalIndices = 0;
 	model.reserve(fullModel.LoadedMeshes.size());
@@ -553,15 +570,15 @@ void Application::GLCreate(objl::Loader &fullModel) {
 
 			{
 				size_t off = 0;
-				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
+				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
 				GLCALL(glEnableVertexAttribArray(0));
 
 				off += 3 * sizeof(Vec3);
-				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
+				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
 				GLCALL(glEnableVertexAttribArray(1));
 
 				off += 3 * sizeof(Vec3);
-				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)off));
+				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
 				GLCALL(glEnableVertexAttribArray(2));
 
 				//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
@@ -699,6 +716,11 @@ Application::Application()
 	glContext = SDL_GL_CreateContext(win);
 	SDL_GetWindowSize(win, &win_width, &win_heigth);
 	SDL_SetWindowResizable(win, (SDL_bool)true);
+
+
+	if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
+		__debugbreak();
+	}
 	// Load GL extensions using glad
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 		std::cerr << "Failed to initialize the OpenGL context." << std::endl;
