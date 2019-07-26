@@ -52,7 +52,7 @@ in struct {
 in vec3 n;
 
 
-out vec4 fvec3;
+out vec4 colorsito;
 
 
 void main()
@@ -60,5 +60,5 @@ void main()
 	vec3 normal = normalize(OBJ.norm.xyz);
 //    fvec3 = texture(tex_bump, OBJ.uv.xy);
 
-fvec3 = vec4(1,0,0,1);
+colorsito = vec4(1,0,0,1);
 }

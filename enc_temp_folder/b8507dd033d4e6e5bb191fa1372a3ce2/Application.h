@@ -66,15 +66,15 @@ public:
 
 
 	ShaderProgram* shaderTri;
+	void SetupDummy();
 
+	void DummyLoop();
 
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();
 	void LoopRender();
-	void DrawFrame(Transform t)
-	{
-	}
+	void DrawFrame(Transform t);
 	Application();
 	~Application();
 };

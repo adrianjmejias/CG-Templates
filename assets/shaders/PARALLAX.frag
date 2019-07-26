@@ -51,11 +51,11 @@ in struct {
 in vec3 n;
 
 
-out vec3 fvec3;
+out vec3 colorsito;
 
 
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-    fvec3 = normal;
+    colorsito = normal;
 }

@@ -57,19 +57,6 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 void Application::SetupScene()
 {
-
-	cubeMap = new CubeMap({
-	"assets/skybox/right.jpg",
-	"assets/skybox/left.jpg",
-	"assets/skybox/top.jpg",
-	"assets/skybox/bottom.jpg",
-	"assets/skybox/front.jpg",
-	"assets/skybox/back.jpg"
-		});
-
-	cubeMap->shader = shaders[6];
-
-
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < FlyingController >();
@@ -205,6 +192,83 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 }
 
 
+void Application::SetupDummy() {
+	cubeMap = new CubeMap({
+		"assets/skybox/right.jpg",
+		"assets/skybox/left.jpg",
+		"assets/skybox/top.jpg",
+		"assets/skybox/bottom.jpg",
+		"assets/skybox/front.jpg",
+		"assets/skybox/back.jpg"
+		});
+
+
+	float vertices[] = {
+		0.5f,  0.5f, 0.0f,  // top right
+		0.5f, -0.5f, 0.0f,  // bottom right
+		-0.5f, -0.5f, 0.0f,  // bottom left
+		-0.5f,  0.5f, 0.0f   // top left 
+	};
+	unsigned int indices[] = {  // note that we start from 0!
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
+	};
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	// bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+	glBindVertexArray(VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	// remember: do NOT unbind the EBO while a VAO is active as the bound element buffer object IS stored in the VAO; keep the EBO bound.
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
+	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
+	glBindVertexArray(0);
+
+	cubeMap->shader = shaders[6];
+
+	shaderTri = shaders[1];
+}
+
+void Application::DummyLoop() {
+
+	const Camera& cam = *cameras[actCam];
+
+	auto view = Transform::GetView(cam.transform);
+	auto projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_heigth));
+
+	ShaderProgram &shader = *shaderTri;
+
+	shader.Use();
+	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+
+	SET_UNIFORM(shader, view);
+	SET_UNIFORM(shader, projection);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+
+
+
+
+	// glBindVertexArray(0); // no need to unbind it every time
+}
+
 void Application::LoopMain()
 {
 	while (running) {
@@ -218,7 +282,25 @@ void Application::LoopMain()
 
 		LoopUpdate();
 
+		// no need to order the cameras over power. we select the one we want
+		//std::sort(begin(orderedCameras), end(orderedCameras), [](Camera* a, Camera* b)
+		//{
+		//	return a->power > b->power;
+		//}); // keep cameras ordered
+
+		const Camera& cam = *cameras[actCam];
+		const Vec3& camPos = cam.transform.GetPosition();
+
+		std::sort(begin(renderers), end(renderers), [&](const MeshRenderer* a, const MeshRenderer* b) {
+			float distCamToA = glm::length(a->transform.GetPosition() - camPos);
+			float distCamToB = glm::length(b->transform.GetPosition() - camPos);
+
+			return distCamToA < distCamToB;
+		});
+
 		LoopRender();
+
+
 
 		SDL_GL_SwapWindow(win);
 
@@ -253,41 +335,12 @@ void Application::LoopRender()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+	const Camera &cam = *cameras[actCam];
 
-	const Camera& cam = *cameras[actCam];
-	const Vec3& camPos = cam.transform.GetPosition();
-	
-	std::vector<const Mesh& > transparentMeshes, NonTransparentMeshes;
-	
-	for (const Model& model : models) {
-		
-		for (const Mesh& mesh : model) {
-			if (mesh.mat.illum == 1) // 1 es el indice del shader transparente
-			{
-				transparentMeshes.push_back(mesh);
-			}
-			else
-			{
-				NonTransparentMeshes.push_back(mesh);
-			}
-		}
-	}
-
-	
-
-	std::sort(begin(renderers), end(renderers), [&](const MeshRenderer* a, const MeshRenderer* b) {
-		float distCamToA = glm::length(a->transform.GetPosition() - camPos);
-		float distCamToB = glm::length(b->transform.GetPosition() - camPos);
-
-		return distCamToA < distCamToB;
-	});
-
-
-	const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
-	const Mat4& view = Transform::GetView(cam.transform);
+	Mat4 projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
+	const Mat4 view = Transform::GetView(cam.transform);
 
 	for (const Model& model : models) {
-
 		for (const Mesh &mesh : model) {
 			iVec3 lightsPlaced{ 0,0,0 };
 			const Material &MAT = mesh.mat;
@@ -354,6 +407,10 @@ void Application::LoopRender()
 				SET_UNIFORM(shader, projection);
 				SET_UNIFORM(shader, view);
 			}
+
+
+
+
 
 			for (auto obj : mesh) {
 				PF_ASSERT(obj && "Renderer is null");
@@ -472,6 +529,10 @@ void Application::LoopRender()
 	//
 	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
 	//
+}
+
+void Application::DrawFrame(Transform t)
+{
 }
 
 void Application::GLCreate(objl::Loader &fullModel) {

@@ -6,6 +6,13 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+out struct {
+	vec4 m_pos;
+	vec4 w_pos;
+	vec4 norm;
+	vec4 uv;
+} OBJ;
+
 
 void main()
 {

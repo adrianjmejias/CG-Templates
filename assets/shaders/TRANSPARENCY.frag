@@ -31,9 +31,9 @@ uniform struct Light
 	vec3 kS;
 } LIGHTS[1];
 
+uniform sampler2D tex_kD;
 uniform sampler2D tex_kS;
 uniform sampler2D tex_bump;
-uniform sampler2D tex_kD;
 uniform sampler2D tex_kA;
 
 
@@ -48,8 +48,11 @@ out vec4 vColor;
 
 void main()
 {
-
 	
-	vColor = texture(tex_bump, OBJ.uv.xy);
+	vColor = texture(tex_kS, OBJ.uv.xy);
+	if(vColor.a < 0.2f){
+		discard;
+	}
+
 
 }
