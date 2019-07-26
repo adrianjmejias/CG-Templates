@@ -37,7 +37,7 @@ void main()
 
 //	OBJ.w_pos = proj*(view*(OBJ.m_pos));
 	
-    gl_Position =  model *pos;
+    gl_Position =  projection*view*pos;
 
 }
 

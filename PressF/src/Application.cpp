@@ -36,6 +36,9 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupScene();
 	SetupDummy();
 
+
+	glEnable(GL_DEPTH_TEST);
+
 	// Sets up shit. maybe not the best way but it's what came to me
 
 	Traverse(rootNodes,
@@ -55,8 +58,9 @@ void Application::SetupScene()
 {
 	{
 		GameObject *go = new GameObject();
+		go->AddComponent < FlyingController >();
 		go->AddComponent < Camera >();
-		cam = &go->AddComponent<CameraGL>();
+		//cam = &go->AddComponent<CameraGL>();
 
 		go->transform.SetPosition(0, 0, -10);
 		rootNodes.push_back(go);
@@ -190,9 +194,14 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 
 
 void Application::SetupDummy() {
-
-
-	shaderTri = shaders[9];
+	cubeMap = new CubeMap({
+		"assets/skybox/right.jpg",
+		"assets/skybox/left.jpg",
+		"assets/skybox/top.jpg",
+		"assets/skybox/bottom.jpg",
+		"assets/skybox/front.jpg",
+		"assets/skybox/back.jpg"
+		});
 
 
 	float vertices[] = {
@@ -230,6 +239,57 @@ void Application::SetupDummy() {
 	// You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
+
+	cubeMap->shader = shaders[6];
+
+	shaderTri = shaders[1];
+}
+
+void Application::DummyLoop() {
+
+	const Camera& cam = *cameras[actCam];
+
+	auto view = Transform::GetView(cam.transform);
+	auto projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_heigth));
+
+	ShaderProgram &shader = *shaderTri;
+
+	shader.Use();
+	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+
+	SET_UNIFORM(shader, view);
+	SET_UNIFORM(shader, projection);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+
+
+	glDepthFunc(GL_LEQUAL);
+	{
+
+		cubeMap->shader->Use();
+		ShaderProgram &shader = *cubeMap->shader;
+		glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
+
+		shader.SetUniform("view", viewSkybox);
+		SET_UNIFORM(shader, projection);
+
+
+		glBindVertexArray(cubeMap->skyboxVAO);
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		glBindVertexArray(0);
+
+
+	}
+	glDepthFunc(GL_LESS);
+
+
+	// glBindVertexArray(0); // no need to unbind it every time
 }
 
 void Application::LoopMain()
@@ -246,17 +306,15 @@ void Application::LoopMain()
 		LoopUpdate();
 
 
-		std::sort(begin(orderedCameras), end(orderedCameras), [](Camera* a, Camera* b)
-		{
-			return a->power > b->power;
-		}); // keep cameras ordered
 
+		// no need to order the cameras over power. we select the one we want
+		//std::sort(begin(orderedCameras), end(orderedCameras), [](Camera* a, Camera* b)
+		//{
+		//	return a->power > b->power;
+		//}); // keep cameras ordered
 
-		const Camera& cam = *orderedCameras[0];
+		const Camera& cam = *cameras[actCam];
 		const Vec3& camPos = cam.transform.GetPosition();
-
-
-
 
 		std::sort(begin(renderers), end(renderers), [&](const MeshRenderer* a, const MeshRenderer* b) {
 			float distCamToA = glm::length(a->transform.GetPosition() - camPos);
@@ -266,6 +324,8 @@ void Application::LoopMain()
 		});
 
 		LoopRender();
+
+
 
 		SDL_GL_SwapWindow(win);
 
@@ -300,10 +360,10 @@ void Application::LoopRender()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-	//Camera &cam = *orderedCameras[0];
+	const Camera &cam = *cameras[actCam];
 
-	Mat4 projection = glm::perspective(glm::radians(70.f), (float)win_width / (float)win_heigth, 0.1f, 300.f);;//cam->GetProjection(n_width, win_heigth);
-	Mat4 view = cam->GetViewMatrix();
+	Mat4 projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
+	const Mat4 view = Transform::GetView(cam.transform);
 
 	for (const Model& model : models) {
 		for (const Mesh &mesh : model) {
@@ -341,7 +401,7 @@ void Application::LoopRender()
 			}
 
 			if (shader.viewDependant) {
-				GLCALL(shader.SetUniform("viewPos", cam->transform.GetPosition()));
+				GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
 			}
 
 			if (shader.MVP) {
@@ -351,26 +411,16 @@ void Application::LoopRender()
 
 			for (auto obj : mesh) {
 				PF_ASSERT(obj && "Renderer is null");
-				Mat4 &model = obj->transform.GetAccumulated();
+				const Mat4 &model = obj->transform.GetAccumulated();
 				SET_UNIFORM(shader, model);
-				//GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 		GLCALL(glBindVertexArray(0));
 	}
 
 
-	shaderTri->Use();
-	ShaderProgram &s = *shaderTri;
-	glBindVertexArray(VAO);
-
-	SET_UNIFORM(s, view);
-	SET_UNIFORM(s, projection);
-
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-	glBindVertexArray(0);
+	DummyLoop();
 
 
 
@@ -456,9 +506,6 @@ void Application::LoopRender()
 void Application::DrawFrame(Transform t)
 {
 }
-
-
-
 
 void Application::GLCreate(objl::Loader &fullModel) {
 	Model model;
@@ -627,7 +674,6 @@ void Application::Steal(Component *comp)
 			mainCamera = cam;
 			mainCamera->power = 1;
 		}
-		orderedCameras.push_back(cam);
 		cameras.push_back(cam);
 	}
 

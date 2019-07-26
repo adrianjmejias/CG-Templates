@@ -544,6 +544,22 @@
   <ItemGroup>
     <None Include="assets\shaders\defaults\BASIC.frag" />
     <None Include="assets\shaders\defaults\BASIC.vert" />
+    <None Include="assets\shaders\defaults\COOK.frag" />
+    <None Include="assets\shaders\defaults\COOK.vert" />
+    <None Include="assets\shaders\defaults\COOK2.frag" />
+    <None Include="assets\shaders\defaults\COOK2.vert" />
+    <None Include="assets\shaders\defaults\CUBEMAP.frag" />
+    <None Include="assets\shaders\defaults\CUBEMAP.vert" />
+    <None Include="assets\shaders\defaults\REFLECTION.frag" />
+    <None Include="assets\shaders\defaults\REFLECTION.vert" />
+    <None Include="assets\shaders\defaults\REFRACTION.frag" />
+    <None Include="assets\shaders\defaults\REFRACTION.vert" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.frag" />
+    <None Include="assets\shaders\defaults\SHADOW_MAPPING.vert" />
+    <None Include="assets\shaders\defaults\TRANSPARENCY.frag" />
+    <None Include="assets\shaders\defaults\TRANSPARENCY.vert" />
+    <None Include="assets\shaders\defaults\TRANSPARENT.frag" />
+    <None Include="assets\shaders\defaults\TRANSPARENT.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

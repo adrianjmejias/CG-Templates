@@ -8,6 +8,22 @@ enum class ProjectionType {
 };
 class Camera;
 
+
+
+class FlyingController : public Component
+{
+	float speed = 0.5f;
+	float sensitivity = 0.2f;
+public:
+	FlyingController(GameObject& go, Transform& t);
+
+	// Inherited via Component
+	virtual void Update() override;
+	virtual void HandleEvent(const SDL_Event & e) override;
+};
+
+
+
 extern Camera* mainCamera;
 
 class Camera : public Component{
@@ -15,6 +31,7 @@ class Camera : public Component{
 public:
 	int power = 0;
 	int isPerspective = true;
+	ProjectionType type = ProjectionType::PERSPECTIVE;
 	float speed = 25.f;
 	float sensitivity = 0.3f;
 	float fov = 45;
@@ -24,11 +41,16 @@ public:
 	Mat4 projection;
 	Mat4 view;
 
+	Camera(GameObject& go, Transform& t);;
+	Camera::~Camera();
+
 	// Inherited via Component
 	virtual void Update() override;
 
 	virtual void HandleEvent(const SDL_Event &e) override;
 
-	virtual Mat4& GetView();
-	virtual Mat4& GetProjection(ProjectionType type, int w, int h);
+	virtual const Mat4& GetView();
+	virtual const Mat4& GetProjection(ProjectionType type, int w, int h);
 };
+
+// 0414 305 9800

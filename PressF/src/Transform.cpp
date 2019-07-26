@@ -1,87 +1,48 @@
 ﻿#include "Transform.h"
 
+enum class Dirty {
+	None,
+	Acum,
+	Model,
+};
 
-
- Vec3 Transform::GetRotation() { return rotation; }
-
- Vec3 Transform::GetScale() { return scale; }
-
- Vec3 Transform::GetPosition() { return position; }
-
- Transform * Transform::SetRotation(const Vec3 & val) {
-	SetDirty(Dirty::Model);
-	rotation = val;
-
-	//forn(ii, 0, 3){
-	//	if (rotation[ii] > 360 || rotation[ii] < -360) {
-	//		rotation[ii] = (glm::abs(rotation[ii]) - 360)  * glm::sign(rotation[ii]);
-	//	}
-	//}
-
-
-
-	return this;
-}
-
- Transform * Transform::SetScale(const Vec3 & val) { SetDirty(Dirty::Model); scale = val; return this; }
-
- Transform * Transform::SetPosition(const Vec3 & val) { SetDirty(Dirty::Model); position = val; return this; }
-
- Transform * Transform::SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
-
- Transform * Transform::SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
-
- Transform * Transform::SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
-
- Transform * Transform::Translate(const Vec3 & val) { return SetPosition(position + val); }
-
- Transform * Transform::Rotate(const Vec3 & val) { return SetRotation(rotation + val); }
-
- Transform * Transform::Scale(const Vec3 & val) { return SetScale(scale + val); }
-
- Transform * Transform::Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
-
- Transform * Transform::Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
-
- Transform * Transform::Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
-
- Vec3 Transform::Front() { return front; }
-
- Vec3 Transform::Right() { return right; }
-
- Vec3 Transform::Up() { return up; }
-
- Vec3 Transform::WorldFront() {
+Vec3 Transform::WorldFront() {
 	return Vec3{ 0,0,1 };
 }
 
- Vec3 Transform::WorldRight() {
+Vec3 Transform::WorldRight() {
 	return Vec3{ 1,0,0 };
 }
 
- Vec3 Transform::WorldUp() {
+Vec3 Transform::WorldUp() {
 	return Vec3{ 0,1,0 };
 }
 
- Vec3 Transform::RotatePoint(Vec3 point, Vec3 rotation) {
+Vec3 Transform::RotatePoint(Vec3 point, Vec3 rotation) {
 	return  RotatePoint(point, GenRotMat(rotation));
 }
 
- Vec3 Transform::RotatePoint(Vec3 point, Mat4 rotation) {
+Vec3 Transform::RotatePoint(Vec3 point, Mat4 rotation) {
 	return  rotation * Vec4(point, 1);
 }
 
 bool Transform::TryGetClean()
 {
 	if (dirty == Dirty::None) return false;
-
-	PF_INFO("{0} / {1} / {2}", position, rotation, scale);
+	//PF_INFO("Cleaned {0}/ pos/ rot/scale, front, right,up", gameobject.name);
+	//std::cout << position << " " << rotation << " " << scale << std::endl;
+	//std::cout << front << " " << right << " " << up << std::endl;
 	if (dirty == Dirty::Model) {
 		rotMat = Transform::GenRotMat(rotation);
 
 		up = RotatePoint(WorldUp(), rotMat);
 		right = RotatePoint(WorldRight(), rotMat);
 		front = RotatePoint(WorldFront(), rotMat);
+
+		up = glm::normalize(up);
+		right = glm::normalize(right);
+		front = glm::normalize(front);
+
 
 		if (parent) {
 			const Mat4& parentRot = parent->rotMat;
@@ -90,11 +51,10 @@ bool Transform::TryGetClean()
 			front = RotatePoint(front, parentRot);
 		}
 
-		up = glm::normalize(up);
-		right = glm::normalize(right);
-		front = glm::normalize(front);
 
-		model = Transform::GenModel(scale, position, rotation);
+
+
+		model = Transform::GenModel(scale, position, rotMat);
 		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
 	}
 
@@ -117,22 +77,65 @@ bool Transform::TryGetClean()
 	return true;
 }
 
- Transform * Transform::SetDirty(Dirty newVal) {
+Transform * Transform::SetDirty(Dirty newVal) {
 	if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
 		dirty = newVal;
 	}
 	return this;
 }
 
- Transform * Transform::SetParent(Transform * other) {
+Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 & rotation) {
+	return Transform::GenModel(scale, position, GenRotMat(rotation));
+}
+
+Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
+	Mat4 model = Mat4(1);
+	model = glm::scale(model, scale);
+	model = glm::translate(model, position);
+	model = rotation * model;
+	return model;
+}
+
+Mat4 Transform::GenRotMat(const Vec3 & rotation) {
+	Mat4 rot = Mat4(1);
+	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
+	rot = glm::rotate(rot, glm::radians(rotation.x), Vec3(1, 0, 0));
+	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
+	return rot;
+}
+
+Mat4 Transform::GetProjection(const Transform & t, bool isPerspective, float aspectRatio) {
+
+	if (isPerspective) {
+		return  glm::perspective(glm::radians(45.f), aspectRatio, 0.1f, 100.0f);
+	}
+	else
+	{
+		return glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 400.f);
+	}
+}
+
+Mat4 Transform::GetView(const Transform & t) {
+	return glm::lookAt(t.position, t.position + t.front, t.up);
+}
+
+Transform::Transform(GameObject & go) : gameObject(go) {
+
+}
+
+Transform::~Transform()
+{
+}
+
+Transform & Transform::SetParent(Transform * other) {
 	if (!other) {
 		// poner como root node porque estoy es quitando el padre
 		throw std::exception("Not implemented yet");
-		return this;
+		return *this;
 	}
 
 	if (parent == other) {
-		return this; // it is done already
+		return *this; // it is done already
 	}
 
 	if (other->parent == this) {
@@ -146,50 +149,56 @@ bool Transform::TryGetClean()
 
 	other->children.push_back(this);// yo soy su hijo
 
-	return this;
+	return *this;
 }
 
- Mat4 & Transform::GetAccumulated() {
+const Mat4 & Transform::GetAccumulated() {
 	TryGetClean();
 	return acum;
 }
 
- Mat4 & Transform::GetModel() {
+const Mat4 & Transform::GetModel() {
 	TryGetClean();
 	return model;
 }
 
- Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 & rotation) {
-	return Transform::GenModel(scale, position, GenRotMat(rotation));
+const Vec3 & Transform::GetRotation() { return rotation; }
+
+const Vec3 & Transform::GetScale() { return scale; }
+
+const Vec3 & Transform::GetPosition() { return position; }
+
+Transform & Transform::SetRotation(const Vec3 & val) {
+	SetDirty(Dirty::Model);
+	rotation = val;
+	rotation = glm::mod(val, 360.0f);
+	return *this;
 }
 
- Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
-	Mat4 model = Mat4(1);
-	model = glm::scale(model, scale);
-	model = glm::translate(model, position);
-	 //TODO: poner rotacion con mat4
-	model = rotation * model;
-	return model;
-}
+Transform & Transform::SetScale(const Vec3 & val) { SetDirty(Dirty::Model); scale = val; return *this; }
 
+Transform & Transform::SetPosition(const Vec3 & val) { SetDirty(Dirty::Model); position = val; return *this; }
 
- Mat4& Transform::ApplyRotation(const Vec3 & rotation, Mat4& model) {
-	 glm::rotate(model, glm::radians(rotation.x), WorldRight());
-	 glm::rotate(model, glm::radians(rotation.y), WorldUp());
-	 glm::rotate(model, glm::radians(rotation.z), WorldFront());
-	 return model;
- }
+Transform & Transform::SetRotation(float x, float y, float z) { return SetRotation(Vec3(x, y, z)); }
 
- Mat4 Transform::GenRotMat(const Vec3 & rotation) {
-	Mat4 rot = glm::rotate(Mat4(1), glm::radians(rotation.x), WorldRight());
-	rot = glm::rotate(rot, glm::radians(rotation.y),WorldUp());
-	rot = glm::rotate(rot, glm::radians(rotation.z), WorldFront());
-	return rot;
-}
+Transform & Transform::SetScale(float x, float y, float z) { return SetScale(Vec3(x, y, z)); }
 
+Transform & Transform::SetPosition(float x, float y, float z) { return SetPosition(Vec3(x, y, z)); }
 
-Transform::Transform(GameObject & go) : gameObject(go) {}
+Transform & Transform::Translate(const Vec3 & val) { return SetPosition(position + val); }
 
-Transform::~Transform()
-{
-}
+Transform & Transform::Rotate(const Vec3 & val) { return SetRotation(rotation + val); }
+
+Transform & Transform::Scale(const Vec3 & val) { return SetScale(scale + val); }
+
+Transform & Transform::Translate(float x, float y, float z) { return Translate(Vec3(x, y, z)); }
+
+Transform & Transform::Rotate(float x, float y, float z) { return Rotate(Vec3(x, y, z)); }
+
+Transform & Transform::Scale(float x, float y, float z) { return Scale(Vec3(x, y, z)); }
+
+const Vec3 & Transform::Front() { return front; }
+
+const Vec3 & Transform::Right() { return right; }
+
+const Vec3 & Transform::Up() { return up; }

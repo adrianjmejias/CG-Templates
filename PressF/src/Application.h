@@ -3,7 +3,6 @@
 #include "core.h"
 
 #include "Camera.h"
-#include "CameraGL.h"
 #include "Light.h"
 #include "MeshRenderer.h"
 
@@ -15,7 +14,6 @@ class Application
 public:
 	//Every object created must have a new id
 	//unsigned int GLOBAL_ID; //replaced with extern
-	CameraGL *cam;
 	SDL_Window *win;
 	SDL_GLContext glContext;
 	int win_width = 800;
@@ -38,7 +36,7 @@ public:
 	int actCam = 0;
 	ShaderProgram* shaders[30]{nullptr};
 	std::vector<Light*> LIGHTS;
-	std::vector < Camera*> orderedCameras;
+	//std::vector < Camera*> orderedCameras;
 	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
 	std::vector<Model> models;
@@ -65,10 +63,13 @@ public:
 	//}
 
 
-	unsigned int VBO, VAO, EBO;
+
+
 	ShaderProgram* shaderTri;
 	void SetupDummy();
+
 	void DummyLoop();
+
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();
