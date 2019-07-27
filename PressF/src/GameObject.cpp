@@ -11,5 +11,4 @@ GameObject::GameObject(const std::string n) : transform(*this), name(n) {}
 
 GameObject::~GameObject()
 {
-	delete[] components.data();
 }

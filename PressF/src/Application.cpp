@@ -5,6 +5,13 @@ extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
 
 
+template <typename LambdaRender>
+void RenderNormal(LambdaRender F) {
+
+}
+
+
+
 static void Traverse(const std::vector<GameObject*> objects, std::function<void(GameObject*)> beforefgo, std::function<void(GameObject*)> afterfgo, std::function<void(Component*)> fcomp) {
 	std::queue<GameObject*, std::deque<GameObject *>> q(std::deque<GameObject*>(objects.begin(), objects.end()));
 	while (!q.empty()) {
@@ -34,7 +41,6 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupShaders(shaderPaths);
 	SetupModels(objPaths);
 	SetupScene();
-	SetupDummy();
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -251,31 +257,32 @@ void Application::LoopUpdate()
 
 void Application::LoopRender()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+
 
 	const Camera& cam = *cameras[actCam];
 	const Vec3& camPos = cam.transform.GetPosition();
-	
-	std::vector<const Mesh& > transparentMeshes, NonTransparentMeshes;
-	
+
+	std::vector<const Mesh *> NonTransparentMeshes;
+	std::vector<const MeshRenderer *> transparentMeshes;
+
 	for (const Model& model : models) {
-		
+
 		for (const Mesh& mesh : model) {
-			if (mesh.mat.illum == 1) // 1 es el indice del shader transparente
+			if (mesh.mat.illum == 1) // 1 transparent shader index
 			{
-				transparentMeshes.push_back(mesh);
+				for (const MeshRenderer * mr : mesh) {
+					transparentMeshes.push_back(mr);
+				}
 			}
 			else
 			{
-				NonTransparentMeshes.push_back(mesh);
+				NonTransparentMeshes.push_back(&mesh);
 			}
 		}
 	}
 
-	
 
-	std::sort(begin(renderers), end(renderers), [&](const MeshRenderer* a, const MeshRenderer* b) {
+	std::sort(begin(transparentMeshes), end(transparentMeshes), [&](const MeshRenderer* a, const MeshRenderer* b) {
 		float distCamToA = glm::length(a->transform.GetPosition() - camPos);
 		float distCamToB = glm::length(b->transform.GetPosition() - camPos);
 
@@ -283,92 +290,43 @@ void Application::LoopRender()
 	});
 
 
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+
+
+
+
+
 	const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
 	const Mat4& view = Transform::GetView(cam.transform);
 
-	for (const Model& model : models) {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 
-		for (const Mesh &mesh : model) {
-			iVec3 lightsPlaced{ 0,0,0 };
-			const Material &MAT = mesh.mat;
-			const ShaderProgram &shader = *shaders[MAT.illum];
-			shader.Use();
-			GLCALL(glBindVertexArray(mesh.VAO));
-
-			if (shader.usesMaterial) {
-				SET_UNIFORM(shader, MAT.kA);
-				SET_UNIFORM(shader, MAT.kD);
-				SET_UNIFORM(shader, MAT.kS);
-				SET_UNIFORM(shader, MAT.Ns);
-				SET_UNIFORM(shader, MAT.Ni);
-			}
-
-			glActiveTexture(GL_TEXTURE5);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
-
-			if (shader.usesTextures)
-			{
-				if (MAT.smap_Kd)
-				{
-					glActiveTexture(GL_TEXTURE1);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
-					shader.SetUniform("tex_kD", 1);
-				}
-
-				if (MAT.smap_Ks)
-				{
-					glActiveTexture(GL_TEXTURE2);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ks->id);
-					shader.SetUniform("tex_kS", 2);
-				}
-
-				if (MAT.smap_bump)
-				{
-					glActiveTexture(GL_TEXTURE3);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id);
-					shader.SetUniform("tex_bump", 3);
-				}
-
-				if (MAT.smap_Ka)
-				{
-					glActiveTexture(GL_TEXTURE4);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ka->id);
-					shader.SetUniform("tex_kA", 4);
-				}
-			}
-			glBindTexture(GL_TEXTURE_2D, 0);
+	DrawObjects(view, projection, NonTransparentMeshes, []() {
 
 
-			if (shader.lit) {
-				for (Light* light : LIGHTS) {
-					PF_ASSERT(light && "Light is null");
-					light->Bind(lightsPlaced, shader);
-				}
-			}
+	});
 
-			if (shader.viewDependant) {
-				GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
-			}
+	DrawObjects(view, projection, transparentMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)-> bool {
 
-			if (shader.MVP) {
-				SET_UNIFORM(shader, projection);
-				SET_UNIFORM(shader, view);
-			}
-
-			for (auto obj : mesh) {
-				PF_ASSERT(obj && "Renderer is null");
-				const Mat4 &model = obj->transform.GetAccumulated();
-				SET_UNIFORM(shader, model);
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
-			}
+		if (MAT.smap_Kd)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
+			shader.SetUniform("tex_kD", 1);
 		}
-		GLCALL(glBindVertexArray(0));
-	}
 
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		return true;
+	});
 
 	glDepthFunc(GL_LEQUAL);
 	{
-
 		cubeMap->shader->Use();
 		ShaderProgram &shader = *cubeMap->shader;
 		glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
@@ -389,12 +347,6 @@ void Application::LoopRender()
 
 	}
 	glDepthFunc(GL_LESS);
-
-
-	DummyLoop();
-
-
-
 
 	//	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
 	//	//			ShaderProgram &shader = *MAT.shader;
@@ -702,6 +654,21 @@ Application::Application()
 
 Application::~Application()
 {
+	for (int ii = 0; ii < 30; ii++) {
+		if (shaders[ii]) {
+			delete shaders[ii];
+		}
+	}
+
+	std::for_each(begin(shadersLoaded), end(shadersLoaded), [](std::pair<std::string, Shader*> p) {delete p.second; });
+	std::for_each(begin(texturesLoaded), end(texturesLoaded), [](std::pair<std::string, Texture*> p) {delete p.second; });
+
+	Traverse(rootNodes,
+		[](GameObject* go) {},
+		[](GameObject* go) {delete go; },
+		[](Component* comp) {delete comp; }
+	);
+
 	//nk_sdl_shutdown();
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);

@@ -12,13 +12,15 @@ class ShaderProgram;
 class Light  : public Component
 {
 public:
+	unsigned int idShadow=0;
 	LightType type;
 	Color kA{ 1,1,1,1 };
+	Color kShadow{ 0,0,0,1 };
 	Color kD{ 0,0,1,1 };
 	Color kS{ 1,0,0,1 };
 	Color kE{ 0,0,0,1 };
 	Color shadowColor{ 0,0,0,1 };
-	Vec3 attenuation;
+	Vec3 attenuation{0,0,0.01f};
 	float innerAngle = 15.f;
 	float outterAngle = 20.f;
 
