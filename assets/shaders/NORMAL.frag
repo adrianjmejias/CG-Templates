@@ -56,5 +56,7 @@ out vec4 colorsito;
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-    colorsito = texture(tex_kD, OBJ.uv.xy);
+//    colorsito = texture(tex_kA, OBJ.uv.xy);
+
+colorsito = vec4(normal, 1);
 }

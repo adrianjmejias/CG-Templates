@@ -11,7 +11,7 @@
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
-
+uniform vec3 viewPos;
 uniform struct Material
 {
 	vec3 kD;
@@ -58,7 +58,15 @@ out vec4 colorsito;
 void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
-//    fvec3 = texture(tex_bump, OBJ.uv.xy);
+	vec3 viewDir = normalize(OBJ.w_pos.xyz - viewPos);
 
-colorsito = vec4(1,0,0,1);
+
+
+
+
+
+
+
+
+	colorsito = vec4(MAT.kD,1);
 }

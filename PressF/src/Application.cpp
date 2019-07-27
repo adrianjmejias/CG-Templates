@@ -82,7 +82,7 @@ void Application::SetupScene()
 		go->AddComponent < Camera >();
 		//cam = &go->AddComponent<CameraGL>();
 
-		go->transform.SetPosition(0, 0, -10);
+		go->transform.SetPosition(0, 0, -20);
 		rootNodes.push_back(go);
 
 	}
@@ -109,21 +109,22 @@ void Application::SetupScene()
 	}
 
 
-	for (size_t ii = 0; ii < 3; ii++)
-		for (Model &model : models) {
-			GameObject *papa = new GameObject();
-			for (Mesh &mesh : model) {
-				GameObject *go = new GameObject();
-				MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
-				mesh.push_back(ren);
+	for (Model &model : models) {
+		GameObject *papa = new GameObject();
+		for (Mesh &mesh : model) {
+			GameObject *go = new GameObject();
+			MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
+			mesh.push_back(ren);
 
-				go->transform.SetPosition(0, 0, 0);
-				go->transform.SetParent(&papa->transform);
-				//go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
+			go->transform.SetPosition(0, 0, 0);
+			go->transform.SetScale(3, 3, 3);
+			go->transform.Rotate(0, 90, 0);
+			go->transform.SetParent(&papa->transform);
+			//go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
 
-			}
-			rootNodes.push_back(papa);
 		}
+		rootNodes.push_back(papa);
+	}
 }
 
 void Application::SetupModels(const std::vector<std::string>& objPaths)
@@ -292,138 +293,161 @@ void Application::LoopRender()
 
 
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 
 
 
 
 
-	const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
-	const Mat4& view = Transform::GetView(cam.transform);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-
-	DrawObjects(view, projection, NonTransparentMeshes, []() {
-
-
-	});
-
-	DrawObjects(view, projection, transparentMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)-> bool {
-
-		if (MAT.smap_Kd)
-		{
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
-			shader.SetUniform("tex_kD", 1);
-		}
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-
-		return true;
-	});
-
-	glDepthFunc(GL_LEQUAL);
+	
+	
+	
+	
 	{
-		cubeMap->shader->Use();
-		ShaderProgram &shader = *cubeMap->shader;
-		glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
 
-		shader.SetUniform("view", viewSkybox);
-		SET_UNIFORM(shader, projection);
+		const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
+		const Mat4& view = Transform::GetView(cam.transform);
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 
-		glBindVertexArray(cubeMap->skyboxVAO);
-		{
-			glActiveTexture(GL_TEXTURE0);
+		DrawObjects(view, projection, NonTransparentMeshes, [&](const ShaderProgram& shader, const Material& MAT)->bool {
+
+			if (shader.usesMaterial) {
+				SET_UNIFORM(shader, MAT.kA);
+				SET_UNIFORM(shader, MAT.kD);
+				SET_UNIFORM(shader, MAT.kS);
+				SET_UNIFORM(shader, MAT.Ns);
+				SET_UNIFORM(shader, MAT.Ni);
+			}
+
+			glActiveTexture(GL_TEXTURE5);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			if (shader.usesTextures)
+			{
+				if (MAT.smap_Kd)
+				{
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
+					shader.SetUniform("tex_kD", 1);
+				}
+
+				if (MAT.smap_Ks)
+				{
+					glActiveTexture(GL_TEXTURE2);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ks->id);
+					shader.SetUniform("tex_kS", 2);
+				}
+
+				if (MAT.smap_bump)
+				{
+					glActiveTexture(GL_TEXTURE3);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id);
+					shader.SetUniform("tex_bump", 3);
+				}
+
+				if (MAT.smap_Ka)
+				{
+					glActiveTexture(GL_TEXTURE4);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ka->id);
+					shader.SetUniform("tex_kA", 4);
+				}
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+
+			if (shader.lit)
+			{
+				iVec3 lightsPlaced{ 0,0,0 };
+				for (Light* light : LIGHTS) {
+					PF_ASSERT(light && "Light is null");
+					light->Bind(lightsPlaced, shader);
+				}
+			}
+
+			if (shader.viewDependant) {
+				GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
+			}
+
+			if (shader.MVP) {
+				SET_UNIFORM(shader, projection);
+				SET_UNIFORM(shader, view);
+			}
+
+			return true;
+		});
+
+		DrawObjects(view, projection, transparentMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)-> bool {
+
+			if (MAT.smap_Kd)
+			{
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
+				shader.SetUniform("tex_kD", 1);
+			}
+			else 
+			{
+				PF_ASSERT("ALL TRANSPARENT MATERIALS MUST HAVE A TEXTURE");
+			}
+
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+
+			return true;
+		});
+
+
+
+		glDepthFunc(GL_LEQUAL);
+		{
+			cubeMap->shader->Use();
+			ShaderProgram &shader = *cubeMap->shader;
+			glm::mat4 viewSkybox = glm::mat4(glm::mat3(view));
+
+			shader.SetUniform("view", viewSkybox);
+			SET_UNIFORM(shader, projection);
+
+
+			glBindVertexArray(cubeMap->skyboxVAO);
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap->textureID);
+
+				glDrawArrays(GL_TRIANGLES, 0, 36);
+			}
+			glBindVertexArray(0);
+
+
 		}
-		glBindVertexArray(0);
-
-
+		glDepthFunc(GL_LESS);
 	}
-	glDepthFunc(GL_LESS);
 
-	//	//			const size_t nElem = materialOrderForRender[ii].quantityFaces;
-	//	//			ShaderProgram &shader = *MAT.shader;
-	//	//			iVec3 lightsPlaced{ 0,0,0 };
-	//	//
-	//	//			ActShader = &shader;
-	//	//			ActSpec = &materialOrderForRender[ii];
-	//	//
-	//	//			shader.use();
-	//	//			GLCALL(glBindVertexArray(materialOrderForRender[ii].VAO));
-	//	//
-	//	//			const std::vector<std::string > nameMapping = {
-	//	//				"tex_kA", /*MapType::AMBIENT*/
-	//	//				"tex_kD", /*MapType::DIFFUSE*/
-	//	//				"tex_kS", /*MapType::SPECULAR*/
-	//	//				"tex_bump", /*MapType::BUMP*/
-	//	//				"tex_cubemap", /*MapType::CUBEMAP*/
-	//	//				"", /*MapType::SHINY*/
-	//	//				"", /*MapType::DISPLACEMENT*/
-	//	//				"", /*MapType::DECAL*/
-	//	//				"", /*MapType::REFLECTION*/
-	//	//				"", /*MapType::DISSOLVE*/
-	//	//			};
-	//	//
-	//	//			// ponemos texturas
-	//	//			for each (auto pair in MAT.maps)
-	//	//			{
-	//	//				Texture &tex = *pair.second;
-	//	//				int type = static_cast<int>(tex.type);
-	//	//				glActiveTexture(GL_TEXTURE0 + type);
-	//	//				glBindTexture(GL_TEXTURE_2D, tex.id);
-	//	//				shader.setInt(nameMapping[type], tex.id);
-	//	//			}
-	//	//
-	//	//			// pasamos toda la data de las luces
-	//	//			if (shader.lit) {
-	//	//				for each (Light* light in lights)
-	//	//				{
-	//	//					light->Bind(lightsPlaced, shader);
-	//	//				}
-	//	//			}
-	//	//
-	//	//			// pasamos toda la data del material
-	//	//#define SET_SHADER_PROP(XX) shader.setVec4(#XX, XX)
-	//	//
-	//	//			SET_SHADER_PROP(MAT.kA);
-	//	//			SET_SHADER_PROP(MAT.kD);
-	//	//			SET_SHADER_PROP(MAT.kS);
-	//	//			SET_SHADER_PROP(MAT.kE);
-	//	//
-	//	//			shader.setFloat("MAT.IOR", MAT.refractionIndex);
-	//	//			shader.setFloat("MAT.shiny", MAT.shiny);
-	//	//
-	//	//			shader.setMat4("view", view);
-	//	//			shader.setMat4("proj", proj);
-	//	//
-	//	//			int nVertex = nElem * 3;
-	//	//			for (MeshRenderer* ren : mesh.registered)
-	//	//			{
-	//	//				PF_ASSERT(ren && "Renderer is null");
-	//	//				if (ren->Enabled()) {
-	//	//					ActRenderer = ren;
-	//	//					Transform &transform = ren->transform;
-	//	//					shader.setMat4("model", transform.GetAccumulated());
-	//	//
-	//	//					shader.preReq([&]() {
-	//	//						GLCALL(glDrawArrays(GL_TRIANGLES, 0, nVertex));
-	//	//					});
-	//	//				}
-	//	//			}
-	//	//			GLCALL(glBindVertexArray(0));
-	//	//		}
-	//}
-	//	//cubemap->Render();
-	//
-	//	nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-	//
+}
+
+inline void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
+{
+
+	auto meshesToRender = meshes;
+	for (const Mesh * const mesh : meshesToRender) {
+		const Material &MAT = mesh->mat;
+		const ShaderProgram &shader = *shaders[MAT.illum];
+
+		shader.Use();
+		GLCALL(glBindVertexArray(mesh->VAO));
+
+		PreReqs(shader, MAT);
+
+		for (auto obj : *mesh) {
+			PF_ASSERT(obj && "Renderer is null");
+			const Mat4 &model = obj->transform.GetAccumulated();
+			SET_UNIFORM(shader, model);
+			GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
+		}
+	}
+	GLCALL(glBindVertexArray(0));
+
 }
 
 void Application::GLCreate(objl::Loader &fullModel) {

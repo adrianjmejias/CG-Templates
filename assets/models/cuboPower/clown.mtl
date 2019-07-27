@@ -9,7 +9,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 0
 
 newmtl carita_morada_roja
 Ns 96.078431
@@ -19,7 +19,7 @@ Ks 0.500000 0.000000 0.035488
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 0
 
 newmtl carita_roja
 Ns 96.078431
@@ -29,7 +29,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 0
 
 newmtl normal
 Ns 96.078431
@@ -39,9 +39,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-disp bricks2_normal.jpg
-map_Kd bricks2_normal.jpg
+illum 8
+map_Kd bricks2.jpg
+map_Bump bricks2_normal.jpg
 
 newmtl parallax
 Ns 96.078431
@@ -51,9 +51,9 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
-disp bricks2_normal.jpg
-map_Kd bricks2_normal.jpg
+illum 7
+map_Kd bricks2.jpg
+map_Bump bricks2_normal.jpg
 
 newmtl reflect
 Ns 749.999996
@@ -64,8 +64,6 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
-disp bricks2_normal.jpg
-map_Kd bricks2_normal.jpg
 
 newmtl refract
 Ns 96.078431
@@ -75,4 +73,4 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 2
+illum 3

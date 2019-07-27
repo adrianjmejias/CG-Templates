@@ -138,6 +138,7 @@
     <ClInclude Include="PressF\src\MeshRenderer.h" />
     <ClInclude Include="PressF\src\Model.h" />
     <ClInclude Include="PressF\src\OBJ_Loader.h" />
+    <ClInclude Include="PressF\src\Physics.h" />
     <ClInclude Include="PressF\src\Shader.h" />
     <ClInclude Include="PressF\src\ShaderProgram.h" />
     <ClInclude Include="PressF\src\Texture.h" />
@@ -528,6 +529,7 @@
     <ClCompile Include="PressF\src\MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\Model.cpp" />
     <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
+    <ClCompile Include="PressF\src\Physics.cpp" />
     <ClCompile Include="PressF\src\Shader.cpp" />
     <ClCompile Include="PressF\src\ShaderProgram.cpp" />
     <ClCompile Include="PressF\src\Texture.cpp" />
