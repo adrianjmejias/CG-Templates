@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -96,7 +96,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -116,7 +116,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -130,9 +130,10 @@
     <ClInclude Include="PressF\src\Application.h" />
     <ClInclude Include="PressF\src\Camera.h" />
     <ClInclude Include="PressF\src\Component.h" />
-    <ClInclude Include="PressF\src\core.h" />
     <ClInclude Include="PressF\src\FrameBuffer.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
+    <ClInclude Include="PressF\src\imgui_impl_opengl3.h" />
+    <ClInclude Include="PressF\src\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\src\Light.h" />
     <ClInclude Include="PressF\src\Logger.h" />
     <ClInclude Include="PressF\src\MeshRenderer.h" />
@@ -145,6 +146,7 @@
     <ClInclude Include="PressF\src\Transform.h" />
     <ClInclude Include="PressF\src\UserInterface.h" />
     <ClInclude Include="PressF\src\Window.h" />
+    <ClInclude Include="PressF\src\core.h" />
     <ClInclude Include="PressF\src\main.h" />
     <ClInclude Include="PressF\src\nuklear.h" />
     <ClInclude Include="PressF\src\nuklear_sdl_gl3.h" />
@@ -524,6 +526,8 @@
     <ClCompile Include="PressF\src\Component.cpp" />
     <ClCompile Include="PressF\src\FrameBuffer.cpp" />
     <ClCompile Include="PressF\src\GameObject.cpp" />
+    <ClCompile Include="PressF\src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="PressF\src\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\src\Light.cpp" />
     <ClCompile Include="PressF\src\Logger.cpp" />
     <ClCompile Include="PressF\src\MeshRenderer.cpp" />
@@ -542,32 +546,9 @@
     <ProjectReference Include="dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\BASIC.frag" />
-    <None Include="assets\shaders\BASIC.vert" />
-    <None Include="assets\shaders\COOK.frag" />
-    <None Include="assets\shaders\COOK.vert" />
-    <None Include="assets\shaders\COOK2.frag" />
-    <None Include="assets\shaders\COOK2.vert" />
-    <None Include="assets\shaders\CUBEMAP.frag" />
-    <None Include="assets\shaders\CUBEMAP.vert" />
-    <None Include="assets\shaders\DEPTH.frag" />
-    <None Include="assets\shaders\DEPTH.vert" />
-    <None Include="assets\shaders\NORMAL.frag" />
-    <None Include="assets\shaders\NORMAL.vert" />
-    <None Include="assets\shaders\PARALLAX.frag" />
-    <None Include="assets\shaders\PARALLAX.vert" />
-    <None Include="assets\shaders\REFLECTION.frag" />
-    <None Include="assets\shaders\REFLECTION.vert" />
-    <None Include="assets\shaders\REFRACTION.frag" />
-    <None Include="assets\shaders\REFRACTION.vert" />
-    <None Include="assets\shaders\SHADOW_MAPPING.frag" />
-    <None Include="assets\shaders\SHADOW_MAPPING.vert" />
-    <None Include="assets\shaders\TRANSPARENCY.frag" />
-    <None Include="assets\shaders\TRANSPARENCY.vert" />
-    <None Include="assets\shaders\TRANSPARENT.frag" />
-    <None Include="assets\shaders\TRANSPARENT.vert" />
+    <ProjectReference Include="dependencies\imgui\ImGui.vcxproj">
+      <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,6 +7,9 @@
     <Filter Include="PressF\src">
       <UniqueIdentifier>{2F851734-1B3D-5981-8444-32DD701BF471}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PressF\src\old">
+      <UniqueIdentifier>{FD30C0D1-E9FE-B3D7-D292-24FEBEFF8F3C}</UniqueIdentifier>
+    </Filter>
     <Filter Include="dependencies">
       <UniqueIdentifier>{8CAD9F58-7810-2FFD-2196-67B30DD8FA7F}</UniqueIdentifier>
     </Filter>
@@ -33,10 +36,25 @@
     <ClInclude Include="PressF\src\Application.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\Camera.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Component.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\FrameBuffer.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\src\GameObject.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\Light.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\src\Logger.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\MeshRenderer.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\Model.h">
@@ -45,16 +63,28 @@
     <ClInclude Include="PressF\src\OBJ_Loader.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\Physics.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\src\Shader.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\ShaderProgram.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\Texture.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\Transform.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\src\UserInterface.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\Window.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\core.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\main.h">
@@ -64,6 +94,9 @@
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\nuklear_sdl_gl3.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\types.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="dependencies\glm\glm\common.hpp">
@@ -1170,27 +1203,32 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\Light.h" />
-    <ClInclude Include="PressF\src\Texture.h" />
-    <ClInclude Include="PressF\src\Transform.h" />
-    <ClInclude Include="PressF\src\Camera.h" />
-    <ClInclude Include="PressF\src\Component.h" />
-    <ClInclude Include="PressF\src\types.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\core.h" />
-    <ClInclude Include="PressF\src\FrameBuffer.h" />
-    <ClInclude Include="PressF\src\MeshRenderer.h" />
-    <ClInclude Include="PressF\src\Physics.h" />
+    <ClInclude Include="PressF\src\imgui_impl_sdl.h" />
+    <ClInclude Include="PressF\src\imgui_impl_opengl3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\Camera.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Component.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\FrameBuffer.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\src\GameObject.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\Light.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\src\Logger.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\MeshRenderer.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\Model.cpp">
@@ -1199,10 +1237,19 @@
     <ClCompile Include="PressF\src\OBJ_Loader.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\Physics.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\src\Shader.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\ShaderProgram.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Texture.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Transform.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\UserInterface.cpp">
@@ -1214,39 +1261,7 @@
     <ClCompile Include="PressF\src\main.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\Camera.cpp" />
-    <ClCompile Include="PressF\src\Component.cpp" />
-    <ClCompile Include="PressF\src\Light.cpp" />
-    <ClCompile Include="PressF\src\Texture.cpp" />
-    <ClCompile Include="PressF\src\Transform.cpp" />
-    <ClCompile Include="PressF\src\MeshRenderer.cpp" />
-    <ClCompile Include="PressF\src\FrameBuffer.cpp" />
-    <ClCompile Include="PressF\src\Physics.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\BASIC.frag" />
-    <None Include="assets\shaders\BASIC.vert" />
-    <None Include="assets\shaders\COOK.frag" />
-    <None Include="assets\shaders\COOK.vert" />
-    <None Include="assets\shaders\COOK2.frag" />
-    <None Include="assets\shaders\COOK2.vert" />
-    <None Include="assets\shaders\CUBEMAP.frag" />
-    <None Include="assets\shaders\CUBEMAP.vert" />
-    <None Include="assets\shaders\REFLECTION.frag" />
-    <None Include="assets\shaders\REFLECTION.vert" />
-    <None Include="assets\shaders\REFRACTION.frag" />
-    <None Include="assets\shaders\REFRACTION.vert" />
-    <None Include="assets\shaders\SHADOW_MAPPING.frag" />
-    <None Include="assets\shaders\SHADOW_MAPPING.vert" />
-    <None Include="assets\shaders\TRANSPARENCY.frag" />
-    <None Include="assets\shaders\TRANSPARENCY.vert" />
-    <None Include="assets\shaders\TRANSPARENT.frag" />
-    <None Include="assets\shaders\TRANSPARENT.vert" />
-    <None Include="assets\shaders\PARALLAX.vert" />
-    <None Include="assets\shaders\PARALLAX.frag" />
-    <None Include="assets\shaders\NORMAL.vert" />
-    <None Include="assets\shaders\NORMAL.frag" />
-    <None Include="assets\shaders\DEPTH.vert" />
-    <None Include="assets\shaders\DEPTH.frag" />
+    <ClCompile Include="PressF\src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="PressF\src\imgui_impl_sdl.cpp" />
   </ItemGroup>
 </Project>

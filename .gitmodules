@@ -19,3 +19,6 @@
 [submodule "dependencies/microui"]
 	path = dependencies/microui
 	url = https://github.com/rxi/microui
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/TheCherno/imgui

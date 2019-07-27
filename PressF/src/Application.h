@@ -29,7 +29,8 @@ public:
 
 	bool running;
 	bool captureMouse = true;
-
+	bool show_demo_window = true;
+	bool show_another_window = true;
 	bool KeyPressed[256];
 	Vec4 bgColor{ 0.2f,0.2f,0.2f, 1 };
 

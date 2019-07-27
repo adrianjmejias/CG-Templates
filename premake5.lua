@@ -16,11 +16,13 @@ IncludeDir["microui"] = "dependencies/microui/src"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
 IncludeDir["obj"] = "dependencies/OBJ-Loader"
+IncludeDir["ImGui"] = "dependencies/imgui/"
 
 
 group "Dependencies"
 	include "dependencies/Glad"
 	include "dependencies/nuklear"
+	include "dependencies/imgui"
 group ""
 
 project "PressF"
@@ -52,7 +54,8 @@ project "PressF"
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.obj}",
 		"%{IncludeDir.stb}",
-		"%{IncludeDir.microui}"
+		"%{IncludeDir.microui}",
+		"%{IncludeDir.ImGui}"
    }
 
    libdirs
@@ -63,6 +66,7 @@ project "PressF"
    links {
       "Glad",
       "SDL2",
+      "ImGui",
       -- "nuklear"
    }
 

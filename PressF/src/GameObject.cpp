@@ -11,4 +11,6 @@ GameObject::GameObject(const std::string n) : transform(*this), name(n) {}
 
 GameObject::~GameObject()
 {
+	std::cout << "Bye GameObject";
+
 }

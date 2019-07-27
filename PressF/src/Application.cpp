@@ -221,12 +221,12 @@ void Application::LoopMain()
 
 		HandleEvents();
 
-		LoopUI();
 
 		LoopUpdate();
 
 		LoopRender();
 
+		LoopUI();
 		SDL_GL_SwapWindow(win);
 
 		NOW = SDL_GetPerformanceCounter();
@@ -240,6 +240,52 @@ void Application::LoopMain()
 
 void Application::LoopUI()
 {
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL2_NewFrame(win);
+	ImGui::NewFrame();
+
+
+	ImGui::ShowDemoWindow(&show_demo_window);
+
+	{
+		static float f = 0.0f;
+		static int counter = 0;
+
+		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+		//ImGui::Checkbox("Another Window", &show_another_window);
+
+		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			counter++;
+		ImGui::SameLine();
+		ImGui::Text("counter = %d", counter);
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+	}
+
+	{
+		ImGui::Begin("Another Window", &show_another_window);
+		// Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+
+
+		ImGui::Text("Hello from another window!");
+		if (ImGui::Button("Close Me"))
+			show_another_window = false;
+		ImGui::End();
+	}
+
+	// Rendering
+	ImGui::Render();
+	SDL_GL_MakeCurrent(win, glContext);
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 	Traverse(rootNodes,
 		[](GameObject* go) {},
 		[](GameObject* go) {},
@@ -300,10 +346,10 @@ void Application::LoopRender()
 
 
 
-	
-	
-	
-	
+
+
+
+
 	{
 
 		const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
@@ -387,7 +433,7 @@ void Application::LoopRender()
 				glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
 				shader.SetUniform("tex_kD", 1);
 			}
-			else 
+			else
 			{
 				PF_ASSERT("ALL TRANSPARENT MATERIALS MUST HAVE A TEXTURE");
 			}
@@ -529,6 +575,7 @@ void Application::HandleEvents()
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
+		ImGui_ImplSDL2_ProcessEvent(&e);
 		if (e.type == SDL_QUIT) {
 			running = false;
 			break;
@@ -648,7 +695,7 @@ Application::Application()
 	// Load GL extensions using glad
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
 		std::cerr << "Failed to initialize the OpenGL context." << std::endl;
-		exit(1);
+		__debugbreak();
 	}
 
 	// Loaded OpenGL successfully.
@@ -657,23 +704,21 @@ Application::Application()
 	/* OpenGL setup */
 	glViewport(0, 0, win_width, win_heigth);
 
-	//ctx = malloc(sizeof(mu_Context));
-	//mu_init(ctx);
 
-	//ctx->text_width = win_width;
-	//ctx->text_height = win_heigth;
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
-	//ctx = nk_sdl_init(win);
-	///* Load Fonts: if none of these are loaded a default font will be used  */
-	///* Load Cursor: if you uncomment cursor loading please hide the cursor */
-	//{
-	//	struct nk_font_atlas *atlas;
-	//	nk_sdl_font_stash_begin(&atlas);
-	//	/*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-	//	nk_sdl_font_stash_end();
-	//	nk_style_load_all_cursors(ctx, atlas->cursors);
-	//	//nk_style_set_font(ctx, &roboto->handle);
-	//}
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsClassic();
+
+	// Setup Platform/Renderer bindings
+	ImGui_ImplSDL2_InitForOpenGL(win, glContext);
+	ImGui_ImplOpenGL3_Init();
+
 }
 
 Application::~Application()
@@ -693,6 +738,10 @@ Application::~Application()
 		[](Component* comp) {delete comp; }
 	);
 
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
 	//nk_sdl_shutdown();
 	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(win);

@@ -9,4 +9,5 @@ Component::Component(GameObject & go, Transform & t)
 
 Component::~Component()
 {
+	std::cout << "Bye Component";
 }
