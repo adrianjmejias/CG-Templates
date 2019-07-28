@@ -17,7 +17,7 @@ uniform struct Material
 	vec3 kS;
 	vec3 kE;
 	float IOR;
-	float shiny;
+	float Ns;
 } MAT;
 
 uniform struct Light
@@ -37,41 +37,77 @@ uniform struct Light
 uniform sampler2D tex_kD;
 uniform sampler2D tex_Bump;
 
+uniform vec3 viewPos;
 
 in struct {
 	vec4 m_pos;
+	vec4 v_pos;
 	vec4 w_pos;
-	vec4 norm;
+	vec4 v_norm;
 	vec4 uv;
-	vec3 bitangent;
-	vec3 tangent;
+	vec4 tangent;
 } OBJ;
 
 out vec4 colorsito;
 
 
+vec4 LigthCalc(vec3 normal, mat3 iTBN)
+{
+	vec3 pos = iTBN * OBJ.w_pos.xyz;
+	vec3 viewPos = iTBN * viewPos;
+
+	vec3 viewDir = normalize(viewPos - pos);
+
+
+	vec4 color = vec4(0,0,0,1);
+
+	for(int ii = 0; ii < LIGHTS.length(); ii++)
+	{
+		Light l = LIGHTS[ii];
+		if(l.isOn){
+			vec3 lightPos = iTBN * l.position;
+			vec3 lightDir = normalize(lightPos-pos);
+			vec3 halfway = normalize(viewDir + lightDir);
+	
+			color+= sdot(normal, lightDir) * l.kD;
+			color+= pow(sdot(normal, halfway),MAT.Ns) * l.kS;
+		}
+	}
+	return color;
+}
+
+vec4 Parallax(vec3 normal, mat3 iTBN)
+{
+	vec3 pos = iTBN * OBJ.w_pos.xyz;
+	vec3 viewPos = iTBN * viewPos;
+
+	vec3 viewDir = normalize(viewPos - pos);
+
+
+	vec4 color = vec4(0,0,0,1);
+
+	for(int ii = 0; ii < LIGHTS.length(); ii++)
+	{
+		Light l = LIGHTS[ii];
+		if(l.isOn){
+			vec3 lightPos = iTBN * l.position;
+			vec3 lightDir = normalize(lightPos-pos);
+			vec3 halfway = normalize(viewDir + lightDir);
+	
+			color+= sdot(normal, lightDir) * l.kD;
+			color+= pow(sdot(normal, halfway),MAT.Ns) * l.kS;
+		}
+	}
+	return color;
+}
+
 void main()
 {
-	vec4 colorsito = OBJ.norm;
-//	vec3 normal = normalize(OBJ.norm.xyz);
+//	colorsito = texture(tex_kD, OBJ.uv.xy);
 
-//	mat3 TBN = mat3(OBJ.tangent, OBJ.bitangent, normal);
+	vec3 normal = texture(tex_kD ,OBJ.uv.xy).xyz;
+	mat3 TBN = mat3(OBJ.tangent.xyz, cross(OBJ.tangent.xyz, normal), normal);
+	mat3 iTBN = transpose(TBN);
 
-
-//	for(int ii = 0; ii < LIGHTS.length(); ii++)
-//	{
-//		Light l = LIGHTS[ii];
-//		vec3 lightDir = normalize(OBJ.w_pos.xyz - l.position);
-//	
-//		colorsito+= sdot(normal, lightDir) * l.kD;
-//	
-//	}
-
-//	vec4 color = 
-
-
-
-
-//	colorsito =texture(tex_kD, OBJ.uv.xy);
-//	colorsito =vec4(OBJ.uv.xy,0,1);
+	colorsito = LigthCalc(TBN * normal, mat3(1));
 }

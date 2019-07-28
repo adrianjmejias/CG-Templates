@@ -290,7 +290,7 @@ void Application::LoopUI()
 			ImGui::ColorEdit3("kS##2f", (float*)&mat.kA[0], ImGuiColorEditFlags_Float);
 			ImGui::SliderFloat("Ni", &mat.Ni, 0.f, 1.f);
 			ImGui::SliderFloat("Ns", &mat.Ns, 0.f, 1.f);
-			ImGui::SliderInt("Shader", &mat.illum, 0, shaders.size() - 1);
+			ImGui::SliderInt("Shader", &mat.illum, 0, (int)(shaders.size() - 1));
 			//mat.illum
 
 
@@ -725,9 +725,7 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 		}
 
 
-		std::vector<Vec3> biTanPerFace;
 		std::vector<Vec3> tanPerFace;
-		biTanPerFace.reserve(fullModel.LoadedIndices.size() / 3);
 		tanPerFace.reserve(fullModel.LoadedIndices.size() / 3);
 
 		std::vector<std::vector<size_t> > vertexContrib{vertex.size(), std::vector<size_t>()};
@@ -759,11 +757,9 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 			const Vec3 p20 = p[2] - p[0];
 
 
-			const Vec3 bitan(((v20*p10) - (v10 - p20)) / ((u10*v20) - (v10*u20)));
-			const Vec3 tan(((u20*p10) - (u10*p20)) / ((v10*u20) - (u10*v20)));
+			const Vec3 tan(((v20*p10) - (v10 * p20)) / ((u10*v20) - (v10*u20)));
 
 
-			biTanPerFace.push_back(bitan);
 			tanPerFace.push_back(tan);
 
 			vertexContrib[idx_a].push_back(iiFace);
@@ -773,26 +769,16 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 
 		for (size_t ii = 0; ii < vertexContrib.size(); ii++)
 		{
-			Vec3 promBitan{0,0,0};
 			Vec3 promTan{0,0,0};
 
 
 			for (size_t indexFace : vertexContrib[ii]) 
 			{
-				promBitan += biTanPerFace[indexFace];
 				promTan += tanPerFace[indexFace];
 			}
 
-			vertex[ii].bitan = promBitan;
-			vertex[ii].tan = promTan;
+			vertex[ii].tan = glm::normalize(promTan/ static_cast<float>(vertexContrib[ii].size()));
 		}
-
-
-
-
-
-
-
 
 		myMesh.mat = objlMesh.MeshMaterial;
 		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
@@ -813,23 +799,17 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
 
 			{
-				size_t off = 0;
 				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
 				GLCALL(glEnableVertexAttribArray(0));
 
-				off += 3 * sizeof(Vec3);
 				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
 				GLCALL(glEnableVertexAttribArray(1));
 
-				off += 3 * sizeof(Vec3);
 				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
 				GLCALL(glEnableVertexAttribArray(2));
 
-				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
 				GLCALL(glEnableVertexAttribArray(3));
-
-				GLCALL(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-				GLCALL(glEnableVertexAttribArray(4));
 
 			}
 

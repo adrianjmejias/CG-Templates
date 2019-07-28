@@ -9,8 +9,7 @@
 layout (location = 0) in vec4 pos;
 layout (location = 1) in vec4 norm;
 layout (location = 2) in vec4 uv;
-layout (location = 3) in vec3 bitangent;
-layout (location = 4) in vec3 tangent;
+layout (location = 3) in vec4 tangent;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -23,24 +22,23 @@ uniform sampler2D tex_bump;
 
 out struct Obj{
 	vec4 m_pos;
+	vec4 v_pos;
 	vec4 w_pos;
-	vec4 norm;
+	vec4 v_norm;
 	vec4 uv;
-		vec3 bitangent;
-	vec3 tangent;
+	vec4 tangent;
 } OBJ;
 
 out vec3 n;
 
 void main()
 {
-	OBJ.m_pos = model * pos;
-	OBJ.norm = norm;
+	OBJ.m_pos = (model * pos);
+	OBJ.v_pos = view*(OBJ.m_pos);
 	OBJ.uv = uv;
-	OBJ.bitangent = bitangent;
-	OBJ.tangent = tangent;
+	OBJ.tangent = model*view*tangent;
 
-	OBJ.w_pos = projection*(view*(OBJ.m_pos));
+	OBJ.w_pos = projection*(OBJ.v_pos);
 	
     gl_Position =  OBJ.w_pos;
 
