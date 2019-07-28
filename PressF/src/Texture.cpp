@@ -73,6 +73,6 @@ inline void Texture::Resize(int width, int height) {
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &id);
-	std::cout << "Bye Texture";
+	glDeleteTextures(1, &id) ;
+	std::cout << "Bye Texture"<< std::endl;
 }

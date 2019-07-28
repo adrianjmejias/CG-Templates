@@ -58,5 +58,5 @@ void main()
 	vec3 normal = normalize(OBJ.norm.xyz);
 //    colorsito = texture(tex_kA, OBJ.uv.xy);
 
-colorsito = vec4(normal, 1);
+colorsito = vec4(MAT.kD, 1);
 }

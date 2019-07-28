@@ -3,14 +3,27 @@
 extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
-
+enum class Dirty;
 
 template <typename LambdaRender>
 void RenderNormal(LambdaRender F) {
 
 }
 
-
+void ImGuiTransform(Transform &t) {
+	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
+		t.SetDirty(Dirty::Model);
+	}
+	if (ImGui::SliderFloat3("Scale", &t.scale[0], -20, 20)) {
+		t.SetDirty(Dirty::Model);
+	}
+	if (ImGui::SliderFloat3("Position", &t.position[0], -20, 20)) {
+		t.SetDirty(Dirty::Model);
+	}
+	//if (ImGui::("Rotation", &t.rotation[0])) {
+	//	t.SetDirty(Dirty::Model);
+	//}
+}
 
 static void Traverse(const std::vector<GameObject*> objects, std::function<void(GameObject*)> beforefgo, std::function<void(GameObject*)> afterfgo, std::function<void(Component*)> fcomp) {
 	std::queue<GameObject*, std::deque<GameObject *>> q(std::deque<GameObject*>(objects.begin(), objects.end()));
@@ -43,6 +56,18 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupScene();
 
 
+	
+	for (Model *model : models) {
+		for (Mesh &mesh : *model) {
+			auto matName = mesh.mat.name;
+			if (materialsLoaded.find(matName) == end(materialsLoaded)) {
+				materialsLoaded[matName] = &mesh.mat;
+			}
+		}
+	}
+
+
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -50,7 +75,6 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 	Traverse(rootNodes,
 		[](GameObject* go) {
-		PF_ASSERT(go && "GameObject is null");
 	},
 		[](GameObject* go) {
 	},
@@ -93,25 +117,30 @@ void Application::SetupScene()
 		go->transform.SetPosition(0, 0, 10);
 		rootNodes.push_back(go);
 	}
-
+	Mesh &lightMesh = lightsModel->at(0);
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::DIRECTIONAL);
+		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
+		lightMesh.push_back(ren);
 		go->transform.SetPosition(0, 10, 0);
 		rootNodes.push_back(go);
 	}
-
+	
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::POINT);
+		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
+		lightMesh.push_back(ren);
+
 		go->transform.SetPosition(0, -10, 0);
 		rootNodes.push_back(go);
 	}
 
 
-	for (Model &model : models) {
+	for (Model *model : models) {
 		GameObject *papa = new GameObject();
-		for (Mesh &mesh : model) {
+		for (Mesh &mesh : *model) {
 			GameObject *go = new GameObject();
 			MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
 			mesh.push_back(ren);
@@ -127,51 +156,50 @@ void Application::SetupScene()
 	}
 }
 
+Model * Application::SetupModel(std::string objPath)
+{
+
+	objl::Loader objlModel;
+
+	if (!objlModel.LoadFile(objPath))
+	{
+		PF_ERROR("Failed to load model {0}", objPath);
+		__debugbreak();
+	}
+	Model *model = GLCreate(objlModel);
+
+	//cargar texturas
+	const std::string basePath = objPath.substr(0, objPath.find_last_of("/"));
+	for (objl::Material& mat : objlModel.LoadedMaterials)
+	{
+		ADD_MAP(map_bump);
+		ADD_MAP(map_Ka);
+		ADD_MAP(map_Kd);
+		ADD_MAP(map_Ks);
+		ADD_MAP(map_d);
+	}
+
+	for (Mesh& mesh : *model)
+	{
+		ADD_MAP_TO_MATERIAL(map_bump);
+		ADD_MAP_TO_MATERIAL(map_Ka);
+		ADD_MAP_TO_MATERIAL(map_Kd);
+		ADD_MAP_TO_MATERIAL(map_Ks);
+		ADD_MAP_TO_MATERIAL(map_d);
+	}
+	return model;
+}
+
 void Application::SetupModels(const std::vector<std::string>& objPaths)
 {
 	for (const std::string& objPath : objPaths)
 	{
-		objl::Loader model;
-
-		if (!model.LoadFile(objPath)) {
-			PF_ERROR("Failed to load model {0}", objPath);
-			__debugbreak();
-		}
-		GLCreate(model);
-
-
-		//cargar texturas
-#define ADD_MAP(NAME)\
-		if (!mat.NAME.empty() && (texturesLoaded.find(mat.NAME) == texturesLoaded.end())) {\
-			texturesLoaded[mat.NAME] = Texture::TextureFromFile(mat.NAME.c_str(), basePath);\
-		}\
-
-
-		const std::string basePath = objPath.substr(0, objPath.find_last_of("/"));
-		for (objl::Material& mat : model.LoadedMaterials) {
-			ADD_MAP(map_bump);
-			ADD_MAP(map_Ka);
-			ADD_MAP(map_Kd);
-			ADD_MAP(map_Ks);
-			ADD_MAP(map_d);
-		}
+		models.push_back(SetupModel(objPath));
 	}
 
-#define ADD_MAP_TO_MATERIAL(NAME)\
-	if (!mesh.mat.NAME.empty()) {\
-		mesh.mat.s##NAME = texturesLoaded.at(mesh.mat.NAME);\
-	}\
 
-	for (Model& myModel : models) {
-
-		for (Mesh& mesh : myModel) {
-			ADD_MAP_TO_MATERIAL(map_bump);
-			ADD_MAP_TO_MATERIAL(map_Ka);
-			ADD_MAP_TO_MATERIAL(map_Kd);
-			ADD_MAP_TO_MATERIAL(map_Ks);
-			ADD_MAP_TO_MATERIAL(map_d);
-		}
-	}
+	lightsModel = SetupModel("assets/models/light/untitled.obj");
+	models.push_back(lightsModel);
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -207,7 +235,7 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 			shadersLoaded[fragName] = frag;
 		}
 
-		shaders[ii] = new ShaderProgram({ vert, frag });
+		shaders.push_back(new ShaderProgram({ vert, frag }));
 	}
 }
 
@@ -221,12 +249,12 @@ void Application::LoopMain()
 
 		HandleEvents();
 
-
 		LoopUpdate();
 
 		LoopRender();
 
 		LoopUI();
+
 		SDL_GL_SwapWindow(win);
 
 		NOW = SDL_GetPerformanceCounter();
@@ -270,16 +298,85 @@ void Application::LoopUI()
 		ImGui::End();
 	}
 
+	ImGui::Begin("Materials");
+	for (auto pair : materialsLoaded) 
 	{
-		ImGui::Begin("Another Window", &show_another_window);
-		// Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		const std::string& matName = pair.first;
+		Material& mat = *pair.second;
+
+		if((ImGui::TreeNode(matName.c_str())))
+		{
+			//ImGui::SliderFloat4("kD", &mat.kD[0], 0.f,1.f);	
+			ImGui::ColorEdit3("kD##2f", (float*)&mat.kD[0], ImGuiColorEditFlags_Float);
+			ImGui::ColorEdit3("kA##2f", (float*)&mat.kS[0], ImGuiColorEditFlags_Float);
+			ImGui::ColorEdit3("kS##2f", (float*) &mat.kA[0], ImGuiColorEditFlags_Float);
+			ImGui::SliderFloat("Ni", &mat.Ni, 0.f, 1.f);
+			ImGui::SliderFloat("Ns", &mat.Ns, 0.f, 1.f);
+			ImGui::SliderInt("Shader", &mat.illum, 0, shaders.size()-1);
+			//mat.illum
 
 
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			show_another_window = false;
-		ImGui::End();
+			switch (mat.illum)
+			{
+			case 3:
+				ImGui::SliderFloat("IOR Material", &mat.IOR, 0.f, 3.f);
+				ImGui::SliderFloat("IOR Air", &IOR_BG, 0.f, 3.f);
+				break;
+			default:
+				break;
+			}
+
+
+
+			ImGui::TreePop();
+		}
 	}
+	ImGui::End();
+
+
+	ImGui::Begin("Lights");
+	{
+		for (Light* light : LIGHTS) {
+			if (ImGui::TreeNode(light->gameObject.name.c_str())) {
+
+				ImGuiTransform(light->transform);
+
+
+
+				ImGui::TreePop();
+			}
+		}
+	}
+	ImGui::End();
+
+
+	//ImGui::Begin("GameObjects");
+	//Traverse(rootNodes,
+	//	[](GameObject* go) {
+	//	ImGui::TreeNode(go->name.c_str());
+	//},
+	//	[](GameObject* go) {
+	//	ImGui::TreePop();
+	//},
+	//	[](Component* comp) {
+	//	
+	//	if (ImGui::TreeNode("ssss")) {
+	//		ImGui::TreePop();
+	//	}
+	//}
+	//);
+	//ImGui::End();
+
+
+	bool showSelected = actGO != nullptr;
+	ImGui::Begin("Selected Object", &showSelected);
+	{
+		//ImGui::LabelText(actGO->name.c_str(),);
+
+	}
+	ImGui::End();
+
+
 
 	// Rendering
 	ImGui::Render();
@@ -311,10 +408,9 @@ void Application::LoopRender()
 
 	std::vector<const Mesh *> NonTransparentMeshes;
 	std::vector<const MeshRenderer *> transparentMeshes;
+	for (const Model* model : (models)) {
 
-	for (const Model& model : models) {
-
-		for (const Mesh& mesh : model) {
+		for (const Mesh& mesh : *model) {
 			if (mesh.mat.illum == 1) // 1 transparent shader index
 			{
 				for (const MeshRenderer * mr : mesh) {
@@ -366,6 +462,8 @@ void Application::LoopRender()
 				SET_UNIFORM(shader, MAT.kS);
 				SET_UNIFORM(shader, MAT.Ns);
 				SET_UNIFORM(shader, MAT.Ni);
+				SET_UNIFORM(shader, MAT.IOR);
+				shader.SetUniform("IOR", IOR_BG);
 			}
 
 			glActiveTexture(GL_TEXTURE5);
@@ -472,7 +570,7 @@ void Application::LoopRender()
 
 }
 
-inline void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
+void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
 {
 
 	auto meshesToRender = meshes;
@@ -494,77 +592,6 @@ inline void Application::DrawObjects(const Mat4 & view, const Mat4 & projection,
 	}
 	GLCALL(glBindVertexArray(0));
 
-}
-
-void Application::GLCreate(objl::Loader &fullModel) {
-	Model model;
-
-	//data transform
-	//std::vector<Vertex> vertex;
-	//vertex.reserve(fullModel.LoadedVertices.size());
-	//for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
-	//	vertex.push_back(Vertex(oVertex));
-	//}
-
-	GLsizei totalIndices = 0;
-	model.reserve(fullModel.LoadedMeshes.size());
-
-	for (int ii = 0; ii < fullModel.LoadedMeshes.size(); ii++) {
-		objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
-		Mesh myMesh;
-
-		std::vector<Vertex> vertex;
-		vertex.reserve(fullModel.LoadedVertices.size());
-
-		for (const objl::Vertex& oVertex : objlMesh.Vertices) {
-			vertex.push_back(Vertex(oVertex));
-		}
-
-		myMesh.mat = objlMesh.MeshMaterial;
-		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
-		myMesh.offset = totalIndices;
-
-		totalIndices += myMesh.nElem;
-
-		GLCALL(glGenVertexArrays(1, &myMesh.VAO));
-		GLCALL(glGenBuffers(1, &myMesh.EBO));
-		GLCALL(glGenBuffers(1, &myMesh.VBO));
-
-		GLCALL(glBindVertexArray(myMesh.VAO));
-		{
-			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
-			GLCALL(glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW));
-
-			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
-			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
-
-			{
-				size_t off = 0;
-				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
-				GLCALL(glEnableVertexAttribArray(0));
-
-				off += 3 * sizeof(Vec3);
-				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-				GLCALL(glEnableVertexAttribArray(1));
-
-				off += 3 * sizeof(Vec3);
-				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
-				GLCALL(glEnableVertexAttribArray(2));
-
-				//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
-				//GLCALL(glEnableVertexAttribArray(2));
-
-				//GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-				//GLCALL(glEnableVertexAttribArray(3));
-
-			}
-
-		}
-		GLCALL(glBindVertexArray(0));
-		model.push_back(myMesh);
-
-	}
-	models.push_back(model);
 }
 
 void Application::HandleEvents()
@@ -591,12 +618,10 @@ void Application::HandleEvents()
 				break;
 			case SDL_Scancode::SDL_SCANCODE_R:
 				PF_INFO("Recompiling");
-				for (size_t ii = 0; ii < 15; ii++)
+				for (size_t ii = 0; ii < shaders.size(); ii++)
 				{
 					auto shader = shaders[ii];
-					if (shader) {
-						shader->ReCompile();
-					}
+					shader->ReCompile();
 				}
 				break;
 			case SDL_Scancode::SDL_SCANCODE_C:
@@ -651,6 +676,83 @@ void Application::HandleEvents()
 	}
 }
 
+
+//static double DeltaTime() { return deltaTime; }
+
+
+//static double DeltaTime() { return deltaTime; }
+
+inline Model * Application::GLCreate(objl::Loader & fullModel) {
+	Model * m = new Model();
+	Model &model = *m;
+	//data transform
+	//std::vector<Vertex> vertex;
+	//vertex.reserve(fullModel.LoadedVertices.size());
+	//for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
+	//	vertex.push_back(Vertex(oVertex));
+	//}
+
+	GLsizei totalIndices = 0;
+	model.reserve(fullModel.LoadedMeshes.size());
+
+	for (int ii = 0; ii < fullModel.LoadedMeshes.size(); ii++) {
+		objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
+		Mesh myMesh;
+		myMesh.name = objlMesh.MeshName;
+		std::vector<Vertex> vertex;
+		vertex.reserve(fullModel.LoadedVertices.size());
+
+		for (const objl::Vertex& oVertex : objlMesh.Vertices) {
+			vertex.push_back(Vertex(oVertex));
+		}
+
+		myMesh.mat = objlMesh.MeshMaterial;
+		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
+		myMesh.offset = totalIndices;
+
+		totalIndices += myMesh.nElem;
+
+		GLCALL(glGenVertexArrays(1, &myMesh.VAO));
+		GLCALL(glGenBuffers(1, &myMesh.EBO));
+		GLCALL(glGenBuffers(1, &myMesh.VBO));
+
+		GLCALL(glBindVertexArray(myMesh.VAO));
+		{
+			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
+			GLCALL(glBufferData(GL_ARRAY_BUFFER, vertex.size() * sizeof(Vertex), vertex.data(), GL_STATIC_DRAW));
+
+			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
+			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
+
+			{
+				size_t off = 0;
+				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
+				GLCALL(glEnableVertexAttribArray(0));
+
+				off += 3 * sizeof(Vec3);
+				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+				GLCALL(glEnableVertexAttribArray(1));
+
+				off += 3 * sizeof(Vec3);
+				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
+				GLCALL(glEnableVertexAttribArray(2));
+
+				//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				//GLCALL(glEnableVertexAttribArray(2));
+
+				//GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+				//GLCALL(glEnableVertexAttribArray(3));
+
+			}
+
+		}
+		GLCALL(glBindVertexArray(0));
+		model.push_back(myMesh);
+
+	}
+	return m;
+}
+
 void Application::Steal(Component *comp)
 {
 	if (Light* l = dynamic_cast<Light*>(comp)) {
@@ -668,6 +770,33 @@ void Application::Steal(Component *comp)
 	if (MeshRenderer* ren = dynamic_cast<MeshRenderer*>(comp)) {
 		renderers.push_back(ren);
 	}
+}
+
+inline void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::vector<const MeshRenderer*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT, const MeshRenderer&mesh)> PreReqs)
+{
+	auto meshesToRender = meshes;
+	for (const MeshRenderer * const meshRen : meshesToRender) {
+
+		const Mesh * mesh = meshRen->mesh;
+		const Material &MAT = mesh->mat;
+		const ShaderProgram &shader = *shaders[MAT.illum];
+
+		shader.Use();
+		GLCALL(glBindVertexArray(mesh->VAO));
+
+
+		if (PreReqs(shader, MAT, *meshRen)) {
+
+			const Mat4 &model = meshRen->transform.GetAccumulated();
+			SET_UNIFORM(shader, model);
+			SET_UNIFORM(shader, view);
+			SET_UNIFORM(shader, projection);
+			GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
+		}
+
+	}
+	GLCALL(glBindVertexArray(0));
+
 }
 
 Application::Application()
@@ -723,14 +852,18 @@ Application::Application()
 
 Application::~Application()
 {
-	for (int ii = 0; ii < 30; ii++) {
-		if (shaders[ii]) {
-			delete shaders[ii];
-		}
+
+	for (int ii = 0; ii < shaders.size(); ii++) {
+		delete shaders[ii];
+
 	}
 
 	std::for_each(begin(shadersLoaded), end(shadersLoaded), [](std::pair<std::string, Shader*> p) {delete p.second; });
 	std::for_each(begin(texturesLoaded), end(texturesLoaded), [](std::pair<std::string, Texture*> p) {delete p.second; });
+	std::for_each(begin(models), end(models), [](Model* p) {delete p; });
+	//std::for_each(begin(shaders), end(shaders), [](ShaderProgram* p) {delete p; });
+
+	delete cubeMap;
 
 	Traverse(rootNodes,
 		[](GameObject* go) {},

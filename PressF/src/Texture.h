@@ -29,7 +29,7 @@ public:
 };
 
 class ShaderProgram;
-class CubeMap {
+class CubeMap{
 public:
 	unsigned int skyboxVAO = 0;
 
@@ -121,5 +121,12 @@ public:
 	void Draw() {
 
 
+	}
+
+	~CubeMap() {
+
+		glDeleteVertexArrays(1, &skyboxVAO);
+		glDeleteBuffers(1, &skyboxVBO);
+		glDeleteTextures(1, &textureID);
 	}
 };

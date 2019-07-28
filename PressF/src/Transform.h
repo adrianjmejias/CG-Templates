@@ -5,7 +5,11 @@
 
 class GameObject;
 class Transform;
-enum class Dirty;
+enum class Dirty {
+	None,
+	Acum,
+	Model,
+};
 
 class Application;
 
@@ -71,7 +75,6 @@ public:
 	Cleans accumulated matrix
 	*/
 	bool TryGetClean();
-private:
 	/*
 	we only update the state if we are getting dirtier ;)
 	*/

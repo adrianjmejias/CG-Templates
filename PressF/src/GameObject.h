@@ -7,8 +7,8 @@ class GameObject
 {
 	friend class Application;
 	unsigned int id = 0;
-	std::string name = "No name";
 public:
+	std::string name = "No name";
 	std::vector<Component*> components;
 	Transform transform;
 	GameObject();

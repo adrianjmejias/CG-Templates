@@ -13,7 +13,7 @@ struct Point{
 	bool isOn;
 	vec3 position;
 	vec3 attenuation;
-	Lightvec3 vec3;
+	vec3 vec3;
 };
 
 struct Directional{

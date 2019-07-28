@@ -28,6 +28,7 @@ public:
 	float Ns;
 	float Ni;
 	float d;
+	float IOR = 1.2f;
 	int illum = 0;
 	std::string map_Ka;
 	std::string map_Kd;
@@ -63,11 +64,11 @@ public:
 	}
 };
 
-
 class Mesh  
 	: public std::vector<MeshRenderer*>
 {
 public:
+	std::string name;
 	unsigned int VAO = 0, EBO= 0, VBO=0;
 	GLsizei offset, nElem;
 	Material mat;

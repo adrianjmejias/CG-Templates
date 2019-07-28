@@ -1,10 +1,6 @@
 ﻿#include "Transform.h"
 
-enum class Dirty {
-	None,
-	Acum,
-	Model,
-};
+
 
 Vec3 Transform::WorldFront() {
 	return Vec3{ 0,0,1 };
@@ -49,13 +45,14 @@ bool Transform::TryGetClean()
 			up = RotatePoint(up, parentRot);
 			right = RotatePoint(right, parentRot);
 			front = RotatePoint(front, parentRot);
+			
+			up = glm::normalize(up);
+			right = glm::normalize(right);
+			front = glm::normalize(front);
 		}
 
-
-
-
 		model = Transform::GenModel(scale, position, rotMat);
-		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN
+		dirty = Dirty::Acum; // IMPORTANTEEEEEE SINO LOS HIJOS NO SE ACTUALIZAN y yo no me actualizo bien
 	}
 
 	if (dirty == Dirty::Acum) {
@@ -89,18 +86,17 @@ Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 &
 }
 
 Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
-	Mat4 model = Mat4(1);
-	model = glm::scale(model, scale);
+	Mat4 model = glm::scale(Mat4(1), scale);
+	model =  model * rotation;
 	model = glm::translate(model, position);
-	model = rotation * model;
 	return model;
 }
 
 Mat4 Transform::GenRotMat(const Vec3 & rotation) {
 	Mat4 rot = Mat4(1);
-	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
 	rot = glm::rotate(rot, glm::radians(rotation.x), Vec3(1, 0, 0));
 	rot = glm::rotate(rot, glm::radians(rotation.y), Vec3(0, 1, 0));
+	rot = glm::rotate(rot, glm::radians(rotation.z), Vec3(0, 0, 1));
 	return rot;
 }
 

@@ -8,21 +8,10 @@ ShaderProgram::ShaderProgram(std::vector<Shader* > li)
 
 ShaderProgram::~ShaderProgram() {
 	std::cout << "Die ShaderProgram" << std::endl;
-	GLCALL(glDeleteProgram(id));
+	glDeleteProgram(id);
 };
 
 ShaderProgram* ShaderProgram::GetDefault(IllumModel model) {
-	//ShaderProgram *a = ShaderProgram::shaders[static_cast<int>(model)];
-
-	//if (a) {
-	//	return a;
-	//}
-
-	//else {
-	//	PF_WARN("DEFUALT SHADER USED");
-	//	return ShaderProgram::shaders[static_cast<int>(IllumModel::COOK)];
-	//}
-
 	__debugbreak();
 	throw std::exception("NOT RECOGNIZED SHADER");
 }

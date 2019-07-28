@@ -7,6 +7,17 @@
 #include "MeshRenderer.h"
 
 
+#define ADD_MAP(NAME)\
+		if (!mat.NAME.empty() && (texturesLoaded.find(mat.NAME) == texturesLoaded.end())) {\
+			texturesLoaded[mat.NAME] = Texture::TextureFromFile(mat.NAME.c_str(), basePath);\
+		}\
+
+
+
+#define ADD_MAP_TO_MATERIAL(NAME)\
+	if (!mesh.mat.NAME.empty()) {\
+		mesh.mat.s##NAME = texturesLoaded.at(mesh.mat.NAME);\
+	}\
 
 
 class Application
@@ -27,6 +38,8 @@ public:
 
 	unsigned long long NOW, LAST;
 
+	float IOR_BG = 1;
+	
 	bool running;
 	bool captureMouse = true;
 	bool show_demo_window = true;
@@ -34,39 +47,43 @@ public:
 	bool KeyPressed[256];
 	Vec4 bgColor{ 0.2f,0.2f,0.2f, 1 };
 
+	GameObject* actGO = nullptr;
 	int actCam = 0;
-	ShaderProgram* shaders[30]{ nullptr };
+	std::vector<ShaderProgram*> shaders;
 	std::vector<Light*> LIGHTS;
+	Model* lightsModel = nullptr;
+
 	//std::vector < Camera*> orderedCameras;
 	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
-	std::vector<Model> models;
+	std::vector<Model*> models;
 	std::vector<GameObject *> rootNodes;
+	std::vector<Material *> materials;
 	std::map<std::string, Shader*> shadersLoaded;
+	std::map<std::string, Material*> materialsLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
 	CubeMap *cubeMap;
+
+	
 public:
 
 
 
 	//static double DeltaTime() { return deltaTime; }
-	void GLCreate(objl::Loader & model);
+
+
+
+
+	static Model* GLCreate(objl::Loader & fullModel);
 	void Steal(Component *);
 	void HandleEvents();
-	unsigned int VBO, VAO, EBO;
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
-	void SetupModels(const std::vector<std::string>& objPathsp);
+	Model* SetupModel(std::string objPath);
+	void SetupModels(const std::vector<std::string>& objPaths);
 	void SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths);
 
-	//void RenderFrame() {
 
-	//}
-
-
-
-
-	ShaderProgram* shaderTri;
 
 
 	void LoopMain();
@@ -75,33 +92,7 @@ public:
 	void LoopRender();
 
 	void DrawObjects(const Mat4& view, const Mat4& projection, std::vector<const Mesh *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT)>  PreReqs);
-
-	void DrawObjects(const Mat4& view, const Mat4& projection, std::vector<const MeshRenderer *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT, const MeshRenderer& mesh)>  PreReqs)
-	{
-		auto meshesToRender = meshes;
-		for (const MeshRenderer * const meshRen : meshesToRender) {
-
-			const Mesh * mesh = meshRen->mesh;
-			const Material &MAT = mesh->mat;
-			const ShaderProgram &shader = *shaders[MAT.illum];
-
-			shader.Use();
-			GLCALL(glBindVertexArray(mesh->VAO));
-
-
-			if (PreReqs(shader, MAT, *meshRen)) {
-
-				const Mat4 &model = meshRen->transform.GetAccumulated();
-				SET_UNIFORM(shader, model);
-				SET_UNIFORM(shader, view);
-				SET_UNIFORM(shader, projection);
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
-			}
-
-		}
-		GLCALL(glBindVertexArray(0));
-
-	}
+	void DrawObjects(const Mat4& view, const Mat4& projection, std::vector<const MeshRenderer *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT, const MeshRenderer& mesh)>  PreReqs);
 
 
 	Application();

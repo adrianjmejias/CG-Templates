@@ -95,5 +95,6 @@ void Shader::SetFromFile(std::string p, unsigned int t) {
 }
 
 Shader::~Shader() {
+	std::cout << "Bye Shader" << std::endl;
 	GLCALL(glDeleteShader(id));
 }

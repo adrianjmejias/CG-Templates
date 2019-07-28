@@ -6,6 +6,7 @@ Model::Model()
 
 Model::~Model()
 {
+	std::cout << "Bye Model" << std::endl;
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
