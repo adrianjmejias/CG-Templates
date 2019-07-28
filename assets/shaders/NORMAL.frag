@@ -105,9 +105,12 @@ void main()
 {
 //	colorsito = texture(tex_kD, OBJ.uv.xy);
 
-	vec3 normal = texture(tex_kD ,OBJ.uv.xy).xyz;
+	vec3 normal = (texture(tex_kD ,OBJ.uv.xy).xyz*2.f)-1;
 	mat3 TBN = mat3(OBJ.tangent.xyz, cross(OBJ.tangent.xyz, normal), normal);
 	mat3 iTBN = transpose(TBN);
 
-	colorsito = LigthCalc(TBN * normal, mat3(1));
+	colorsito = LigthCalc(TBN * normal, iTBN);
+
+
+//colorsito = vec4(gl_FragCoord.zzz,1);
 }
