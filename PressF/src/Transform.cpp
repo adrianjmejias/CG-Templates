@@ -87,8 +87,8 @@ Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Vec3 &
 
 Mat4 Transform::GenModel(const Vec3 & scale, const Vec3 & position, const Mat4 & rotation) {
 	Mat4 model = glm::scale(Mat4(1), scale);
-	model =  model * rotation;
 	model = glm::translate(model, position);
+	model =  model * rotation;
 	return model;
 }
 
