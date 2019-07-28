@@ -28,7 +28,7 @@ public:
 	~Light();
 
 	virtual void Update();
-	void Bind(iVec3& countLights, const ShaderProgram &shader);
+	void Bind(int& countLights, const ShaderProgram &shader);
 	virtual void HandleEvent(const SDL_Event & e) override;
 
 	//void UI() override {

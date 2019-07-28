@@ -57,6 +57,7 @@ public:
 	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
 	std::vector<Model*> models;
+	std::vector<Model*> modelsDebug;
 	std::vector<GameObject *> rootNodes;
 	std::vector<Material *> materials;
 	std::map<std::string, Shader*> shadersLoaded;

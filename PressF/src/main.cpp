@@ -31,7 +31,7 @@ int main() {
 			// NORMAL_MAPPING 8
 			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
 			// NORMAL_MAPPING 9 tex disp
-			std::make_tuple("COOK.vert", "COOK.frag"),
+			std::make_tuple("LIGHT.vert", "LIGHT.frag"),
 			// NORMAL_MAPPING 10 tex disp
 			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
 			// NORMAL_MAPPING 11 tex disp 

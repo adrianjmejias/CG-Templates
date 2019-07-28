@@ -7,7 +7,7 @@
 class Component
 {
 public:
-	int enabled = 0;
+	int enabled = 1;
 	GameObject& gameObject;
 	Transform& transform;
 	Component(GameObject& go, Transform& t);

@@ -11,8 +11,8 @@ public:
 	Vec3 pos;
 	Vec3 normal;
 	Vec2 uv;
-	//Vec3 bitan;
-	//Vec3 tan;
+	Vec3 bitan;
+	Vec3 tan;
 	Vertex(const objl::Vertex& v);
 };
 

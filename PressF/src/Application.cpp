@@ -56,7 +56,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 	SetupScene();
 
 
-	
+
 	for (Model *model : models) {
 		for (Mesh &mesh : *model) {
 			auto matName = mesh.mat.name;
@@ -126,7 +126,7 @@ void Application::SetupScene()
 		go->transform.SetPosition(0, 10, 0);
 		rootNodes.push_back(go);
 	}
-	
+
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::POINT);
@@ -199,7 +199,7 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 
 
 	lightsModel = SetupModel("assets/models/light/untitled.obj");
-	models.push_back(lightsModel);
+	modelsDebug.push_back(lightsModel);
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -276,43 +276,21 @@ void Application::LoopUI()
 
 	ImGui::ShowDemoWindow(&show_demo_window);
 
-	{
-		static float f = 0.0f;
-		static int counter = 0;
-
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		//ImGui::Checkbox("Another Window", &show_another_window);
-
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		//ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
-
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	}
-
 	ImGui::Begin("Materials");
-	for (auto pair : materialsLoaded) 
+	for (auto pair : materialsLoaded)
 	{
 		const std::string& matName = pair.first;
 		Material& mat = *pair.second;
 
-		if((ImGui::TreeNode(matName.c_str())))
+		if ((ImGui::TreeNode(matName.c_str())))
 		{
 			//ImGui::SliderFloat4("kD", &mat.kD[0], 0.f,1.f);	
 			ImGui::ColorEdit3("kD##2f", (float*)&mat.kD[0], ImGuiColorEditFlags_Float);
 			ImGui::ColorEdit3("kA##2f", (float*)&mat.kS[0], ImGuiColorEditFlags_Float);
-			ImGui::ColorEdit3("kS##2f", (float*) &mat.kA[0], ImGuiColorEditFlags_Float);
+			ImGui::ColorEdit3("kS##2f", (float*)&mat.kA[0], ImGuiColorEditFlags_Float);
 			ImGui::SliderFloat("Ni", &mat.Ni, 0.f, 1.f);
 			ImGui::SliderFloat("Ns", &mat.Ns, 0.f, 1.f);
-			ImGui::SliderInt("Shader", &mat.illum, 0, shaders.size()-1);
+			ImGui::SliderInt("Shader", &mat.illum, 0, shaders.size() - 1);
 			//mat.illum
 
 
@@ -340,6 +318,27 @@ void Application::LoopUI()
 			if (ImGui::TreeNode(light->gameObject.name.c_str())) {
 
 				ImGuiTransform(light->transform);
+
+				ImGui::Checkbox("isOn", reinterpret_cast<bool*>(&light->enabled));
+				ImGui::ColorEdit4("kD##2f", (float*)&light->kD[0], ImGuiColorEditFlags_Float);
+				ImGui::ColorEdit4("kS##2f", (float*)&light->kS[0], ImGuiColorEditFlags_Float);
+				ImGui::ColorEdit4("kA##2f", (float*)&light->kA[0], ImGuiColorEditFlags_Float);
+				const char* types[] = { "Point","Directional", "Spotlight" };
+				ImGui::Combo("Type", reinterpret_cast<int*>(&light->type), types, IM_ARRAYSIZE(types));
+
+				switch (light->type)
+				{
+				case LightType::SPOTLIGHT:
+					ImGui::SliderFloat("InnerAngle", &light->innerAngle, 5.f, light->outterAngle);
+					ImGui::SliderFloat("OutterAngle", &light->outterAngle, light->innerAngle, 90.f);
+					//falls
+				case LightType::POINT:
+					ImGui::SliderFloat3("attenuation", &light->attenuation[0], 0, 3);
+
+
+				default:
+					break;
+				}
 
 
 
@@ -441,11 +440,6 @@ void Application::LoopRender()
 
 
 
-
-
-
-
-
 	{
 
 		const Mat4& projection = Transform::GetProjection(cam.transform, true, win_width / static_cast<float>(win_width));
@@ -471,40 +465,41 @@ void Application::LoopRender()
 
 			if (shader.usesTextures)
 			{
-				if (MAT.smap_Kd)
+				if (MAT.smap_Kd != nullptr)
+				{
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id);
+					glUniform1i(glGetUniformLocation(shader.id, "tex_kD"), 0); // set it manually
+				}
+
+				if (MAT.smap_bump != nullptr)
 				{
 					glActiveTexture(GL_TEXTURE1);
 					glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
-					shader.SetUniform("tex_kD", 1);
+					glUniform1i(glGetUniformLocation(shader.id, "tex_Bump"), 1); // set it manually
 				}
 
-				if (MAT.smap_Ks)
-				{
-					glActiveTexture(GL_TEXTURE2);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ks->id);
-					shader.SetUniform("tex_kS", 2);
-				}
+				//if (MAT.smap_Ks != nullptr)
+				//{
+				//	glActiveTexture(GL_TEXTURE1);
+				//	glBindTexture(GL_TEXTURE_2D, MAT.smap_Ks->id);
+				//shader.SetUniform("tex_kS", (int)1);
+				//}
 
-				if (MAT.smap_bump)
-				{
-					glActiveTexture(GL_TEXTURE3);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id);
-					shader.SetUniform("tex_bump", 3);
-				}
+				//if (MAT.smap_Ka != nullptr )
+				//{
+				//	glActiveTexture(GL_TEXTURE3);
+				//	glBindTexture(GL_TEXTURE_2D, MAT.smap_Ka->id);
+				//	shader.SetUniform("tex_kA", (int)3);	
+				//}
 
-				if (MAT.smap_Ka)
-				{
-					glActiveTexture(GL_TEXTURE4);
-					glBindTexture(GL_TEXTURE_2D, MAT.smap_Ka->id);
-					shader.SetUniform("tex_kA", 4);
-				}
 			}
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 
 			if (shader.lit)
 			{
-				iVec3 lightsPlaced{ 0,0,0 };
+				int lightsPlaced{ 0 };
 				for (Light* light : LIGHTS) {
 					PF_ASSERT(light && "Light is null");
 					light->Bind(lightsPlaced, shader);
@@ -542,6 +537,33 @@ void Application::LoopRender()
 			return true;
 		});
 
+
+
+		std::vector<const MeshRenderer*> LightMeshes;
+		
+
+		Mesh& renderers = (*lightsModel)[0];
+		for (const MeshRenderer* ren : renderers) {
+			LightMeshes.push_back(ren);
+
+		}
+			// Draw lights
+
+		int ii = 0;
+		DrawObjects(view, projection, LightMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)->bool {
+			Light * light = LIGHTS[ii];
+
+			bool isOn = light->enabled != 0;
+			Color kD = light->kD;
+
+			SET_UNIFORM(shader, kD);
+			SET_UNIFORM(shader, isOn);
+			SET_UNIFORM(shader, projection);
+			SET_UNIFORM(shader, view);
+
+			ii++;
+			return true;
+		});
 
 
 		glDepthFunc(GL_LEQUAL);
@@ -607,7 +629,6 @@ void Application::HandleEvents()
 			running = false;
 			break;
 		}
-
 		if (e.type == SDL_EventType::SDL_KEYDOWN) {
 
 			auto keyPressed = e.key.keysym.scancode;
@@ -677,11 +698,6 @@ void Application::HandleEvents()
 }
 
 
-//static double DeltaTime() { return deltaTime; }
-
-
-//static double DeltaTime() { return deltaTime; }
-
 inline Model * Application::GLCreate(objl::Loader & fullModel) {
 	Model * m = new Model();
 	Model &model = *m;
@@ -703,8 +719,80 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 		vertex.reserve(fullModel.LoadedVertices.size());
 
 		for (const objl::Vertex& oVertex : objlMesh.Vertices) {
-			vertex.push_back(Vertex(oVertex));
+			Vertex ver = Vertex(oVertex);
+
+			vertex.push_back(ver);
 		}
+
+
+		std::vector<Vec3> biTanPerFace;
+		std::vector<Vec3> tanPerFace;
+		biTanPerFace.reserve(fullModel.LoadedIndices.size() / 3);
+		tanPerFace.reserve(fullModel.LoadedIndices.size() / 3);
+
+		std::vector<std::vector<size_t> > vertexContrib{vertex.size(), std::vector<size_t>()};
+
+		for (size_t iiFace = 0, iiReal = 0; iiReal < fullModel.LoadedIndices.size()-2; iiFace++, iiReal+=3)
+		{
+			const int idx_a = fullModel.LoadedIndices[iiReal];
+			const int idx_b = fullModel.LoadedIndices[iiReal +1];
+			const int idx_c = fullModel.LoadedIndices[iiReal +2];
+
+			const Vertex &v_1 = vertex[idx_a];
+			const Vertex &v_2 = vertex[idx_b];
+			const Vertex &v_3 = vertex[idx_c];
+
+
+			// hago esto por legibilidad
+			const Vec3 &u{ v_1.uv[0],v_2.uv[0],v_3.uv[0] };
+			const Vec3 &v{ v_1.uv[1],v_2.uv[1],v_3.uv[1] };
+			const Vec3 p[3] {v_1.pos,v_2.pos ,v_3.pos };
+
+			
+			const float v20 = v[2] - v[0];
+			const float v10 = v[1] - v[0];
+
+			const float u10 = u[1] - u[0];
+			const float u20 = u[2] - u[0];
+
+			const Vec3 p10 = p[1] - p[0];
+			const Vec3 p20 = p[2] - p[0];
+
+
+			const Vec3 bitan(((v20*p10) - (v10 - p20)) / ((u10*v20) - (v10*u20)));
+			const Vec3 tan(((u20*p10) - (u10*p20)) / ((v10*u20) - (u10*v20)));
+
+
+			biTanPerFace.push_back(bitan);
+			tanPerFace.push_back(tan);
+
+			vertexContrib[idx_a].push_back(iiFace);
+			vertexContrib[idx_b].push_back(iiFace);
+			vertexContrib[idx_c].push_back(iiFace);
+		}
+
+		for (size_t ii = 0; ii < vertexContrib.size(); ii++)
+		{
+			Vec3 promBitan{0,0,0};
+			Vec3 promTan{0,0,0};
+
+
+			for (size_t indexFace : vertexContrib[ii]) 
+			{
+				promBitan += biTanPerFace[indexFace];
+				promTan += tanPerFace[indexFace];
+			}
+
+			vertex[ii].bitan = promBitan;
+			vertex[ii].tan = promTan;
+		}
+
+
+
+
+
+
+
 
 		myMesh.mat = objlMesh.MeshMaterial;
 		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
@@ -737,11 +825,11 @@ inline Model * Application::GLCreate(objl::Loader & fullModel) {
 				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
 				GLCALL(glEnableVertexAttribArray(2));
 
-				//GLCALL(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
-				//GLCALL(glEnableVertexAttribArray(2));
+				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitan)));
+				GLCALL(glEnableVertexAttribArray(3));
 
-				//GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-				//GLCALL(glEnableVertexAttribArray(3));
+				GLCALL(glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
+				GLCALL(glEnableVertexAttribArray(4));
 
 			}
 
@@ -861,6 +949,7 @@ Application::~Application()
 	std::for_each(begin(shadersLoaded), end(shadersLoaded), [](std::pair<std::string, Shader*> p) {delete p.second; });
 	std::for_each(begin(texturesLoaded), end(texturesLoaded), [](std::pair<std::string, Texture*> p) {delete p.second; });
 	std::for_each(begin(models), end(models), [](Model* p) {delete p; });
+	std::for_each(begin(modelsDebug), end(modelsDebug), [](Model* p) {delete p; });
 	//std::for_each(begin(shaders), end(shaders), [](ShaderProgram* p) {delete p; });
 
 	delete cubeMap;

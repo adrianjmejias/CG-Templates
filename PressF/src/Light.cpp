@@ -8,12 +8,11 @@ Light::~Light()
 {
 }
 
-void Light::Bind(iVec3 & countLights, const ShaderProgram & shader) {
-	int& myCount = countLights[static_cast<int>(type)];
+void Light::Bind(int & countLights, const ShaderProgram & shader) {
 
-	std::string name = "LIGHTS[" + std::to_string(myCount) + "]";
+	std::string name = "LIGHTS[" + std::to_string(countLights) + "]";
 
-	GLCALL(shader.SetUniform(name + ".type", myCount));
+	GLCALL(shader.SetUniform(name + ".type", static_cast<int>(type)));
 	GLCALL(shader.SetUniform(name + ".position", transform.GetPosition()));
 	GLCALL(shader.SetUniform(name + ".attenuation", attenuation));
 	GLCALL(shader.SetUniform(name + ".innerAngle", glm::radians(innerAngle)));
@@ -25,8 +24,6 @@ void Light::Bind(iVec3 & countLights, const ShaderProgram & shader) {
 	GLCALL(shader.SetUniform(name + ".kA", kA));
 	GLCALL(shader.SetUniform(name + ".kD", kD));
 	GLCALL(shader.SetUniform(name + ".kS", kS));
-
-	myCount++;
 }
 
 void Light::HandleEvent(const SDL_Event & e)

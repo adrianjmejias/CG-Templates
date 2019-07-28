@@ -29,15 +29,13 @@ uniform struct Light
 	float outerAngle;
 	vec3 direction;
 	bool isOn;
-	vec3 kD;
-	vec3 kA;
-	vec3 kS;
-} LIGHTS[1];
+	vec4 kD;
+	vec4 kA;
+	vec4 kS;
+} LIGHTS[2];
 
 uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
+uniform sampler2D tex_Bump;
 
 
 in struct {
@@ -45,18 +43,35 @@ in struct {
 	vec4 w_pos;
 	vec4 norm;
 	vec4 uv;
+	vec3 bitangent;
+	vec3 tangent;
 } OBJ;
-
-in vec3 n;
-
 
 out vec4 colorsito;
 
 
 void main()
 {
-	vec3 normal = normalize(OBJ.norm.xyz);
-//    colorsito = texture(tex_kA, OBJ.uv.xy);
+	vec4 colorsito = OBJ.norm;
+//	vec3 normal = normalize(OBJ.norm.xyz);
 
-colorsito = vec4(MAT.kD, 1);
+//	mat3 TBN = mat3(OBJ.tangent, OBJ.bitangent, normal);
+
+
+//	for(int ii = 0; ii < LIGHTS.length(); ii++)
+//	{
+//		Light l = LIGHTS[ii];
+//		vec3 lightDir = normalize(OBJ.w_pos.xyz - l.position);
+//	
+//		colorsito+= sdot(normal, lightDir) * l.kD;
+//	
+//	}
+
+//	vec4 color = 
+
+
+
+
+//	colorsito =texture(tex_kD, OBJ.uv.xy);
+//	colorsito =vec4(OBJ.uv.xy,0,1);
 }

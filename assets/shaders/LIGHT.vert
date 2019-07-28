@@ -1,7 +1,7 @@
 #version 330 core
 #define sdot(a,b) min( max(dot(a,b), 0) , 1)
 #define v4(a) vec4(a,1)
-#define vec3 vec3
+#define vec3 vec4
 #define POINT 0
 #define DIRECTIONAL 1
 #define SPOT 2
@@ -9,8 +9,6 @@
 layout (location = 0) in vec4 pos;
 layout (location = 1) in vec4 norm;
 layout (location = 2) in vec4 uv;
-layout (location = 3) in vec3 bitangent;
-layout (location = 4) in vec3 tangent;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -26,8 +24,6 @@ out struct Obj{
 	vec4 w_pos;
 	vec4 norm;
 	vec4 uv;
-		vec3 bitangent;
-	vec3 tangent;
 } OBJ;
 
 out vec3 n;
@@ -37,12 +33,11 @@ void main()
 	OBJ.m_pos = model * pos;
 	OBJ.norm = norm;
 	OBJ.uv = uv;
-	OBJ.bitangent = bitangent;
-	OBJ.tangent = tangent;
 
-	OBJ.w_pos = projection*(view*(OBJ.m_pos));
+
+//	OBJ.w_pos = proj*(view*(OBJ.m_pos));
 	
-    gl_Position =  OBJ.w_pos;
+    gl_Position =  projection*view*model*pos;
 
 }
 

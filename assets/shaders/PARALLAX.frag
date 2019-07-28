@@ -37,7 +37,7 @@ uniform struct Light
 uniform sampler2D tex_kD;
 uniform sampler2D tex_kS;
 uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
+uniform sampler2D tex_Bump;
 uniform samplerCube skybox;
 
 
@@ -58,5 +58,7 @@ void main()
 {
 	vec3 normal = normalize(OBJ.norm.xyz);
 //    colorsito = vec4(1,1,0,1);
-	colorsito = vec4(MAT.kD,1);
+	colorsito = vec4(0,1,0,1);
+
+	colorsito = texture(tex_kD, OBJ.uv.xy);
 }
