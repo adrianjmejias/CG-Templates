@@ -66,10 +66,10 @@ void FlyingController::HandleEvent(const SDL_Event & e)
 			transform.Translate(-transform.Front() * speed);
 			break;
 		case SDL_SCANCODE_D:
-			transform.Translate(transform.Right() * speed);
+			transform.Translate(-transform.Right() * speed);
 			break;
 		case SDL_SCANCODE_A:
-			transform.Translate(-transform.Right() * speed);
+			transform.Translate(transform.Right() * speed);
 			break;
 		case SDL_SCANCODE_C:
 			blockRotation = !blockRotation;

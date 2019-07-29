@@ -67,7 +67,7 @@ public:
 	std::map<std::string, Material*> materialsLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
 	CubeMap *cubeMap;
-	
+	std::unique_ptr<FrameBuffer> depthFB;
 public:
 
 

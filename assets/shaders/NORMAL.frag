@@ -94,14 +94,14 @@ void main()
 	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
    
     vec3 color = texture(tex_kD, uv).rgb;
-    vec3 ambient = 0.1 * color;
+    vec3 ambient = MAT.kA * color;
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
 
     vec3 halfwayDir = normalize(lightDir + viewDir);  
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), MAT.Ns);
 
-    vec3 specular = vec3(0.2) * spec;
+    vec3 specular = MAT.kS * spec;
     FragColor = vec4(ambient + diffuse + specular, 1.0);
 
 //FragColor = texture(tex_displacement, OBJ.uv);

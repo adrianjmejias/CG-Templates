@@ -21,7 +21,7 @@ int main() {
 			// Refraction 3
 			std::make_tuple("REFRACTION.vert", "REFRACTION.frag"),
 			// SHADOW FIRST PASS 4
-			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
+			std::make_tuple("DEPTH.vert", "DEPTH.frag"),
 			// SHADOW SECOND PASS 5
 			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
 			// Cubemap 6
@@ -35,7 +35,7 @@ int main() {
 			// NORMAL_MAPPING 10 tex disp
 			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
 			// NORMAL_MAPPING 11 tex disp 
-			std::make_tuple("COOK.vert", "COOK.frag"),
+			std::make_tuple("BASIC.vert", "BASIC.frag"),
 
 
 

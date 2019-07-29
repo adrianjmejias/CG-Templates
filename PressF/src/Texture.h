@@ -24,6 +24,7 @@ public:
 	static Texture* TextureCubemap(std::vector < std::string > paths) {
 
 	}
+	
 	void Resize(int width, int height);
 	~Texture();
 };

@@ -87,7 +87,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 void Application::SetupScene()
 {
-
+	depthFB = FrameBuffer::GetShadowBuffer(win_width, win_heigth);
 	cubeMap = new CubeMap({
 	"assets/skybox/right.jpg",
 	"assets/skybox/left.jpg",
@@ -110,17 +110,11 @@ void Application::SetupScene()
 		rootNodes.push_back(go);
 
 	}
-
-	{
-		GameObject *go = new GameObject();
-		go->AddComponent < Camera >();
-		go->transform.SetPosition(0, 0, 10);
-		rootNodes.push_back(go);
-	}
 	Mesh &lightMesh = lightsModel->at(0);
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::DIRECTIONAL);
+		go->AddComponent < Camera >();
 		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
 		lightMesh.push_back(ren);
 		go->transform.SetPosition(0, 10, 0);
@@ -387,12 +381,6 @@ void Application::LoopUI()
 	ImGui::Render();
 	SDL_GL_MakeCurrent(win, glContext);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	Traverse(rootNodes,
-		[](GameObject* go) {},
-		[](GameObject* go) {},
-		[](Component* comp) {comp->Update(); }
-	);
 }
 
 void Application::LoopUpdate()
@@ -425,6 +413,43 @@ void Application::LoopRender()
 		[](Component* comp) {}
 	);
 
+
+	{// depth pass
+
+		Mat4 ViewProjection = Transform::GetProjection(LIGHTS[0]->transform, false, win_width / static_cast<float>(win_heigth));
+		ViewProjection = ViewProjection * Transform::GetView(LIGHTS[0]->transform);
+		
+		Texture &shadowTex = depthFB->texture;
+		
+
+		glViewport(0,0,shadowTex.width, shadowTex.height);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
+
+		ShaderProgram &depthShader = *shaders[4];
+		depthShader.Use();
+		SET_UNIFORM(depthShader, ViewProjection);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+		for (const Model* model : (models)) {
+			for (const Mesh& mesh : *model) {
+				glBindVertexArray(mesh.VAO);
+				
+				for (auto ren : mesh) {
+					Mat4 model = ren->transform.GetAccumulated();
+					SET_UNIFORM(depthShader, model);
+					glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0);
+				}
+				glBindVertexArray(0);
+			}
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	}
+	glViewport(0, 0, win_width, win_heigth);
+
+
 	for (const Model* model : (models)) {
 
 		for (const Mesh& mesh : *model) {
@@ -449,7 +474,7 @@ void Application::LoopRender()
 		float distCamToB = b->transform.GetPosition() - camPos;
 
 		//no saco sqrt sino que hago esto. no me importa el valor exacto de distancia
-		return distCamToA* distCamToA < distCamToB*distCamToB; 
+		return distCamToA * distCamToA < distCamToB*distCamToB;
 	});
 #endif // TRANSPARENCY_ON
 
@@ -470,7 +495,7 @@ void Application::LoopRender()
 
 				SET_UNIFORM(shader, minLayers);
 				SET_UNIFORM(shader, maxLayers);
-				
+
 				shader.SetUniform("IOR", IOR_BG);
 			}
 
@@ -482,6 +507,7 @@ void Application::LoopRender()
 				GLCALL(glUniform1i(glGetUniformLocation(shader.id, "tex_kD"), 0));
 				GLCALL(glUniform1i(glGetUniformLocation(shader.id, "tex_Bump"), 1));
 				GLCALL(glUniform1i(glGetUniformLocation(shader.id, "tex_displacement"), 2));
+				GLCALL(glUniform1i(glGetUniformLocation(shader.id, "depthMap"), 3));
 				if (MAT.smap_Kd != nullptr)
 				{
 					GLCALL(glActiveTexture(GL_TEXTURE0));
@@ -490,16 +516,19 @@ void Application::LoopRender()
 
 				if (MAT.smap_bump != nullptr)
 				{
-					GLCALL(glActiveTexture(GL_TEXTURE1)); 
+					GLCALL(glActiveTexture(GL_TEXTURE1));
 					GLCALL(glBindTexture(GL_TEXTURE_2D, MAT.smap_bump->id));
 				}
-				
+
 				if (MAT.smap_d != nullptr)
 				{
 					GLCALL(glActiveTexture(GL_TEXTURE2));
 					GLCALL(glBindTexture(GL_TEXTURE_2D, MAT.smap_d->id));
 				}
 			}
+
+			GLCALL(glActiveTexture(GL_TEXTURE3));
+			GLCALL(glBindTexture(GL_TEXTURE_2D, depthFB->texture.id));
 
 
 			if (shader.lit)
@@ -542,31 +571,34 @@ void Application::LoopRender()
 			return true;
 		});
 
-		std::vector<const MeshRenderer*> LightMeshes;
 
-		Mesh& renderers = (*lightsModel)[0];
-		for (const MeshRenderer* ren : renderers) {
-			LightMeshes.push_back(ren);
+
+		if (actCam == 0) {
+			std::vector<const MeshRenderer*> LightMeshes;
+
+			Mesh& renderers = (*lightsModel)[0];
+			for (const MeshRenderer* ren : renderers) {
+				LightMeshes.push_back(ren);
+			}
+			// Draw lights
+
+			int ii = 0;
+			DrawObjects(view, projection, LightMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)->bool {
+				Light * light = LIGHTS[ii];
+
+				bool isOn = light->enabled != 0;
+				Color kD = light->kD;
+
+				SET_UNIFORM(shader, kD);
+				SET_UNIFORM(shader, isOn);
+				SET_UNIFORM(shader, projection);
+				SET_UNIFORM(shader, view);
+
+				ii++;
+				return true;
+			});
 
 		}
-		// Draw lights
-
-		int ii = 0;
-		DrawObjects(view, projection, LightMeshes, [&](const ShaderProgram& shader, const Material& MAT, const MeshRenderer& meshRen)->bool {
-			Light * light = LIGHTS[ii];
-
-			bool isOn = light->enabled != 0;
-			Color kD = light->kD;
-
-			SET_UNIFORM(shader, kD);
-			SET_UNIFORM(shader, isOn);
-			SET_UNIFORM(shader, projection);
-			SET_UNIFORM(shader, view);
-
-			ii++;
-			return true;
-		});
-
 
 		glDepthFunc(GL_LEQUAL);
 		{
@@ -592,7 +624,7 @@ void Application::LoopRender()
 		glDepthFunc(GL_LESS);
 	}
 
-}
+			}
 
 void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
 {
