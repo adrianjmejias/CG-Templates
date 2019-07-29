@@ -6,41 +6,59 @@
 #define DIRECTIONAL 1
 #define SPOT 2
 
-layout (location = 0) in vec4 pos;
-layout (location = 1) in vec4 norm;
-layout (location = 2) in vec4 uv;
-layout (location = 3) in vec4 tangent;
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 uv;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat3 normalMatrix;
+uniform vec3 viewPos;
 
-uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
+uniform struct Light
+{
+	int type;
+	vec3 position;
+	vec3 attenuation;
+	float innerAngle;
+	float outerAngle;
+	vec3 direction;
+	bool isOn;
+	vec4 kD;
+	vec4 kA;
+	vec4 kS;
+} LIGHTS[2];
+
 
 out struct Obj{
-	vec4 m_pos;
-	vec4 v_pos;
-	vec4 w_pos;
-	vec4 v_norm;
-	vec4 uv;
-	vec4 tangent;
+	vec2 uv;
+	vec3 pos;
+	vec3 normal;
+	vec3 TangentPos;
+	vec3 TangentLightPos;
+	vec3 TangentViewPos;
 } OBJ;
-
-out vec3 n;
 
 void main()
 {
-	OBJ.m_pos = (model * pos);
-	OBJ.v_pos = view*(OBJ.m_pos);
 	OBJ.uv = uv;
-	OBJ.tangent = model*view*tangent;
-
-	OBJ.w_pos = projection*(OBJ.v_pos);
+	OBJ.pos = vec3(model *vec4(pos,1.0f));
 	
-    gl_Position =  OBJ.w_pos;
+    vec3 T = normalize(normalMatrix * tangent);
+    vec3 N = normalize(normalMatrix * normal);
+    T = normalize(T - dot(T, N) * N);
+	vec3 B = cross(N, T);
+
+   mat3 TBN = mat3(T, B, N);
+   mat3 iTBN = transpose(TBN);
+
+   OBJ.TangentPos = iTBN * pos;
+   OBJ.TangentLightPos = iTBN* LIGHTS[0].position;
+   OBJ.TangentViewPos = iTBN* viewPos;
+    gl_Position =  projection*view * model*vec4(pos,1);
 
 }
 

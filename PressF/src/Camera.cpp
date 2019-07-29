@@ -78,10 +78,10 @@ void FlyingController::HandleEvent(const SDL_Event & e)
 			return;
 		}
 
-		transform.TryGetClean();
-		Vec3 position = transform.GetPosition();
+		//transform.TryGetClean();
+		//Vec3 position = transform.GetPosition();
 
-		PF_INFO("cam position {0}, {1}, {2}", position.x, position.y, position.z);
+		//PF_INFO("cam position {0}, {1}, {2}", position.x, position.y, position.z);
 
 	}
 
@@ -93,16 +93,16 @@ void FlyingController::HandleEvent(const SDL_Event & e)
 		deltaMouse*= sensitivity;
 		transform.Rotate(deltaMouse.y, deltaMouse.x, 0);
 
-		Vec3 rotation = transform.GetRotation();
-		Vec3 front = transform.Front();
-		Vec3 right = transform.Right();
-		Vec3 up = transform.Up();
-		transform.TryGetClean();
+		//Vec3 rotation = transform.GetRotation();
+		//Vec3 front = transform.Front();
+		//Vec3 right = transform.Right();
+		//Vec3 up = transform.Up();
+		//transform.TryGetClean();
 
-		PF_INFO("cam rotation {0}, {1}, {2}", rotation.x, rotation.y, rotation.z);
-		PF_INFO("cam front {0}, {1}, {2}", front.x, front.y, front.z);
-		PF_INFO("cam right {0}, {1}, {2}", right.x, right.y, right.z);
-		PF_INFO("cam up {0}, {1}, {2}", up.x, up.y, up.z);
+		//PF_INFO("cam rotation {0}, {1}, {2}", rotation.x, rotation.y, rotation.z);
+		//PF_INFO("cam front {0}, {1}, {2}", front.x, front.y, front.z);
+		//PF_INFO("cam right {0}, {1}, {2}", right.x, right.y, right.z);
+		//PF_INFO("cam up {0}, {1}, {2}", up.x, up.y, up.z);
 	}
 
 

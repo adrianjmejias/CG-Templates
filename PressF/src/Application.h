@@ -39,6 +39,7 @@ public:
 	unsigned long long NOW, LAST;
 
 	float IOR_BG = 1;
+	float heightScale = 2.f;
 	
 	bool running;
 	bool captureMouse = true;
@@ -64,7 +65,6 @@ public:
 	std::map<std::string, Material*> materialsLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
 	CubeMap *cubeMap;
-
 	
 public:
 

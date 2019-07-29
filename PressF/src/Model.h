@@ -21,9 +21,9 @@ class Material
 {
 public:
 	std::string name;
-	Vec3 kA{1,0,0};
-	Vec3 kD{0,0,1};
-	Vec3 kS{0,1,0};
+	Vec3 kA{0,0,0};
+	Vec3 kD{0.8f,0.8f,0.8f };
+	Vec3 kS{ 0.8f,0.8f,0.8f };
 	float Ns;
 	float Ni;
 	float d;

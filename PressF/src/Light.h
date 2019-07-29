@@ -16,8 +16,8 @@ public:
 	LightType type;
 	Color kA{ 1,1,1,1 };
 	Color kShadow{ 0,0,0,1 };
-	Color kD{ 0,0,1,1 };
-	Color kS{ 1,0,0,1 };
+	Color kD{ 0.5,0.5,0.5,1 };
+	Color kS{ 0.5,0.5,0.5,1 };
 	Color kE{ 0,0,0,1 };
 	Color shadowColor{ 0,0,0,1 };
 	Vec3 attenuation{0,0,0.01f};
