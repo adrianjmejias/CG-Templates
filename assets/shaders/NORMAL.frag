@@ -38,6 +38,9 @@ uniform sampler2D tex_kD;
 uniform sampler2D tex_Bump;
 uniform sampler2D tex_displacement;
 
+uniform float minLayers = 8;
+uniform float maxLayers = 200;
+
 uniform vec3 viewPos;
 uniform float heightScale;
 in struct {
@@ -52,40 +55,56 @@ in struct {
 
 out vec4 FragColor;
 
-vec2 Parallax(vec2 uv, vec3 viewDir)
-{
-	float height = texture(tex_displacement, uv).r;
-	vec2 p = viewDir.xy/viewDir.z * (height*heightScale);
-	return uv -p;
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{ 
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
+    float layerDepth = 1.0 / numLayers;
+    float currentLayerDepth = 0.0;
+    vec2 P = viewDir.xy / viewDir.z * heightScale; 
+    vec2 deltaTexCoords = P / numLayers;
+    vec2  currentTexCoords     = texCoords;
+    float currentDepthMapValue = texture(tex_displacement, currentTexCoords).r;
+      
+    while(currentLayerDepth < currentDepthMapValue)
+    {
+        currentTexCoords -= deltaTexCoords;
+        currentDepthMapValue = texture(tex_displacement, currentTexCoords).r;  
+        currentLayerDepth += layerDepth;  
+    }
+    
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+    float afterDepth  = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture(tex_displacement, prevTexCoords).r - currentLayerDepth + layerDepth;
+ 
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
 }
 
 void main()
 {
-
-  // obtain normal from normal map in range [0,1]
-    vec3 normal = texture(tex_Bump, OBJ.uv).rgb;
-    // transform normal vector to range [-1,1]
-    normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
-   
-    // get diffuse color
-    vec3 color = texture(tex_kD, OBJ.uv).rgb;
-    // ambient
-    vec3 ambient = 0.1 * color;
-    // diffuse
+    vec3 viewDir = normalize(OBJ.TangentViewPos - OBJ.TangentPos);
     vec3 lightDir = -normalize(OBJ.TangentLightPos - OBJ.TangentPos);
+
+	vec2 uv = ParallaxMapping(OBJ.uv, viewDir);
+    vec3 normal = texture(tex_Bump, uv).rgb;
+    
+	normal = normalize(normal * 2.0 - 1.0);  // this normal is in tangent space
+   
+    vec3 color = texture(tex_kD, uv).rgb;
+    vec3 ambient = 0.1 * color;
     float diff = max(dot(lightDir, normal), 0.0);
     vec3 diffuse = diff * color;
-    // specular
-    vec3 viewDir = normalize(OBJ.TangentViewPos - OBJ.TangentPos);
-    vec3 reflectDir = reflect(-lightDir, normal);
+
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
     vec3 specular = vec3(0.2) * spec;
     FragColor = vec4(ambient + diffuse + specular, 1.0);
-//FragColor = texture(tex_displacement, OBJ.uv)
 
-
+//FragColor = texture(tex_displacement, OBJ.uv);
 
 
 

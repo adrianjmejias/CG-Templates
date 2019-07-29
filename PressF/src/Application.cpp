@@ -301,7 +301,9 @@ void Application::LoopUI()
 				ImGui::SliderFloat("IOR Air", &IOR_BG, 0.f, 3.f);
 				break;
 			case 8:
-				ImGui::SliderFloat("HeightScale", &heightScale, 0.f, 3.f);
+				ImGui::SliderFloat("HeightScale", &heightScale, 0.f, 10.f);
+				ImGui::SliderFloat("MinLayers", &minLayers, 6.f, maxLayers);
+				ImGui::SliderFloat("MaxLayers", &maxLayers, minLayers, 400.f);
 
 				break;
 			default:
@@ -404,8 +406,6 @@ void Application::LoopUpdate()
 
 void Application::LoopRender()
 {
-
-
 	std::vector<const Mesh *> NonTransparentMeshes;
 	std::vector<const MeshRenderer *> transparentMeshes;
 	const Camera& cam = *cameras[actCam];
@@ -467,6 +467,9 @@ void Application::LoopRender()
 				SET_UNIFORM(shader, MAT.Ni);
 				SET_UNIFORM(shader, MAT.IOR);
 				SET_UNIFORM(shader, heightScale);
+
+				SET_UNIFORM(shader, minLayers);
+				SET_UNIFORM(shader, maxLayers);
 				
 				shader.SetUniform("IOR", IOR_BG);
 			}
@@ -497,7 +500,6 @@ void Application::LoopRender()
 					GLCALL(glBindTexture(GL_TEXTURE_2D, MAT.smap_d->id));
 				}
 			}
-			glBindTexture(GL_TEXTURE_2D, 0);
 
 
 			if (shader.lit)
@@ -528,13 +530,13 @@ void Application::LoopRender()
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, MAT.smap_Kd->id);
 				shader.SetUniform("tex_kD", 1);
+
 			}
 			else
 			{
 				PF_ASSERT("ALL TRANSPARENT MATERIALS MUST HAVE A TEXTURE");
 			}
 
-			glBindTexture(GL_TEXTURE_2D, 0);
 
 
 			return true;

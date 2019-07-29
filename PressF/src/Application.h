@@ -40,7 +40,9 @@ public:
 
 	float IOR_BG = 1;
 	float heightScale = 2.f;
-	
+	float minLayers = 8;
+	float maxLayers = 200;
+
 	bool running;
 	bool captureMouse = true;
 	bool show_demo_window = true;
