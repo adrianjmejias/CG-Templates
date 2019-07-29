@@ -9,7 +9,7 @@ Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
-illum 4
+illum 11
 map_Bump bricks2_normal.jpg
 map_Kd bricks2.jpg
 map_d bricks2_disp.jpg

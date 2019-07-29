@@ -15,6 +15,9 @@ public:
 	GameObject(const std::string n);
 	~GameObject();
 
+
+	
+
 	template <typename TT, typename ...Args>
 	TT& AddComponent(Args&&... params);
 	template <typename TT>
