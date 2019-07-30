@@ -23,7 +23,7 @@ int main() {
 			// SHADOW FIRST PASS 4
 			std::make_tuple("DEPTH.vert", "DEPTH.frag"),
 			// SHADOW SECOND PASS 5
-			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
+			std::make_tuple("SHADOW_MAPPING.vert", "SHADOW_MAPPING.frag"),
 			// Cubemap 6
 			std::make_tuple("CUBEMAP.vert", "CUBEMAP.frag"),
 			// PARALLAX_MAPPING 7

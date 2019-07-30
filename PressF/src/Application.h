@@ -29,7 +29,6 @@ public:
 	SDL_GLContext glContext;
 	int win_width = 800;
 	int win_heigth = 600;
-
 	//static double deltaTime;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
@@ -71,6 +70,7 @@ public:
 	unsigned int VAO_PLANE, VBO_PLANE;
 	bool renderPlane = false;
 	bool renderScene = true;
+	FlyingController * fc;
 	ShaderProgram* depthPlaneShader = nullptr;
 	Vec4 orthoSides{-80,80,-80,80};
 	Vec2 clippingPlane{ 1.f,400.f };

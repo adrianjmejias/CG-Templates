@@ -12,7 +12,7 @@ class Camera;
 
 class FlyingController : public Component
 {
-	float speed = 0.5f;
+	float speed = 5.f;
 	float sensitivity = 0.2f;
 	bool blockRotation = true;
 public:

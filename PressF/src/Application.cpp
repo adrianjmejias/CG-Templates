@@ -117,7 +117,7 @@ void Application::SetupScene()
 
 	{
 		GameObject *go = new GameObject();
-		go->AddComponent < FlyingController >();
+		fc = go->AddComponent < FlyingController >();
 		go->AddComponent < Camera >();
 		//cam = &go->AddComponent<CameraGL>();
 
@@ -427,7 +427,7 @@ void Application::LoopRender()
 	const Camera& cam = *cameras[actCam];
 	Transform &camTransform = *cam.transform;
 	const Vec3& camPos = camTransform.GetPosition();
-	const Mat4& projection = Transform::GetProjection(camTransform, false, win_width / static_cast<float>(win_width));
+	const Mat4& projection = Transform::GetProjection(camTransform, true, win_width / static_cast<float>(win_width));
 	const Mat4& view = Transform::GetView(camTransform);
 
 	bool camDirty =  camTransform.TryGetClean();
@@ -443,9 +443,9 @@ void Application::LoopRender()
 		},
 		[](Component* comp) {}
 		);
-	camDirty = false;
+
+
 		Transform &lightTransform = *LIGHTS[0]->transform;
-		//Transform &lightTransform = mainCamera->transform;
 		Mat4 ViewProjection = glm::ortho(orthoSides[0], orthoSides[1], orthoSides[2], orthoSides[3], clippingPlane[0], clippingPlane[1]);//Transform::GetProjection(lightTransform, false, win_width / static_cast<float>(win_heigth));
 		ViewProjection = ViewProjection * Transform::GetView(lightTransform);
 		Texture &shadowTex = depthFB->texture;
@@ -464,8 +464,10 @@ void Application::LoopRender()
 		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
 		
 
-		for (const Model* model : (models)) {
-			for (const Mesh& mesh : *model) {
+		for (const Model* model : (models)) 
+		{
+			for (const Mesh& mesh : *model) 
+			{
 				glBindVertexArray(mesh.VAO);
 
 				for (auto ren : mesh) {
@@ -715,7 +717,6 @@ void Application::LoopEvents()
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
-		ImGui_ImplSDL2_ProcessEvent(&e);
 		if (e.type == SDL_QUIT) {
 			running = false;
 			break;
@@ -759,7 +760,6 @@ void Application::LoopEvents()
 				if (actCam != newCam) {
 					PF_INFO("Swapped to Camera {0}", newCam);
 					if (newCam < cameras.size()) {
-						FlyingController* fc = mainCamera->gameObject->GetComponent<FlyingController>();
 						actCam = newCam;
 						mainCamera = cameras[actCam];
 						mainCamera->gameObject->AddComponent(fc);
@@ -793,6 +793,7 @@ void Application::LoopEvents()
 				comp->HandleEvent(e);
 			}
 		}
+		ImGui_ImplSDL2_ProcessEvent(&e);
 	}
 }
 
@@ -1004,7 +1005,7 @@ Application::Application()
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-
+	io.WantCaptureKeyboard = false;
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
 	//ImGui::StyleColorsClassic();
