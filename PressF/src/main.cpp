@@ -10,7 +10,7 @@ int main() {
 			"assets/models/cuboPower/simpleQuad.obj",
 			//"assets/models/cuboPower/simpleCube.obj",
 			//"assets/models/cuboPower/clown.obj",
-			"assets/models/cuboPower/cuboPower.obj"
+			"assets/models/cuboPower/cuboPowerblend.obj"
 		}, {
 			// Cook
 			std::make_tuple("COOK.vert", "COOK.frag"),

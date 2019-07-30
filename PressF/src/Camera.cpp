@@ -92,7 +92,7 @@ void FlyingController::HandleEvent(const SDL_Event & e)
 	if (e.type == SDL_EventType::SDL_MOUSEMOTION) {
 		Vec2 deltaMouse = { e.motion.xrel, e.motion.yrel };
 		deltaMouse*= sensitivity;
-		transform.Rotate(deltaMouse.y, deltaMouse.x, 0);
+		transform.Rotate(deltaMouse.y, -deltaMouse.x, 0);
 
 		//Vec3 rotation = transform.GetRotation();
 		//Vec3 front = transform.Front();

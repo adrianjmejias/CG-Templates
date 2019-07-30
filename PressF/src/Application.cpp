@@ -568,7 +568,7 @@ void Application::LoopRender()
 
 				GLCALL(glActiveTexture(GL_TEXTURE3));
 				GLCALL(glBindTexture(GL_TEXTURE_2D, depthFB->texture.id));
-
+				shader.SetUniform("depthMap" ,3);
 
 				if (shader.lit)
 				{
