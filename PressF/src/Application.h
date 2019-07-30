@@ -72,7 +72,8 @@ public:
 	bool renderPlane = false;
 	bool renderScene = true;
 	ShaderProgram* depthPlaneShader = nullptr;
-
+	Vec4 orthoSides{-80,80,-80,80};
+	Vec2 clippingPlane{ 1.f,400.f };
 public:
 
 
@@ -84,7 +85,7 @@ public:
 
 	static Model* GLCreate(objl::Loader & fullModel);
 	void Steal(Component *);
-	void HandleEvents();
+	void LoopEvents();
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
 	Model* SetupModel(std::string objPath);

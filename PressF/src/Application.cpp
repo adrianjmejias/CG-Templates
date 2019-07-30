@@ -132,7 +132,8 @@ void Application::SetupScene()
 		go->AddComponent < Camera >();
 		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
 		lightMesh.push_back(ren);
-		go->transform.SetPosition(0, 10, 0);
+		go->transform.SetPosition(-7, 12.74, -86.2f);
+		go->transform.SetRotation(346.8f, 359.2f, 0.f);
 		rootNodes.push_back(go);
 	}
 
@@ -256,7 +257,7 @@ void Application::LoopMain()
 		glViewport(0, 0, win_width, win_heigth);
 
 
-		HandleEvents();
+		LoopEvents();
 
 		LoopUpdate();
 
@@ -329,6 +330,18 @@ void Application::LoopUI()
 
 	ImGui::Begin("Lights");
 	{
+		
+		Transform &camTransform = mainCamera->transform;
+		ImGui::Text("Camera transform");
+		ImGuiTransform(camTransform);
+
+
+
+
+		ImGui::SliderFloat4("orthoSize", &orthoSides[0], -100, 100);
+		ImGui::SliderFloat2("clipping", &clippingPlane[0], 1, 600);
+
+
 		for (Light* light : LIGHTS) {
 			if (ImGui::TreeNode(light->gameObject.name.c_str())) {
 
@@ -430,9 +443,9 @@ void Application::LoopRender()
 		[](Component* comp) {}
 		);
 
-		//Transform &lightTransform = LIGHTS[0]->transform;
-		Transform &lightTransform = mainCamera->transform;
-		Mat4 ViewProjection = Transform::GetProjection(lightTransform, false, win_width / static_cast<float>(win_heigth));
+		Transform &lightTransform = LIGHTS[0]->transform;
+		//Transform &lightTransform = mainCamera->transform;
+		Mat4 ViewProjection = glm::ortho(orthoSides[0], orthoSides[1], orthoSides[2], orthoSides[3], clippingPlane[0], clippingPlane[1]);//Transform::GetProjection(lightTransform, false, win_width / static_cast<float>(win_heigth));
 		ViewProjection = ViewProjection * Transform::GetView(lightTransform);
 		Texture &shadowTex = depthFB->texture;
 		ShaderProgram &depthShader = *shaders[4];
@@ -693,7 +706,7 @@ void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::v
 
 }
 
-void Application::HandleEvents()
+void Application::LoopEvents()
 {
 	SDL_GetWindowSize(win, &win_width, &win_heigth);
 	LAST = NOW;
