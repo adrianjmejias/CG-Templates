@@ -2,7 +2,7 @@
 
 
 
-MeshRenderer::MeshRenderer(GameObject & go, Transform & t, Mesh * m) : Component(go, t), mesh(m)
+MeshRenderer::MeshRenderer(COMP_PARAMS, Mesh *m) COMP_INIT, mesh(m)
 {
 }
 

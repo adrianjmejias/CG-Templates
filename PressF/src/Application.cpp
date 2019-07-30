@@ -130,9 +130,9 @@ void Application::SetupScene()
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::DIRECTIONAL);
 		go->AddComponent < Camera >();
-		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
+		MeshRenderer *ren = go->AddComponent<MeshRenderer>(&lightMesh);
 		lightMesh.push_back(ren);
-		go->transform.SetPosition(-7, 12.74, -86.2f);
+		go->transform.SetPosition(-7.f, 12.74f, -86.2f);
 		go->transform.SetRotation(346.8f, 359.2f, 0.f);
 		rootNodes.push_back(go);
 	}
@@ -140,7 +140,7 @@ void Application::SetupScene()
 	{
 		GameObject *go = new GameObject();
 		go->AddComponent < Light >(LightType::POINT);
-		MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&lightMesh);
+		MeshRenderer *ren = go->AddComponent<MeshRenderer>(&lightMesh);
 		lightMesh.push_back(ren);
 
 		go->transform.SetPosition(0, -10, 0);
@@ -152,7 +152,7 @@ void Application::SetupScene()
 		GameObject *papa = new GameObject();
 		for (Mesh &mesh : *model) {
 			GameObject *go = new GameObject();
-			MeshRenderer *ren = &go->AddComponent<MeshRenderer>(&mesh);
+			MeshRenderer *ren = go->AddComponent<MeshRenderer>(&mesh);
 			mesh.push_back(ren);
 
 			go->transform.SetPosition(0, 0, 0);
@@ -331,7 +331,7 @@ void Application::LoopUI()
 	ImGui::Begin("Lights");
 	{
 		
-		Transform &camTransform = mainCamera->transform;
+		Transform &camTransform = *mainCamera->transform;
 		ImGui::Text("Camera transform");
 		ImGuiTransform(camTransform);
 
@@ -343,9 +343,9 @@ void Application::LoopUI()
 
 
 		for (Light* light : LIGHTS) {
-			if (ImGui::TreeNode(light->gameObject.name.c_str())) {
+			if (ImGui::TreeNode(light->gameObject->name.c_str())) {
 
-				ImGuiTransform(light->transform);
+				ImGuiTransform(*light->transform);
 
 				ImGui::Checkbox("isOn", reinterpret_cast<bool*>(&light->enabled));
 				ImGui::ColorEdit4("kD##2f", (float*)&light->kD[0], ImGuiColorEditFlags_Float);
@@ -425,11 +425,12 @@ void Application::LoopRender()
 	std::vector<const Mesh *> NonTransparentMeshes;
 	std::vector<const MeshRenderer *> transparentMeshes;
 	const Camera& cam = *cameras[actCam];
-	const Vec3& camPos = cam.transform.GetPosition();
-	const Mat4& projection = Transform::GetProjection(cam.transform, false, win_width / static_cast<float>(win_width));
-	const Mat4& view = Transform::GetView(cam.transform);
+	Transform &camTransform = *cam.transform;
+	const Vec3& camPos = camTransform.GetPosition();
+	const Mat4& projection = Transform::GetProjection(camTransform, false, win_width / static_cast<float>(win_width));
+	const Mat4& view = Transform::GetView(camTransform);
 
-	bool camDirty = cam.transform.TryGetClean();
+	bool camDirty =  camTransform.TryGetClean();
 
 	Traverse(rootNodes,
 		[](GameObject* go) {},
@@ -442,8 +443,8 @@ void Application::LoopRender()
 		},
 		[](Component* comp) {}
 		);
-
-		Transform &lightTransform = LIGHTS[0]->transform;
+	camDirty = false;
+		Transform &lightTransform = *LIGHTS[0]->transform;
 		//Transform &lightTransform = mainCamera->transform;
 		Mat4 ViewProjection = glm::ortho(orthoSides[0], orthoSides[1], orthoSides[2], orthoSides[3], clippingPlane[0], clippingPlane[1]);//Transform::GetProjection(lightTransform, false, win_width / static_cast<float>(win_heigth));
 		ViewProjection = ViewProjection * Transform::GetView(lightTransform);
@@ -468,7 +469,7 @@ void Application::LoopRender()
 				glBindVertexArray(mesh.VAO);
 
 				for (auto ren : mesh) {
-					Mat4 model = ren->transform.GetAccumulated();
+					Mat4 model = ren->transform->GetAccumulated();
 					SET_UNIFORM(depthShader, model);
 					glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0);
 				}
@@ -577,7 +578,7 @@ void Application::LoopRender()
 				}
 
 				if (shader.viewDependant) {
-					GLCALL(shader.SetUniform("viewPos", cam.transform.GetPosition()));
+					GLCALL(shader.SetUniform("viewPos", cam.transform->GetPosition()));
 				}
 
 				if (shader.MVP) {
@@ -693,8 +694,8 @@ void Application::DrawObjects(const Mat4 & view, const Mat4 & projection, std::v
 
 		for (auto obj : *mesh) {
 			PF_ASSERT(obj && "Renderer is null");
-			const Mat4 &model = obj->transform.GetAccumulated();
-			const glm::mat3 &normalMatrix = obj->transform.normalMatrix;
+			const Mat4 &model = obj->transform->GetAccumulated();
+			const glm::mat3 &normalMatrix = obj->transform->normalMatrix;
 
 			SET_UNIFORM(shader, model);
 			SET_UNIFORM(shader, normalMatrix);
@@ -758,12 +759,11 @@ void Application::LoopEvents()
 				if (actCam != newCam) {
 					PF_INFO("Swapped to Camera {0}", newCam);
 					if (newCam < cameras.size()) {
-						FlyingController* fc = mainCamera->gameObject.GetComponent<FlyingController>();
+						FlyingController* fc = mainCamera->gameObject->GetComponent<FlyingController>();
 						actCam = newCam;
 						mainCamera = cameras[actCam];
-						//mainCamera
-
-
+						mainCamera->gameObject->AddComponent(fc);
+						mainCamera->transform->SetDirty(Dirty::Model);
 					}
 					else {
 						PF_WARN("Camera {0} not available", newCam);
@@ -954,7 +954,7 @@ inline void Application::DrawObjects(const Mat4 & view, const Mat4 & projection,
 
 		if (PreReqs(shader, MAT, *meshRen)) {
 
-			const Mat4 &MVP = meshRen->transform.MVP;
+			const Mat4 &MVP = meshRen->transform->MVP;
 			SET_UNIFORM(shader, MVP);
 			GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
 		}

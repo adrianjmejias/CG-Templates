@@ -16,26 +16,19 @@ public:
 	~GameObject();
 
 	template <typename TT, typename ...Args>
-	TT& AddComponent(Args&&... params);
+	TT* AddComponent(Args&&... params);
 	template <typename TT>
 	TT* GetComponent();
 
-	//template<>
-	//Component* AddComponent<Component>(Component* comp) {
-	//	if (&comp.gameObject == this) {
-	//		return comp;
-	//	}
-	//	auto a = const_cast<GameObject*>(this);
-	//	//comp.gameObject = *a;
-	//	return comp;
-	//}
+	Component* AddComponent(Component* comp);
+
 };
 
 template<typename TT, typename ...Args>
-TT & GameObject::AddComponent(Args && ...params) {
-	TT* comp = new TT(*this, transform, std::forward<Args>(params)...);
+TT * GameObject::AddComponent(Args && ...params) {
+	TT* comp = new TT(this, &transform, std::forward<Args>(params)...);
 	components.push_back(comp);
-	return *comp;
+	return comp;
 }
 
 template<typename TT>

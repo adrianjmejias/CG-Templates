@@ -7,7 +7,7 @@ class MeshRenderer : public Component
 {
 public:
 	Mesh *mesh;
-	MeshRenderer(GameObject& go, Transform& t, Mesh* m);
+	MeshRenderer(COMP_PARAMS, Mesh *);
 	~MeshRenderer();
 
 	// Inherited via Component

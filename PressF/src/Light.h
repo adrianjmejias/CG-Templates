@@ -24,7 +24,7 @@ public:
 	float innerAngle = 15.f;
 	float outterAngle = 20.f;
 
-	Light(GameObject& go, Transform& t, LightType ty);
+	Light(COMP_PARAMS, LightType ty);
 	~Light();
 
 	virtual void Update();

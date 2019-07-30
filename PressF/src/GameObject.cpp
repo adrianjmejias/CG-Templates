@@ -15,3 +15,4 @@ GameObject::~GameObject()
 	std::cout << "Bye GameObject"<<std::endl;
 
 }
+

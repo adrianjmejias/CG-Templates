@@ -5,7 +5,7 @@ extern double deltaTime;
 
 
 
-Camera::Camera(GameObject & go, Transform & t) : Component(go, t) {}
+Camera::Camera(COMP_PARAMS) COMP_INIT {}
 
 Camera::~Camera()
 {
@@ -41,12 +41,13 @@ const Mat4 & Camera::GetProjection(ProjectionType type, int w, int h)
 }
 const Mat4 & Camera::GetView()
 {
+	Transform &transform = *this->transform;
 	view = Transform::GenModel(transform.GetScale(), -transform.GetPosition(), transform.GetRotation());
 
 	return view;
 }
 
-FlyingController::FlyingController(GameObject& go, Transform& t) : Component(go, t) {}
+FlyingController::FlyingController(COMP_PARAMS)COMP_INIT {}
 
 void FlyingController::Update()
 {
@@ -54,11 +55,11 @@ void FlyingController::Update()
 
 void FlyingController::HandleEvent(const SDL_Event & e)
 {
+	Transform& transform = *this->transform;
 	if (e.type == SDL_EventType::SDL_KEYDOWN) {
 
 		switch (e.key.keysym.scancode) {
 			PF_INFO("Moving Camera");
-
 		case SDL_SCANCODE_W:
 			transform.Translate(transform.Front() * speed);
 			break;

@@ -2,6 +2,7 @@
 
 
 
+
 Vec3 Transform::WorldFront() {
 	return Vec3{ 0,0,1 };
 }

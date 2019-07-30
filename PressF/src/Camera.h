@@ -16,7 +16,7 @@ class FlyingController : public Component
 	float sensitivity = 0.2f;
 	bool blockRotation = true;
 public:
-	FlyingController(GameObject& go, Transform& t);
+	FlyingController(COMP_PARAMS);
 
 	// Inherited via Component
 	virtual void Update() override;
@@ -42,7 +42,7 @@ public:
 	Mat4 projection;
 	Mat4 view;
 
-	Camera(GameObject& go, Transform& t);;
+	Camera(COMP_PARAMS);
 	Camera::~Camera();
 
 	// Inherited via Component
