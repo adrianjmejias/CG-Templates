@@ -69,7 +69,8 @@ public:
 	CubeMap *cubeMap;
 	std::unique_ptr<FrameBuffer> depthFB;
 	unsigned int VAO_PLANE, VBO_PLANE;
-	bool renderPlane = true;
+	bool renderPlane = false;
+	bool renderScene = true;
 	ShaderProgram* depthPlaneShader = nullptr;
 
 public:

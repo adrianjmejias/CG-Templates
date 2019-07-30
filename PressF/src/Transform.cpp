@@ -104,7 +104,7 @@ Mat4 Transform::GetProjection(const Transform & t, bool isPerspective, float asp
 	}
 	else
 	{
-		return glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 400.f);
+		return glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.f, 300.f);
 	}
 }
 

@@ -4,9 +4,7 @@ layout (location = 0) in vec4 pos;
 layout (location = 1) in vec4 norm;
 layout (location = 2) in vec4 uv;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform mat4 MVP;
 
 out struct {
 	vec4 m_pos;
@@ -19,7 +17,5 @@ out struct {
 void main()
 {
 	OBJ.uv = uv;
-
-
-    gl_Position = projection*(view*(model*pos));
+    gl_Position = MVP*pos;
 }
