@@ -31,6 +31,7 @@ public:
 	Mat4 model = Mat4(1);
 	Mat4 acum = Mat4(1);
 	Mat4 rotMat = Mat4(1);
+	Mat4 MVP = Mat4(1);
 	glm::mat3 normalMatrix;
 
 	Dirty dirty;

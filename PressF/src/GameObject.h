@@ -15,13 +15,20 @@ public:
 	GameObject(const std::string n);
 	~GameObject();
 
-
-	
-
 	template <typename TT, typename ...Args>
 	TT& AddComponent(Args&&... params);
 	template <typename TT>
-	TT& GetComponent();
+	TT* GetComponent();
+
+	//template<>
+	//Component* AddComponent<Component>(Component* comp) {
+	//	if (&comp.gameObject == this) {
+	//		return comp;
+	//	}
+	//	auto a = const_cast<GameObject*>(this);
+	//	//comp.gameObject = *a;
+	//	return comp;
+	//}
 };
 
 template<typename TT, typename ...Args>
@@ -32,8 +39,8 @@ TT & GameObject::AddComponent(Args && ...params) {
 }
 
 template<typename TT>
-TT & GameObject::GetComponent() {
-	for each (object comp in component)
+TT * GameObject::GetComponent() {
+	for (Component* comp : components)
 	{
 		if (TT* t = dynamic_cast<TT*>(comp)) {
 			return t;

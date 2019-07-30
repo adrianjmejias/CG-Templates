@@ -100,7 +100,7 @@ Mat4 Transform::GenRotMat(const Vec3 & rotation) {
 Mat4 Transform::GetProjection(const Transform & t, bool isPerspective, float aspectRatio) {
 
 	if (isPerspective) {
-		return  glm::perspective(glm::radians(45.f), aspectRatio, 0.1f, 100.0f);
+		return  glm::perspective(glm::radians(45.f), aspectRatio, 0.1f, 300.0f);
 	}
 	else
 	{

@@ -5,11 +5,6 @@ extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
 enum class Dirty;
 
-template <typename LambdaRender>
-void RenderNormal(LambdaRender F) {
-
-}
-
 void ImGuiTransform(Transform &t) {
 	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
 		t.SetDirty(Dirty::Model);
@@ -96,8 +91,28 @@ void Application::SetupScene()
 	"assets/skybox/front.jpg",
 	"assets/skybox/back.jpg"
 		});
-
 	cubeMap->shader = shaders[6];
+
+	depthPlaneShader = shaders[11];
+
+	float quadVertices[] = {
+		// positions        // texture Coords
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	};
+	// setup plane VAO
+	glGenVertexArrays(1, &VAO_PLANE);
+	glGenBuffers(1, &VBO_PLANE);
+	glBindVertexArray(VAO_PLANE);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO_PLANE);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
 
 
 	{
@@ -413,25 +428,23 @@ void Application::LoopRender()
 		[](Component* comp) {}
 	);
 
-
-	{// depth pass
-
 		Mat4 ViewProjection = Transform::GetProjection(LIGHTS[0]->transform, false, win_width / static_cast<float>(win_heigth));
 		ViewProjection = ViewProjection * Transform::GetView(LIGHTS[0]->transform);
 
 		Texture &shadowTex = depthFB->texture;
-
-
-		glViewport(0, 0, shadowTex.width, shadowTex.height);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-
 		ShaderProgram &depthShader = *shaders[4];
 		depthShader.Use();
 		SET_UNIFORM(depthShader, ViewProjection);
 
-		glClear(GL_DEPTH_BUFFER_BIT);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+		
+
+		glViewport(0, 0, shadowTex.width, shadowTex.height);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
+
+
+		glClear(GL_DEPTH_BUFFER_BIT);
 		for (const Model* model : (models)) {
 			for (const Mesh& mesh : *model) {
 				glBindVertexArray(mesh.VAO);
@@ -446,9 +459,10 @@ void Application::LoopRender()
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	}
-	glViewport(0, 0, win_width, win_heigth);
 
+
+	glViewport(0, 0, win_width, win_heigth);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (const Model* model : (models)) {
 
@@ -622,7 +636,24 @@ void Application::LoopRender()
 
 		}
 		glDepthFunc(GL_LESS);
-	}
+	
+
+		if (this->renderPlane) 
+		{
+			depthPlaneShader->Use();
+			GLCALL(glBindVertexArray(VAO_PLANE));
+			{
+				GLCALL(glActiveTexture(GL_TEXTURE0));
+				GLCALL(glBindTexture(GL_TEXTURE_2D, shadowTex.id));
+				GLCALL(depthPlaneShader->SetUniform("depthMap", 0));
+
+				GLCALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+			}
+			GLCALL(glBindVertexArray(0));
+		}
+
+}
+
 
 }
 
@@ -690,6 +721,11 @@ void Application::HandleEvents()
 				captureMouse = !captureMouse;
 				break;
 
+			case SDL_Scancode::SDL_SCANCODE_0:
+
+				renderPlane = !renderPlane;
+
+				break;
 			case SDL_Scancode::SDL_SCANCODE_1:
 			case SDL_Scancode::SDL_SCANCODE_2:
 			case SDL_Scancode::SDL_SCANCODE_3:
@@ -700,7 +736,7 @@ void Application::HandleEvents()
 				if (actCam != newCam) {
 					PF_INFO("Swapped to Camera {0}", newCam);
 					if (newCam < cameras.size()) {
-						FlyingController& fc = mainCamera->gameObject.GetComponent<FlyingController>();
+						FlyingController* fc = mainCamera->gameObject.GetComponent<FlyingController>();
 						actCam = newCam;
 						mainCamera = cameras[actCam];
 						//mainCamera
@@ -964,7 +1000,6 @@ Application::~Application()
 
 	for (int ii = 0; ii < shaders.size(); ii++) {
 		delete shaders[ii];
-
 	}
 
 	std::for_each(begin(shadersLoaded), end(shadersLoaded), [](std::pair<std::string, Shader*> p) {delete p.second; });
@@ -973,8 +1008,11 @@ Application::~Application()
 	std::for_each(begin(modelsDebug), end(modelsDebug), [](Model* p) {delete p; });
 	//std::for_each(begin(shaders), end(shaders), [](ShaderProgram* p) {delete p; });
 
-	delete cubeMap;
+	glDeleteVertexArrays(1, &VAO_PLANE);
+	glDeleteBuffers(1, &VBO_PLANE);
 
+	delete cubeMap;
+	
 	Traverse(rootNodes,
 		[](GameObject* go) {},
 		[](GameObject* go) {delete go; },
