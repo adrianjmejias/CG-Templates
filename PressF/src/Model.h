@@ -1,5 +1,4 @@
 #pragma once
-#include "pch.h"
 #include "Physics.h"
 #include "OBJ_Loader.h"
 #include "Texture.h"

@@ -1,3 +1,5 @@
+
+#include "types.h"
 #include "Camera.h"
 
 extern double deltaTime;
@@ -22,32 +24,7 @@ void Camera::HandleEvent(const SDL_Event & e) {
 
 }
 
-const Mat4 & Camera::GetProjection(ProjectionType type, int w, int h)
-{
-	if (type == ProjectionType::CAM_SETUP) {
-		type = type;
-	}
-
-
-	if (isPerspective) {
-		view = glm::perspective(glm::radians(45.f), w / static_cast<float>(h), 0.1f, 300.f);
-	}
-	else
-	{
-		view = glm::ortho(0.f, 100.0f, 0.f, 100.0f, 0.01f, 400.f);
-	}
-
-	return view;
-}
-const Mat4 & Camera::GetView()
-{
-	Transform &transform = *this->transform;
-	view = Transform::GenModel(transform.GetScale(), -transform.GetPosition(), transform.GetRotation());
-
-	return view;
-}
-
-FlyingController::FlyingController(COMP_PARAMS)COMP_INIT {}
+FlyingController::FlyingController(COMP_PARAMS) COMP_INIT {}
 
 void FlyingController::Update()
 {

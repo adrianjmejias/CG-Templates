@@ -1,3 +1,6 @@
+#include "types.h"
+
+
 #include "ShaderProgram.h"
 
 ShaderProgram::ShaderProgram(std::vector<Shader* > li)

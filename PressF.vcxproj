@@ -76,13 +76,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>types.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -93,7 +94,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -103,6 +104,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>types.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,11 +116,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>PressF\src;dependencies\spdlog\include;.;dependencies\glm;dependencies\Glad\include;dependencies\SDL\include;dependencies\OBJ-Loader;dependencies\stb;dependencies\microui\src;dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeaderFile>types.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,7 +142,6 @@
     <ClInclude Include="PressF\src\MeshRenderer.h" />
     <ClInclude Include="PressF\src\Model.h" />
     <ClInclude Include="PressF\src\OBJ_Loader.h" />
-    <ClInclude Include="PressF\src\pch.h" />
     <ClInclude Include="PressF\src\Physics.h" />
     <ClInclude Include="PressF\src\Shader.h" />
     <ClInclude Include="PressF\src\ShaderProgram.h" />
@@ -532,12 +534,16 @@
     <ClCompile Include="PressF\src\MeshRenderer.cpp" />
     <ClCompile Include="PressF\src\Model.cpp" />
     <ClCompile Include="PressF\src\OBJ_Loader.cpp" />
-    <ClCompile Include="PressF\src\pch.cpp" />
     <ClCompile Include="PressF\src\Physics.cpp" />
     <ClCompile Include="PressF\src\Shader.cpp" />
     <ClCompile Include="PressF\src\ShaderProgram.cpp" />
     <ClCompile Include="PressF\src\Texture.cpp" />
     <ClCompile Include="PressF\src\Transform.cpp" />
+    <ClCompile Include="PressF\src\types.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="PressF\src\UserInterface.cpp" />
     <ClCompile Include="PressF\src\Window.cpp" />
     <ClCompile Include="PressF\src\main.cpp" />

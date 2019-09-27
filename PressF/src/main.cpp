@@ -1,3 +1,4 @@
+#include "types.h"
 #include "main.h"
 
 int main() {
@@ -7,11 +8,14 @@ int main() {
 
 	app.Setup(
 		{
-			"assets/models/cuboPower/simpleQuad.obj",
+			//"assets/models/cuboPower/simpleQuad.obj",
 			//"assets/models/cuboPower/simpleCube.obj",
 			//"assets/models/cuboPower/clown.obj",
-			"assets/models/cuboPower/cuboPowerblend.obj"
-		}, {
+			//"assets/models/cuboPower/cuboPowerblend.obj",
+			"assets/models/volumeCube.obj",
+			"assets/models/screenQuad.obj",
+		}, 
+		{
 			// Cook
 			std::make_tuple("COOK.vert", "COOK.frag"),
 			// Transparency 1
@@ -36,9 +40,12 @@ int main() {
 			std::make_tuple("NORMAL.vert", "NORMAL.frag"),
 			// NORMAL_MAPPING 11 tex disp 
 			std::make_tuple("BASIC.vert", "BASIC.frag"),
-
-
-
+			//12 simple texture shader
+			std::make_tuple("BASIC.vert", "BASIC.frag"),
+			// 13 volume raycast first pass
+			std::make_tuple("BASIC.vert", "BASIC.frag"),
+			// 14 volume raycast last pass
+			std::make_tuple("BASIC.vert", "BASIC.frag"),
 		});
 
 	app.LoopMain();

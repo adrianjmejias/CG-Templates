@@ -1199,7 +1199,6 @@
     </ClInclude>
     <ClInclude Include="PressF\src\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\src\imgui_impl_opengl3.h" />
-    <ClInclude Include="PressF\src\pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1258,6 +1257,6 @@
     </ClCompile>
     <ClCompile Include="PressF\src\imgui_impl_opengl3.cpp" />
     <ClCompile Include="PressF\src\imgui_impl_sdl.cpp" />
-    <ClCompile Include="PressF\src\pch.cpp" />
+    <ClCompile Include="PressF\src\types.cpp" />
   </ItemGroup>
 </Project>

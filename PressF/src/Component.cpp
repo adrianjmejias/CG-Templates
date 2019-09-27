@@ -1,3 +1,5 @@
+
+#include "types.h"
 #include "Component.h"
 
 Component * GameObject::AddComponent(Component * comp)
@@ -17,7 +19,7 @@ Component * GameObject::AddComponent(Component * comp)
 	{
 		if (comps[ii] == comp) {
 			comps.erase(begin(comps)+ii);
-			ii = comps.size()+1;
+			ii = static_cast<int>(comps.size())+1;
 		}
 	}
 

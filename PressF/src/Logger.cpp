@@ -1,3 +1,5 @@
+
+#include "types.h"
 #include "Logger.h"
 
 Logger::Logger()

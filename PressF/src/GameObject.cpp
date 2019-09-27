@@ -1,3 +1,4 @@
+#include "types.h"
 #include "GameObject.h"
 extern unsigned int GLOBAL_ID;
 

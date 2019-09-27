@@ -76,11 +76,7 @@ public:
 	Vec2 clippingPlane{ 1.f,400.f };
 public:
 
-
-
 	//static double DeltaTime() { return deltaTime; }
-
-
 
 
 	static Model* GLCreate(objl::Loader & fullModel);

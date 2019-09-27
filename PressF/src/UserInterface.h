@@ -1,3 +1,4 @@
+#include "types.h"
 #pragma once
 
 //#define NK_INCLUDE_FIXED_TYPES
@@ -13,7 +14,6 @@
 //
 
 //#include <microui.h>
-#include "types.h"
 #include <imgui.h>
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl.h"
