@@ -28,7 +28,7 @@ public:
 	SDL_Window *win;
 	SDL_GLContext glContext;
 	int win_width = 800;
-	int win_heigth = 600;
+	int win_heigth = 1024;
 	//static double deltaTime;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
@@ -68,10 +68,13 @@ public:
 	CubeMap *cubeMap;
 	std::unique_ptr<FrameBuffer> depthFB;
 	unsigned int VAO_PLANE, VBO_PLANE;
-	bool renderPlane = false;
+	bool renderPlane = true;
 	bool renderScene = true;
 	FlyingController * fc;
 	ShaderProgram* depthPlaneShader = nullptr;
+	ShaderProgram* firstPass = nullptr;
+	ShaderProgram* lastPass = nullptr;
+	ShaderProgram* renderQuad = nullptr;
 	Vec4 orthoSides{-80,80,-80,80};
 	Vec2 clippingPlane{ 1.f,400.f };
 public:
@@ -96,8 +99,8 @@ public:
 	void LoopUpdate();
 	void LoopRender();
 
-	void DrawObjects(const Mat4& view, const Mat4& projection, std::vector<const Mesh *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT)>  PreReqs);
-	void DrawObjects(const Mat4& view, const Mat4& projection, std::vector<const MeshRenderer *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT, const MeshRenderer& mesh)>  PreReqs);
+	void DrawObjects(std::vector<const Mesh *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT)>  PreReqs);
+	void DrawObjects(std::vector<const MeshRenderer *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT, const MeshRenderer& mesh)>  PreReqs);
 
 
 	Application();

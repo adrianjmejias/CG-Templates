@@ -30,7 +30,7 @@ bool GLLogCall(const char * function, const char * file, int line) {
 		default:break;
 		}
 
-		PF_ERROR("[OpenGL Error {0} | {1}  \nCall {2}  \nError : {3}]", file, line, function, errName);
+		PF_ERROR("[OpenGL Error {0} | {1}  \nCall {2}  \nError : #{4:x}:{3}]", file, line, function, errName,error);
 		return false;
 	}
 
