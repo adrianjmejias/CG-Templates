@@ -21,7 +21,6 @@ IncludeDir["ImGui"] = "dependencies/imgui/"
 
 group "Dependencies"
 	include "dependencies/Glad"
-	include "dependencies/nuklear"
 	include "dependencies/imgui"
 group ""
 
@@ -29,7 +28,8 @@ project "PressF"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++17" --StaticLib
-
+   pchheader "types.h"
+   pchsource "types.cpp"
    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
    
@@ -72,6 +72,8 @@ project "PressF"
 
    -- linkoptions { "``" }
    -- prebuildcommands { "MyTool --dosomething" }
+   filter "system:windows"
+      systemversion "latest"
 
    filter "configurations:Debug"
       defines { "_CRT_SECURE_NO_WARNINGS", "DEBUG"}
