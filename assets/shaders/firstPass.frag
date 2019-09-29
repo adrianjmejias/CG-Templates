@@ -1,8 +1,13 @@
 #version 330 core
 
-in vec3 aTexCoords;
+
+in vec4 TexCoords;
+
 out vec4 FragColor;
+
+
+
 void main()
 {            
-	FragColor = vec4(1,0,0,1);
+	FragColor = TexCoords;
 }

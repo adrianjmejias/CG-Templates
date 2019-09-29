@@ -1,4 +1,3 @@
-
 #include "types.h"
 #include "Application.h"
 
@@ -6,6 +5,40 @@ extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
 enum class Dirty;
+
+
+unsigned int LoadVolume(const std::string &path, int width, int heigth, int depth)
+{
+	unsigned int id;
+	const int size = width * heigth * depth;
+	FILE *pFile;
+	GLubyte* pVolume = new GLubyte[size];
+	errno_t err;
+	if ((err = fopen_s(&pFile, path.c_str(), "rb")) != 0) {
+		std::cout << "ERROR:: Unable to load texture " << path << std::endl;
+		glDeleteTextures(1, &id);
+	}
+	else {
+		fread(pVolume, sizeof(GLubyte), size, pFile);
+		fclose(pFile);
+
+		// Load data into a 3D texture
+		glGenTextures(1, &id);
+		glBindTexture(GL_TEXTURE_3D, id);
+
+		// Set the texture parameters
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width, heigth, depth, 0, GL_RED, GL_UNSIGNED_BYTE, pVolume);
+		delete[] pVolume;
+	}
+
+	return id;
+}
+
 
 void ImGuiTransform(Transform &t) {
 	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
@@ -85,42 +118,10 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 void Application::SetupScene()
 {
 	depthFB = FrameBuffer::GetGBuffer(win_width, win_heigth); //FrameBuffer::GetShadowBuffer(win_width, win_heigth);
-	cubeMap = new CubeMap({
-	"assets/skybox/right.jpg",
-	"assets/skybox/left.jpg",
-	"assets/skybox/top.jpg",
-	"assets/skybox/bottom.jpg",
-	"assets/skybox/front.jpg",
-	"assets/skybox/back.jpg"
-	});
-	//cubeMap->shader = shaders[6];
-	//depthPlaneShader = shaders[11];
 
 	firstPass = shaders[0];
 	lastPass = shaders[1];
 	renderQuad = shaders[2];
-
-
-	float quadVertices[] = {
-		// positions        // texture Coords
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-	};
-
-	// setup plane VAO
-	glGenVertexArrays(1, &VAO_PLANE);
-	glGenBuffers(1, &VBO_PLANE);
-	glBindVertexArray(VAO_PLANE);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_PLANE);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-
 
 	{
 		GameObject *go = new GameObject();
@@ -133,28 +134,6 @@ void Application::SetupScene()
 	}
 
 
-
-	Mesh &lightMesh = lightsModel->at(0);
-	{
-		GameObject *go = new GameObject();
-		go->AddComponent < Light >(LightType::DIRECTIONAL);
-		go->AddComponent < Camera >();
-		MeshRenderer *ren = go->AddComponent<MeshRenderer>(&lightMesh);
-		lightMesh.push_back(ren);
-		go->transform.SetPosition(-7.f, 12.74f, -86.2f);
-		go->transform.SetRotation(346.8f, 359.2f, 0.f);
-		rootNodes.push_back(go);
-	}
-
-	{
-		GameObject *go = new GameObject();
-		go->AddComponent < Light >(LightType::POINT);
-		MeshRenderer *ren = go->AddComponent<MeshRenderer>(&lightMesh);
-		lightMesh.push_back(ren);
-
-		go->transform.SetPosition(0, -10, 0);
-		rootNodes.push_back(go);
-	}
 
 
 	for (Model *model : models) {
@@ -216,9 +195,11 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 		models.push_back(SetupModel(objPath));
 	}
 
-
 	lightsModel = SetupModel("assets/models/light/untitled.obj");
 	modelsDebug.push_back(lightsModel);
+
+
+	volumeId = LoadVolume("assets/models/bonsai.raw", 256, 256, 256);
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -345,8 +326,6 @@ void Application::LoopUI()
 		ImGuiTransform(camTransform);
 
 
-
-
 		ImGui::SliderFloat4("orthoSize", &orthoSides[0], -100, 100);
 		ImGui::SliderFloat2("clipping", &clippingPlane[0], 1, 600);
 
@@ -462,73 +441,74 @@ void Application::LoopRender()
 		ViewProjection = ViewProjection * Transform::GetView(*camera.transform);
 		Texture &shadowTex = depthFB->texture;
 
-		for (const Model* model : (models)) {
-			for (const Mesh& mesh : *model) {
-				NonTransparentMeshes.push_back(&mesh);
-			}
-		}
+		const Model* cube = models[0];
+		const Model* transfer = models[1];
 
 
 
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-		//glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
 
 
-		for (const Mesh * const mesh : NonTransparentMeshes) {
-			const Material &MAT = mesh->mat;
-			const ShaderProgram &shader = *shaders[MAT.illum];
-
-			shader.Use();
-			GLCALL(glBindVertexArray(mesh->VAO));
+		for (const Mesh &mesh : *cube) {
+			GLCALL(glBindVertexArray(mesh.VAO));
 
 			firstPass->Use();
-
-
-			for (auto obj : *mesh) {
-				PF_ASSERT(obj && "Renderer is null");
+			for (auto obj : mesh) {
 				const Mat4 &MVP = obj->transform->MVP;
-				const glm::mat3 &normalMatrix = obj->transform->normalMatrix;
 
-				SET_UNIFORM(shader, MVP);
+				PF_ASSERT(obj && "Renderer is null");
+				firstPass->SetUniform("MVP", MVP);
 
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
+				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 
 		GLCALL(glBindVertexArray(0));
 		
-	/*	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		for (const Mesh * const mesh : NonTransparentMeshes) {
-			const Material &MAT = mesh->mat;
-			const ShaderProgram &shader = *shaders[MAT.illum];
+		for (const Mesh &mesh : *cube) {
 
-			shader.Use();
-			GLCALL(glBindVertexArray(mesh->VAO));
+			GLCALL(glBindVertexArray(mesh.VAO));
 
 			lastPass->Use();
+			lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
 
-			for (auto obj : *mesh) {
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_3D, volumeId);
+
+			//lastPass->SetUniform("bfCoords",2);
+
+			for (auto obj : mesh) {
 				PF_ASSERT(obj && "Renderer is null");
 				const Mat4 &MVP = obj->transform->MVP;
-				const glm::mat3 &normalMatrix = obj->transform->normalMatrix;
 
-				SET_UNIFORM(shader, MVP);
-				SET_UNIFORM(shader, normalMatrix);
+				lastPass->SetUniform("MVP", MVP);
 
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
+				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 
-		GLCALL(glBindVertexArray(0));*/
+		GLCALL(glBindVertexArray(0));
+
+
+
+
+
+
+
 
 
 
@@ -901,11 +881,12 @@ Application::~Application()
 	std::for_each(begin(models), end(models), [](Model* p) {delete p; });
 	std::for_each(begin(modelsDebug), end(modelsDebug), [](Model* p) {delete p; });
 	//std::for_each(begin(shaders), end(shaders), [](ShaderProgram* p) {delete p; });
-
+	
+	glDeleteTextures(1, &volumeId);
 	glDeleteVertexArrays(1, &VAO_PLANE);
 	glDeleteBuffers(1, &VBO_PLANE);
 
-	delete cubeMap;
+	//delete cubeMap;
 	
 	Traverse(rootNodes,
 		[](GameObject* go) {},

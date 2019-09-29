@@ -27,8 +27,8 @@ public:
 	//unsigned int GLOBAL_ID; //replaced with extern
 	SDL_Window *win;
 	SDL_GLContext glContext;
-	int win_width = 800;
-	int win_heigth = 1024;
+	int win_width = 1366;
+	int win_heigth = 705;
 	//static double deltaTime;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
@@ -65,7 +65,6 @@ public:
 	std::map<std::string, Shader*> shadersLoaded;
 	std::map<std::string, Material*> materialsLoaded;
 	std::map<std::string, Texture*> texturesLoaded;
-	CubeMap *cubeMap;
 	std::unique_ptr<FrameBuffer> depthFB;
 	unsigned int VAO_PLANE, VBO_PLANE;
 	bool renderPlane = true;
@@ -77,6 +76,7 @@ public:
 	ShaderProgram* renderQuad = nullptr;
 	Vec4 orthoSides{-80,80,-80,80};
 	Vec2 clippingPlane{ 1.f,400.f };
+	unsigned int volumeId;
 public:
 
 	//static double DeltaTime() { return deltaTime; }

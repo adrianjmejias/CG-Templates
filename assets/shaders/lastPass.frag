@@ -8,65 +8,63 @@
 #define SPOT 2
 
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 proj;
-uniform vec3 viewPos;
-uniform struct Material
+vec2 mapCoords();
+
+uniform vec2 windowSize;
+uniform sampler2D bfCoords;
+uniform sampler3D volume;
+uniform sampler1D tf;
+uniform float rayStep = 1/256.f;
+in vec4 inPoint;
+uniform float minStrength = 0.1;
+out vec4 FragColor;
+
+vec2 mapWindowToTexture()
 {
-	vec3 kD;
-	vec3 kA;
-	vec3 kS;
-	vec3 kE;
-	float IOR;
-	float shiny;
-} MAT;
-
-uniform struct Light
-{
-	int type;
-	vec3 position;
-	vec3 attenuation;
-	float innerAngle;
-	float outerAngle;
-	vec3 direction;
-	bool isOn;
-	vec3 kD;
-	vec3 kA;
-	vec3 kS;
-} LIGHTS[1];
-
-uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
+	vec2 point;
+	point = gl_FragCoord.xy / windowSize;
+	return point;
+}
 
 
-in struct {
-	vec4 m_pos;
-	vec4 w_pos;
-	vec4 norm;
-	vec4 uv;
-} OBJ;
-
-in vec3 n;
 
 
-out vec4 colorsito;
 
 
 void main()
-{
-	vec3 normal = normalize(OBJ.norm.xyz);
-	vec3 viewDir = normalize(OBJ.w_pos.xyz - viewPos);
+{	
+	vec3 outPoint = texture(bfCoords, mapWindowToTexture()).xyz;
+	vec3 fullRay = (outPoint - inPoint.xyz);  
+	float rayLength = length(fullRay);
+	vec3 rayDir = normalize(fullRay);
+	rayDir*= rayStep; // esto es para que el rayo esté escalado y sea todo más chola
+
+	vec4 acumColor = vec4(0,0,0,1);
+	
+	vec3 ray = inPoint.xyz; 
+	
+	for(float travelDist = 0; travelDist <= rayLength; travelDist += rayStep, ray += rayDir)
+	{
+		vec4 colorSample = vec4(texture(volume, ray).rgb,1);
+//		vec4 colorSample = texture(tf, texture(volume, ray).r);
+
+		acumColor.rgb = (colorSample.rgb)* acumColor.a;
+		
+		acumColor.a*= 1- colorSample.a;
+		
+//		if(acumColor.a < minStrength)
+//		{
+//			break;
+//		}
+	}
+
+
+	FragColor = acumColor;
+//FragColor = vec4(vec3(rayLength),1);
+//	FragColor = inPoint;
+//	FragColor = vec4(outPoint,1);
 
 
 
-
-
-
-
-
-
-	colorsito = vec4(MAT.kD,1);
+	FragColor.a = 1;
 }

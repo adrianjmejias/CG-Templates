@@ -7,9 +7,6 @@
     <Filter Include="PressF\src">
       <UniqueIdentifier>{2F851734-1B3D-5981-8444-32DD701BF471}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PressF\src\old">
-      <UniqueIdentifier>{FD30C0D1-E9FE-B3D7-D292-24FEBEFF8F3C}</UniqueIdentifier>
-    </Filter>
     <Filter Include="dependencies">
       <UniqueIdentifier>{8CAD9F58-7810-2FFD-2196-67B30DD8FA7F}</UniqueIdentifier>
     </Filter>
@@ -51,9 +48,6 @@
     <ClInclude Include="PressF\src\Light.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\Logger.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
     <ClInclude Include="PressF\src\MeshRenderer.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
@@ -85,6 +79,12 @@
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\core.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\imgui_impl_opengl3.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\imgui_impl_sdl.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\main.h">
@@ -1197,8 +1197,12 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\imgui_impl_sdl.h" />
-    <ClInclude Include="PressF\src\imgui_impl_opengl3.h" />
+    <ClInclude Include="PressF\src\Logger.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\src\TransferenceFunction.h">
+      <Filter>PressF\src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1217,9 +1221,6 @@
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\Light.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\Logger.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\MeshRenderer.cpp">
@@ -1252,11 +1253,20 @@
     <ClCompile Include="PressF\src\Window.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\imgui_impl_opengl3.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\imgui_impl_sdl.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\src\main.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="PressF\src\imgui_impl_sdl.cpp" />
-    <ClCompile Include="PressF\src\types.cpp" />
+    <ClCompile Include="PressF\src\types.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\src\Logger.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

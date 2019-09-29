@@ -6,38 +6,17 @@
 #define DIRECTIONAL 1
 #define SPOT 2
 
-layout (location = 0) in vec4 pos;
-layout (location = 1) in vec4 norm;
-layout (location = 2) in vec4 uv;
+layout (location = 0) in vec4 aPos;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
-
-out struct Obj{
-	vec4 m_pos;
-	vec4 w_pos;
-	vec4 norm;
-	vec4 uv;
-} OBJ;
-
-out vec3 n;
+out vec4 inPoint;
+uniform mat4 MVP;
 
 void main()
 {
-	OBJ.m_pos = model * pos;
-	OBJ.norm = norm;
-	OBJ.uv = uv;
-
-
-//	OBJ.w_pos = proj*(view*(OBJ.m_pos));
-	
-    gl_Position =  projection*view*model*pos;
+	vec3 a = (aPos );
+	inPoint = a;
+		
+    gl_Position = MVP * aPos;
 
 }
 
