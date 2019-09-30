@@ -6,8 +6,7 @@ extern unsigned int GLOBAL_ID = 1;
 extern Camera* mainCamera = nullptr;
 enum class Dirty;
 
-
-unsigned int LoadVolume(const std::string &path, int width, int heigth, int depth)
+static unsigned int LoadVolume(const std::string &path, int width, int heigth, int depth)
 {
 	unsigned int id;
 	const int size = width * heigth * depth;
@@ -40,7 +39,7 @@ unsigned int LoadVolume(const std::string &path, int width, int heigth, int dept
 }
 
 
-void ImGuiTransform(Transform &t) {
+static void ImGuiTransform(Transform &t) {
 	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
 		t.SetDirty(Dirty::Model);
 	}
@@ -53,6 +52,21 @@ void ImGuiTransform(Transform &t) {
 	//if (ImGui::("Rotation", &t.rotation[0])) {
 	//	t.SetDirty(Dirty::Model);
 	//}
+}
+
+static void ImGuiGameObject(GameObject * go)
+{
+	if (ImGui::TreeNode(go->name.c_str())) {
+
+		ImGuiTransform(go->transform);
+
+		for (auto c : go->transform.children)
+		{
+			ImGuiGameObject(&c->gameObject);
+		}
+
+		ImGui::TreePop();
+	}
 }
 
 static void Traverse(const std::vector<GameObject*> objects, std::function<void(GameObject*)> beforefgo, std::function<void(GameObject*)> afterfgo, std::function<void(Component*)> fcomp) {
@@ -122,7 +136,7 @@ void Application::SetupScene()
 	firstPass = shaders[0];
 	lastPass = shaders[1];
 	renderQuad = shaders[2];
-
+	shaderUI = shaders[3];
 	{
 		GameObject *go = new GameObject();
 		fc = go->AddComponent < FlyingController >();
@@ -143,15 +157,17 @@ void Application::SetupScene()
 			MeshRenderer *ren = go->AddComponent<MeshRenderer>(&mesh);
 			mesh.push_back(ren);
 
-			go->transform.SetPosition(0, 0, 0);
+			/*go->transform.SetPosition(0, 0, 0);
 			go->transform.SetScale(3, 3, 3);
-			go->transform.Rotate(0, 90, 0);
+			go->transform.Rotate(0, 90, 0);*/
 			go->transform.SetParent(&papa->transform);
 			//go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
-
+			
 		}
 		rootNodes.push_back(papa);
 	}
+
+	transferFunc = rootNodes[2]->AddComponent<TransferenceFunction >();
 }
 
 Model * Application::SetupModel(std::string objPath)
@@ -239,13 +255,11 @@ void Application::SetupShaders(const std::vector<std::tuple<std::string, std::st
 	}
 }
 
-
 void Application::LoopMain()
 {
 	while (running) {
 		//std::cout << "looping";
 		glViewport(0, 0, win_width, win_heigth);
-
 
 		LoopEvents();
 
@@ -365,22 +379,15 @@ void Application::LoopUI()
 	ImGui::End();
 
 
-	//ImGui::Begin("GameObjects");
-	//Traverse(rootNodes,
-	//	[](GameObject* go) {
-	//	ImGui::TreeNode(go->name.c_str());
-	//},
-	//	[](GameObject* go) {
-	//	ImGui::TreePop();
-	//},
-	//	[](Component* comp) {
-	//	
-	//	if (ImGui::TreeNode("ssss")) {
-	//		ImGui::TreePop();
-	//	}
-	//}
-	//);
-	//ImGui::End();
+	ImGui::Begin("Objects");
+	{
+		for (auto go : rootNodes)
+		{
+			ImGuiGameObject(go);
+		}
+	}
+	ImGui::End();
+
 
 
 	bool showSelected = actGO != nullptr;
@@ -445,69 +452,89 @@ void Application::LoopRender()
 		const Model* transfer = models[1];
 
 
+		{
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+			glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+			glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
 
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
 
+			for (const Mesh &mesh : *cube) {
+				GLCALL(glBindVertexArray(mesh.VAO));
 
-		for (const Mesh &mesh : *cube) {
-			GLCALL(glBindVertexArray(mesh.VAO));
+				firstPass->Use();
+				for (auto obj : mesh) {
+					const Mat4 &MVP = obj->transform->MVP;
 
-			firstPass->Use();
-			for (auto obj : mesh) {
-				const Mat4 &MVP = obj->transform->MVP;
+					PF_ASSERT(obj && "Renderer is null");
+					firstPass->SetUniform("MVP", MVP);
 
-				PF_ASSERT(obj && "Renderer is null");
-				firstPass->SetUniform("MVP", MVP);
-
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+					GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+				}
 			}
+
+			GLCALL(glBindVertexArray(0));
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+			glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+
+			for (const Mesh &mesh : *cube) {
+
+				GLCALL(glBindVertexArray(mesh.VAO));
+
+				lastPass->Use();
+				lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
+
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_3D, volumeId);
+
+				//lastPass->SetUniform("bfCoords",2);
+
+				for (auto obj : mesh) {
+					PF_ASSERT(obj && "Renderer is null");
+					const Mat4 &MVP = obj->transform->MVP;
+
+					lastPass->SetUniform("MVP", MVP);
+
+					GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+				}
+			}
+
+			GLCALL(glBindVertexArray(0));
 		}
 
-		GLCALL(glBindVertexArray(0));
-		
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
 
-		for (const Mesh &mesh : *cube) {
+		shaderUI->Use();
+
+
+		
+		for (auto it = transfer->rbegin(); it != transfer->rend(); it++) {
+			auto mesh = *it ;
 
 			GLCALL(glBindVertexArray(mesh.VAO));
 
-			lastPass->Use();
-			lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
-
-
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
-
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_3D, volumeId);
-
-			//lastPass->SetUniform("bfCoords",2);
-
 			for (auto obj : mesh) {
 				PF_ASSERT(obj && "Renderer is null");
+				const Mat4 &acum = obj->transform->GetAccumulated();
 				const Mat4 &MVP = obj->transform->MVP;
-
+				
+				lastPass->SetUniform("model", acum);
 				lastPass->SetUniform("MVP", MVP);
 
 				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
 			}
 		}
 
-		GLCALL(glBindVertexArray(0));
 
-
-
-
-
-
+		
 
 
 

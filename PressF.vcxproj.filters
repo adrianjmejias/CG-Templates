@@ -1268,5 +1268,8 @@
     <ClCompile Include="PressF\src\Logger.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\src\TransferenceFunction.cpp">
+      <Filter>PressF\src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

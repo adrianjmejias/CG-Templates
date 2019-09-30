@@ -537,6 +537,7 @@
     <ClCompile Include="PressF\src\Shader.cpp" />
     <ClCompile Include="PressF\src\ShaderProgram.cpp" />
     <ClCompile Include="PressF\src\Texture.cpp" />
+    <ClCompile Include="PressF\src\TransferenceFunction.cpp" />
     <ClCompile Include="PressF\src\Transform.cpp" />
     <ClCompile Include="PressF\src\UserInterface.cpp" />
     <ClCompile Include="PressF\src\Window.cpp" />

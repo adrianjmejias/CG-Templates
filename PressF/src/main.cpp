@@ -19,6 +19,7 @@ int main() {
 			std::make_tuple("lastPass.vert", "lastPass.frag"),
 			//3 volume raycast last pass
 			std::make_tuple("firstPass.vert", "firstPass.frag"),
+			std::make_tuple("shaderUI.vert", "shaderUI.frag"),
 		});
 
 	app.LoopMain();

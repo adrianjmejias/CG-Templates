@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include "Light.h"
 #include "MeshRenderer.h"
-
+#include "TransferenceFunction.h"
 
 #define ADD_MAP(NAME)\
 		if (!mat.NAME.empty() && (texturesLoaded.find(mat.NAME) == texturesLoaded.end())) {\
@@ -29,11 +29,11 @@ public:
 	SDL_GLContext glContext;
 	int win_width = 1366;
 	int win_heigth = 705;
-	//static double deltaTime;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
 	int mouse_deltaX;
 	int mouse_deltaY;
+	//static double deltaTime;
 
 	unsigned long long NOW, LAST;
 
@@ -54,7 +54,7 @@ public:
 	std::vector<ShaderProgram*> shaders;
 	std::vector<Light*> LIGHTS;
 	Model* lightsModel = nullptr;
-
+	TransferenceFunction *transferFunc;
 	//std::vector < Camera*> orderedCameras;
 	std::vector < Camera*> cameras;
 	std::vector<MeshRenderer*> renderers;
@@ -74,6 +74,7 @@ public:
 	ShaderProgram* firstPass = nullptr;
 	ShaderProgram* lastPass = nullptr;
 	ShaderProgram* renderQuad = nullptr;
+	ShaderProgram* shaderUI = nullptr;
 	Vec4 orthoSides{-80,80,-80,80};
 	Vec2 clippingPlane{ 1.f,400.f };
 	unsigned int volumeId;

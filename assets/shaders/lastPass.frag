@@ -34,7 +34,7 @@ vec2 mapWindowToTexture()
 void main()
 {	
 	vec3 outPoint = texture(bfCoords, mapWindowToTexture()).xyz;
-	vec3 fullRay = (outPoint - inPoint.xyz);  
+	vec3 fullRay = (inPoint.xyz -outPoint);
 	float rayLength = length(fullRay);
 	vec3 rayDir = normalize(fullRay);
 	rayDir*= rayStep; // esto es para que el rayo esté escalado y sea todo más chola
@@ -43,19 +43,23 @@ void main()
 	
 	vec3 ray = inPoint.xyz; 
 	
-	for(float travelDist = 0; travelDist <= rayLength; travelDist += rayStep, ray += rayDir)
+	for(
+	float travelDist = 0;
+	travelDist < rayLength && acumColor.a >= minStrength; 
+	travelDist += rayStep, ray += rayDir)
 	{
-		vec4 colorSample = vec4(texture(volume, ray).rgb,1);
-//		vec4 colorSample = texture(tf, texture(volume, ray).r);
+		vec4 volumeSample = vec4(texture(volume, ray).rgb,1);
+//		vec4 volumeSample = texture(tf, texture(volume, ray).r);
 
-		acumColor.rgb = (colorSample.rgb)* acumColor.a;
-		
-		acumColor.a*= 1- colorSample.a;
-		
-//		if(acumColor.a < minStrength)
-//		{
-//			break;
-//		}
+//		vec4 transferSample = texture(tf, volumeSample.r);
+
+
+
+		vec4 color = volumeSample;
+
+
+		acumColor.rgb += color.r *color.rrr  * acumColor.a;
+		acumColor.a*= 1- color.r;
 	}
 
 
