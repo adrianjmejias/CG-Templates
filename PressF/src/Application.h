@@ -20,14 +20,163 @@
 	}\
 
 
+struct VolumeRush
+{
+	GLuint quadVAO = 0, quadVBO= 0, cubeVAO =0, cubeVBO=0, volume=0;
+	GLuint nQuad=0, nCube=0;
+	int axis = 0;
+	float timePassed = 0;
+
+
+
+	
+
+	void Render(float deltaTime, const Mat4 &view, const Mat4 &projection, ShaderProgram* shaderQuad)
+	{
+		
+		shaderQuad->Use();
+		glBindVertexArray(quadVAO);
+		{
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_3D, volume);
+
+			shaderQuad->SetUniform("volume", 0);
+			shaderQuad->SetUniform("view", view);
+			shaderQuad->SetUniform("projection", projection);
+			shaderQuad->SetUniform("deltaTime", timePassed * (2.f/10));
+			shaderQuad->SetUniform("axis", axis);
+
+			glDrawArrays(GL_TRIANGLES, 0, 4);
+		}
+		
+		glBindVertexArray(0);
+		timePassed += deltaTime;
+		if (timePassed > 1)
+		{
+			timePassed = 0;
+
+			axis = (axis + 1) % 3;
+		}
+	}
+
+
+	void Setup(GLuint volId) 
+	{
+
+		volume = volId;
+
+		{
+			float quadVertices[] = {
+				// positions        	// texture Coords
+				-1.0f,1.0f,0.0f,
+				0.0f,
+				1.0f,
+				-1.0f,-1.0f,0.0f,
+				0.0f,
+				0.0f,
+				1.0f,1.0f,0.0f,
+				1.0f,
+				1.0f,
+				1.0f,-1.0f,	0.0f,
+				1.0f,
+				0.0f,
+			};
+
+			// setup plane VAO
+			glGenVertexArrays(1, &quadVAO);
+			glGenBuffers(1, &quadVBO);
+			glBindVertexArray(quadVAO);
+			glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+			glBindVertexArray(0);
+
+			nQuad = 4;
+		}
+	
+		{
+			glFrontFace(GL_CW);
+			float cubeVertices[] = {
+			// Back face
+			-0.5f, -0.5f, -0.5f, // Bottom-left
+			0.5f, -0.5f, -0.5f,  // bottom-right
+			0.5f, 0.5f, -0.5f,   // top-right
+			0.5f, 0.5f, -0.5f,   // top-right
+			-0.5f, 0.5f, -0.5f,  // top-left
+			-0.5f, -0.5f, -0.5f, // bottom-left
+			// Front face
+			-0.5f, -0.5f, 0.5f, // bottom-left
+			0.5f, 0.5f, 0.5f,   // top-right
+			0.5f, -0.5f, 0.5f,  // bottom-right
+			0.5f, 0.5f, 0.5f,   // top-right
+			-0.5f, -0.5f, 0.5f, // bottom-left
+			-0.5f, 0.5f, 0.5f,  // top-left
+			// Left face
+			-0.5f, 0.5f, 0.5f,   // top-right
+			-0.5f, -0.5f, -0.5f, // bottom-left
+			-0.5f, 0.5f, -0.5f,  // top-left
+			-0.5f, -0.5f, -0.5f, // bottom-left
+			-0.5f, 0.5f, 0.5f,   // top-right
+			-0.5f, -0.5f, 0.5f,  // bottom-right
+			// Right face
+			0.5f, 0.5f, 0.5f,   // top-left
+			0.5f, 0.5f, -0.5f,  // top-right
+			0.5f, -0.5f, -0.5f, // bottom-right
+			0.5f, -0.5f, -0.5f, // bottom-right
+			0.5f, -0.5f, 0.5f,  // bottom-left
+			0.5f, 0.5f, 0.5f,   // top-left
+			// Bottom face
+			-0.5f, -0.5f, -0.5f, // top-right
+			0.5f, -0.5f, 0.5f,   // bottom-left
+			0.5f, -0.5f, -0.5f,  // top-left
+			0.5f, -0.5f, 0.5f,   // bottom-left
+			-0.5f, -0.5f, -0.5f, // top-right
+			-0.5f, -0.5f, 0.5f,  // bottom-right
+			// Top face
+			-0.5f, 0.5f, -0.5f, // top-left
+			0.5f, 0.5f, -0.5f,  // top-right
+			0.5f, 0.5f, 0.5f,   // bottom-right
+			0.5f, 0.5f, 0.5f,   // bottom-right
+			-0.5f, 0.5f, 0.5f,  // bottom-left
+			-0.5f, 0.5f, -0.5f  // top-left
+			};
+
+			glGenVertexArrays(1, &cubeVAO);
+			glGenBuffers(1, &cubeVBO);
+			glBindVertexArray(cubeVAO);
+			glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
+			glBindVertexArray(0);
+		
+			nCube = sizeof(cubeVertices) / sizeof(cubeVertices[0]);
+		}
+
+	}
+	~VolumeRush()
+	{
+		glDeleteVertexArrays(1, &cubeVAO);
+		glDeleteVertexArrays(1, &quadVAO);
+		glDeleteBuffers(1, &cubeVBO);
+		glDeleteBuffers(1, &quadVBO);
+	}
+};
+
+
 class Application
 {
 public:
 	//Every object created must have a new id
 	//unsigned int GLOBAL_ID; //replaced with extern
+	VolumeRush vol;
 	SDL_Window *win;
 	SDL_GLContext glContext;
-	int win_width = 1366;
+	int win_width = 705;
 	int win_heigth = 705;
 	int mouse_lastPosX;
 	int mouse_lastPosY;
@@ -75,6 +224,8 @@ public:
 	ShaderProgram* lastPass = nullptr;
 	ShaderProgram* renderQuad = nullptr;
 	ShaderProgram* shaderUI = nullptr;
+	ShaderProgram* shaderQuad = nullptr;
+
 	Vec4 orthoSides{-80,80,-80,80};
 	Vec2 clippingPlane{ 1.f,400.f };
 	unsigned int volumeId;

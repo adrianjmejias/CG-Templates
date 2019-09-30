@@ -10,6 +10,6 @@ out vec4 TexCoords;
 
 void main()
 {
-    TexCoords = aPos;
+    TexCoords = aPos +0.5f;
     gl_Position = MVP * aPos;
 }

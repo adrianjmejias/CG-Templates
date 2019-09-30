@@ -36,11 +36,11 @@ void TransferenceFunction::HandleEvent(const SDL_Event &e)
 
 TransferenceFunction::TransferenceFunction(COMP_PARAMS) COMP_INIT
 {
-	glGenTextures(1, &texPreview);
+	/*glGenTextures(1, &texPreview);
 	glBindTexture(GL_TEXTURE_1D, texPreview);
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA32F, 256, 0, GL_RGBA, GL_FLOAT, dataPreview);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA32F, 256, 0, GL_RGBA, GL_FLOAT, dataPreview);*/
+	//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 std::tuple<int, int> TransferenceFunction::GetClickedPoint(int x, int y)

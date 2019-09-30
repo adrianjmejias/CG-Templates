@@ -38,7 +38,6 @@ static unsigned int LoadVolume(const std::string &path, int width, int heigth, i
 	return id;
 }
 
-
 static void ImGuiTransform(Transform &t) {
 	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
 		t.SetDirty(Dirty::Model);
@@ -113,8 +112,8 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// Sets up shit. maybe not the best way but it's what came to me
 
 	Traverse(rootNodes,
@@ -137,6 +136,10 @@ void Application::SetupScene()
 	lastPass = shaders[1];
 	renderQuad = shaders[2];
 	shaderUI = shaders[3];
+	volumeId = LoadVolume("assets/models/bonsai.raw", 256, 256, 256);
+	vol.Setup(volumeId);
+
+	//shaderQuad = shaders[4];
 	{
 		GameObject *go = new GameObject();
 		fc = go->AddComponent < FlyingController >();
@@ -167,7 +170,13 @@ void Application::SetupScene()
 		rootNodes.push_back(papa);
 	}
 
+
+
+
 	transferFunc = rootNodes[2]->AddComponent<TransferenceFunction >();
+
+
+
 }
 
 Model * Application::SetupModel(std::string objPath)
@@ -215,7 +224,7 @@ void Application::SetupModels(const std::vector<std::string>& objPaths)
 	modelsDebug.push_back(lightsModel);
 
 
-	volumeId = LoadVolume("assets/models/bonsai.raw", 256, 256, 256);
+
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -417,121 +426,100 @@ void Application::LoopUpdate()
 
 void Application::LoopRender()
 {
-	std::vector<const Mesh *> NonTransparentMeshes;
-	std::vector<const MeshRenderer *> transparentMeshes;
+	
+	Camera &cam = *cameras[actCam];
+	Transform camTransform = *cam.transform;
+
+	float ar = win_width / static_cast<float>(win_heigth);
+
+	const Mat4 &view = Transform::GetView(camTransform);
+	const Mat4 &projection = Transform::GetProjection(camTransform, true, 45.f);
+
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//vol.Render(deltaTime, view, projection, renderQuad);
+
+	GLuint cubeVAO = vol.cubeVAO;
+
+	GameObject *go = rootNodes[1];
+	Transform& cubeTransform = go->transform;
+
+	auto MVP = cubeTransform.GetAccumulated();
+	//MVP = view *MVP;
+	//MVP = projection* MVP;
+	//auto MVP = 
 
 
-	const Camera& cam = *cameras[actCam];
-	Transform &camTransform = *cam.transform;
-	const Vec3& camPos = camTransform.GetPosition();
-	const Mat4& projection = Transform::GetProjection(camTransform, true, win_width / static_cast<float>(win_width));
-	const Mat4& view = Transform::GetView(camTransform);
-
-	bool camDirty =  camTransform.TryGetClean();
-
-	Traverse(rootNodes, // this updates the main matrices of the transform
-		[](GameObject* go) {},
-		[&](GameObject* go) {
-			if (camDirty || go->transform.TryGetClean()) {
-				Mat4 acum = go->transform.GetAccumulated();
-				go->transform.MVP = projection * view * acum;
-				go->transform.normalMatrix = glm::mat3(glm::transpose(glm::inverse(acum * view)));
-			}
-		},
-		[](Component* comp) {}
-		);
+	{
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
 
-		Camera &camera = *cameras[actCam];
+		GLCALL(glBindVertexArray(cubeVAO));
 
-		Mat4 ViewProjection = Camera::GetPerspective(45.f, static_cast<int>( win_width/ win_heigth), 0.1, 500);
-		ViewProjection = ViewProjection * Transform::GetView(*camera.transform);
-		Texture &shadowTex = depthFB->texture;
+		firstPass->Use();
+		firstPass->SetUniform("MVP", MVP);
 
-		const Model* cube = models[0];
-		const Model* transfer = models[1];
-
-
-		{
-			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-			glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-			glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
+		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+	}
 
 
-			for (const Mesh &mesh : *cube) {
-				GLCALL(glBindVertexArray(mesh.VAO));
+	{
 
-				firstPass->Use();
-				for (auto obj : mesh) {
-					const Mat4 &MVP = obj->transform->MVP;
-
-					PF_ASSERT(obj && "Renderer is null");
-					firstPass->SetUniform("MVP", MVP);
-
-					GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
-				}
-			}
-
-			GLCALL(glBindVertexArray(0));
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-			glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
-
-			for (const Mesh &mesh : *cube) {
-
-				GLCALL(glBindVertexArray(mesh.VAO));
-
-				lastPass->Use();
-				lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 
 
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+		GLCALL(glBindVertexArray(cubeVAO));
 
-				glActiveTexture(GL_TEXTURE1);
-				glBindTexture(GL_TEXTURE_3D, volumeId);
-
-				//lastPass->SetUniform("bfCoords",2);
-
-				for (auto obj : mesh) {
-					PF_ASSERT(obj && "Renderer is null");
-					const Mat4 &MVP = obj->transform->MVP;
-
-					lastPass->SetUniform("MVP", MVP);
-
-					GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
-				}
-			}
-
-			GLCALL(glBindVertexArray(0));
-		}
+		lastPass->Use();
+		lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
 
 
-		shaderUI->Use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_3D, volumeId);
+
+		lastPass->SetUniform("bfCoords", 0);
+		lastPass->SetUniform("volume", 1);
+		lastPass->SetUniform("MVP", MVP);
+		lastPass->SetUniform("deltaTime", vol.timePassed);
+
+		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+
+	}
 
 
-		
-		for (auto it = transfer->rbegin(); it != transfer->rend(); it++) {
-			auto mesh = *it ;
+	//shaderUI->Use();
 
-			GLCALL(glBindVertexArray(mesh.VAO));
 
-			for (auto obj : mesh) {
-				PF_ASSERT(obj && "Renderer is null");
-				const Mat4 &acum = obj->transform->GetAccumulated();
-				const Mat4 &MVP = obj->transform->MVP;
-				
-				lastPass->SetUniform("model", acum);
-				lastPass->SetUniform("MVP", MVP);
+	//
+	//for (auto it = transfer->rbegin(); it != transfer->rend(); it++) {
+	//	auto mesh = *it ;
 
-				GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
-			}
-		}
+	//	GLCALL(glBindVertexArray(mesh.VAO));
+
+	//	for (auto obj : mesh) {
+	//		PF_ASSERT(obj && "Renderer is null");
+	//		const Mat4 &acum = obj->transform->GetAccumulated();
+	//		const Mat4 &MVP = obj->transform->MVP;
+	//		
+	//		lastPass->SetUniform("model", acum);
+	//		lastPass->SetUniform("MVP", MVP);
+
+	//		GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
+	//	}
+	//}
 
 
 		
@@ -540,19 +528,19 @@ void Application::LoopRender()
 
 
 
-	/*	if (this->renderPlane) 
+/*	if (this->renderPlane) 
+	{
+		renderQuad->Use();
+		GLCALL(glBindVertexArray(VAO_PLANE));
 		{
-			renderQuad->Use();
-			GLCALL(glBindVertexArray(VAO_PLANE));
-			{
-				GLCALL(glActiveTexture(GL_TEXTURE0));
-				GLCALL(glBindTexture(GL_TEXTURE_2D, shadowTex.id));
-				GLCALL(depthPlaneShader->SetUniform("depthMap", 0));
+			GLCALL(glActiveTexture(GL_TEXTURE0));
+			GLCALL(glBindTexture(GL_TEXTURE_2D, shadowTex.id));
+			GLCALL(depthPlaneShader->SetUniform("depthMap", 0));
 
-				GLCALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
-			}
-			GLCALL(glBindVertexArray(0));
-		}*/
+			GLCALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+		}
+		GLCALL(glBindVertexArray(0));
+	}*/
 }
 
 void Application::DrawObjects(std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
@@ -831,7 +819,6 @@ void Application::DrawObjects(std::vector<const MeshRenderer*> meshes, std::func
 
 		shader.Use();
 		GLCALL(glBindVertexArray(mesh->VAO));
-
 
 		if (PreReqs(shader, MAT, *meshRen)) {
 

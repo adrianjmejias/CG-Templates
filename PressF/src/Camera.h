@@ -35,11 +35,11 @@ public:
 	int isPerspective = true;
 
 	ProjectionType type = ProjectionType::PERSPECTIVE;
-	float fov;
+	float fov = 45.f;
 	float speed = 25.f;
 	float sensitivity = 0.3f;
 	float nearClippingPlane = 0.1f;
-	float farClippingPlane = 400.f;
+	float farClippingPlane = 800.f;
 	Vec4 screenOrtho = {};
 	Mat4 projection;
 	Mat4 view;
@@ -57,11 +57,11 @@ public:
 		Transform &transform = *this->transform;
 		const Vec3 &position = transform.GetPosition();
 
-		view = glm::lookAt(position, position + transform.Front(), transform.Up());
+		view = glm::lookAt(position, position +transform.Front(), transform.Up());
 
 		return view;
 	}
-	const Mat4& GetProjection(float ar = 45.f)
+	const Mat4& GetProjection(float ar)
 	{
 		switch (type)
 		{

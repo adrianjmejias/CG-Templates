@@ -13,7 +13,7 @@ uniform mat4 MVP;
 
 void main()
 {
-	vec3 a = (aPos );
+	vec3 a = (aPos +0.5f);
 	inPoint = a;
 		
     gl_Position = MVP * aPos;
