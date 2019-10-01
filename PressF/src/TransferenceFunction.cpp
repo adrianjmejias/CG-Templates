@@ -16,31 +16,62 @@ void TransferenceFunction::Update()
 }
 void TransferenceFunction::HandleEvent(const SDL_Event &e)
 {
-
 	int x, y;
+	
 	SDL_GetMouseState(&x, &y);
 	switch (e.type) {
-	case SDL_QUIT:
-		break;
 	case SDL_MOUSEBUTTONDOWN:
-		OnClickDown(x, y);
+		if (!ignoreMouse)
+		{
+			OnClickDown(x, y);
+		}
+
 		break;
 	case SDL_MOUSEBUTTONUP:
-		OnClickUp(x, y);
+		if (!ignoreMouse) 
+		{
+			OnClickUp(x, y);
+		}
+
 		break;
 	case SDL_MOUSEMOTION:
-		OnClickMove(x, y);
+		if (!ignoreMouse) { OnClickMove(x, y); }
+	case SDL_KEYDOWN:
+
+		auto keyPressed = e.key.keysym.scancode;
+
+		switch (keyPressed)
+		{
+			case SDL_Scancode::SDL_SCANCODE_LEFT:
+				if (indexEditing > 0)
+				{
+					indexEditing--;
+				}
+			break;
+			case SDL_Scancode::SDL_SCANCODE_RIGHT:
+				this->indexEditing = -1;
+				if (indexEditing + 1 < points.size())
+				{
+					indexEditing++;
+				}
+				break;
+			case SDL_Scancode::SDL_SCANCODE_N:
+				points.push_back(TransferencePoint());
+				UpdateTransfer();
+				break;
+		}
 	}
 }
 
 
 TransferenceFunction::TransferenceFunction(COMP_PARAMS) COMP_INIT
 {
-	/*glGenTextures(1, &texPreview);
-	glBindTexture(GL_TEXTURE_1D, texPreview);
-	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA32F, 256, 0, GL_RGBA, GL_FLOAT, dataPreview);*/
-	//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	points.emplace_back();
+	points.emplace_back();
+
+	points[0].color = { 0.7, 0, 0, 1};
+
+	//UpdateTransfer();
 }
 
 std::tuple<int, int> TransferenceFunction::GetClickedPoint(int x, int y)
@@ -60,22 +91,21 @@ std::tuple<int, int> TransferenceFunction::GetClickedPoint(int x, int y)
 	}
 	return { leftMost, -1 };
 }
-
 void TransferenceFunction::OnClickDown(int x, int y)
 {
-	clicked = true;
+	//clicked = true;
 
-	auto[leftMost, indexClicked] = GetClickedPoint(x, y);
+	//auto[leftMost, indexClicked] = GetClickedPoint(x, y);
 
 
-	if (indexClicked >= 0)
-	{
+	//if (indexClicked >= 0)
+	//{
 
-	}
-	else
-	{
+	//}
+	//else
+	//{
 
-	}
+	//}
 
 
 }
@@ -98,9 +128,4 @@ void TransferenceFunction::OnClickMove(int x, int y)
 
 
 	}
-}
-
-void TransferenceFunction::Render(Mesh &bg, Mesh &preview, Mesh &alpha, Mesh &hue, ShaderProgram &shader)
-{
-
 }

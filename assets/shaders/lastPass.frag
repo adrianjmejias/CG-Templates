@@ -52,10 +52,10 @@ void main()
 		vec4 volumeSample = vec4(texture(volume, ray).r);
 //		vec4 volumeSample = texture(tf, texture(volume, ray).r);
 
-//		vec4 transferSample = texture(tf, volumeSample.r);
+		vec4 transferSample = texture(tf, volumeSample.r);
 ////
 
-		vec4 color = volumeSample;
+		vec4 color = transferSample;
 //		acumColor = color;
 		acumColor.rgb += color.a *color.rgb  * acumColor.a;
 		acumColor.a*= 1.f- color.a;

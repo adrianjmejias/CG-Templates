@@ -408,6 +408,7 @@ void Application::LoopUI()
 	ImGui::End();
 
 
+	transferFunc->RenderUI();
 
 	// Rendering
 	ImGui::Render();
@@ -426,15 +427,13 @@ void Application::LoopUpdate()
 
 void Application::LoopRender()
 {
-	
 	Camera &cam = *cameras[actCam];
 	Transform camTransform = *cam.transform;
-
 	float ar = win_width / static_cast<float>(win_heigth);
-
+	camTransform.TryGetClean();
 	const Mat4 &view = Transform::GetView(camTransform);
 	const Mat4 &projection = Transform::GetProjection(camTransform, true, 45.f);
-
+	const Mat4 &ortho = Transform::GetProjection(camTransform, false, 45.f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -447,12 +446,8 @@ void Application::LoopRender()
 	Transform& cubeTransform = go->transform;
 
 	auto MVP = cubeTransform.GetAccumulated();
-	//MVP = view *MVP;
-	//MVP = projection* MVP;
-	//auto MVP = 
-
-
-	{
+	
+	/*{
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
@@ -490,57 +485,27 @@ void Application::LoopRender()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_3D, volumeId);
 
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_1D, transferFunc->texPreview);
+
 		lastPass->SetUniform("bfCoords", 0);
 		lastPass->SetUniform("volume", 1);
+		lastPass->SetUniform("tf", 2);
 		lastPass->SetUniform("MVP", MVP);
 		lastPass->SetUniform("deltaTime", vol.timePassed);
 
 		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
 
-	}
-
-
-	//shaderUI->Use();
-
-
-	//
-	//for (auto it = transfer->rbegin(); it != transfer->rend(); it++) {
-	//	auto mesh = *it ;
-
-	//	GLCALL(glBindVertexArray(mesh.VAO));
-
-	//	for (auto obj : mesh) {
-	//		PF_ASSERT(obj && "Renderer is null");
-	//		const Mat4 &acum = obj->transform->GetAccumulated();
-	//		const Mat4 &MVP = obj->transform->MVP;
-	//		
-	//		lastPass->SetUniform("model", acum);
-	//		lastPass->SetUniform("MVP", MVP);
-
-	//		GLCALL(glDrawElements(GL_TRIANGLES, mesh.nElem, GL_UNSIGNED_INT, 0));
-	//	}
-	//}
-
-
-		
-
-
-
-
-
-/*	if (this->renderPlane) 
-	{
-		renderQuad->Use();
-		GLCALL(glBindVertexArray(VAO_PLANE));
-		{
-			GLCALL(glActiveTexture(GL_TEXTURE0));
-			GLCALL(glBindTexture(GL_TEXTURE_2D, shadowTex.id));
-			GLCALL(depthPlaneShader->SetUniform("depthMap", 0));
-
-			GLCALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
-		}
-		GLCALL(glBindVertexArray(0));
 	}*/
+	transferFunc->Render(shaderUI, vol.quadVAO, win_width);
+
+
+
+
+
+
+
+
 }
 
 void Application::DrawObjects(std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)

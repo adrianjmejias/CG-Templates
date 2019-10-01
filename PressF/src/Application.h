@@ -26,9 +26,6 @@ struct VolumeRush
 	GLuint nQuad=0, nCube=0;
 	int axis = 0;
 	float timePassed = 0;
-
-
-
 	
 
 	void Render(float deltaTime, const Mat4 &view, const Mat4 &projection, ShaderProgram* shaderQuad)
@@ -69,13 +66,13 @@ struct VolumeRush
 		{
 			float quadVertices[] = {
 				// positions        	// texture Coords
-				-1.0f,1.0f,0.0f,
+				-1.0f,-.75f,0.0f,
 				0.0f,
 				1.0f,
 				-1.0f,-1.0f,0.0f,
 				0.0f,
 				0.0f,
-				1.0f,1.0f,0.0f,
+				1.0f,-.75f,0.0f,
 				1.0f,
 				1.0f,
 				1.0f,-1.0f,	0.0f,

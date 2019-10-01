@@ -20,7 +20,7 @@ void main()
 	texCoords = i_uv;
 
 //	pos = projection * ( view * vec4(i_pos,1));
-	pos =  projection* view* vec4(i_pos,1);
+	pos =   vec4(i_pos,1);
     gl_Position = pos;
 }
 
