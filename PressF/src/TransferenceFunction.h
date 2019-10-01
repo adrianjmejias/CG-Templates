@@ -19,15 +19,15 @@ class TransferenceFunction : public Component
 	bool clicked = true;
 	int indexEditing = 0;
 	int x, y;
-	float selectedHue{0};
-	GLuint texHue{0};
-	GLuint texAlpha{0};
+	float selectedHue{ 0 };
+	GLuint texHue{ 0 };
+	GLuint texAlpha{ 0 };
 	std::vector<Vec4> dataPreview;
 	int width;
 	// acá asumamos que siempre está ordenado con respecto a X
 	std::vector<TransferencePoint> points;
 public:
-	GLuint texPreview{0};
+	GLuint texPreview{ 0 };
 	virtual void Update();
 	virtual void HandleEvent(const SDL_Event &e);
 
@@ -42,10 +42,10 @@ public:
 			shaderUI->SetUniform("zIndex", 0);
 			shaderUI->SetUniform("model", transform->GetAccumulated());
 			shaderUI->SetUniform("tf", 0);
-			
+
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_1D, texPreview);
-			
+
 			//shaderUI->SetUniform("projection", projection);
 
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -60,7 +60,7 @@ public:
 		ImGui::Begin("Color picker");
 		{
 			bool change = false;
-			
+
 			ImGui::SliderInt("picked", &indexEditing, 0, points.size() - 1);
 			change = change || ImGui::ColorEdit4("hue", &p.color[0], 0);
 
@@ -80,21 +80,21 @@ public:
 		{
 			dataPreview.emplace_back();
 		}
-		//while (dataPreview.size() > width)
-		//{
-		//	dataPreview.pop_back();
-		//}
 
 
 
 		std::vector<int> indexes;
 
-		int space = width;
-		int step = space/points.size();
 
-		for (size_t ii = 0, idx = 0; ii < points.size()+1; ii++, idx+= step)
+		float space = width;
+
+
+
+
+		for (size_t ii = 0; ii < points.size(); ii++)
 		{
-			indexes.push_back(idx);
+			float lerpFactor = float(ii / (points.size() - 1));
+			indexes.push_back(space* lerpFactor);
 		}
 
 		for (size_t ii = 0; ii < points.size() - 1; ii++)
@@ -102,16 +102,18 @@ public:
 			int init = indexes[ii];
 			int end = indexes[ii + 1];
 
-			for (size_t jj = init; jj <= end; jj++)
+			for (size_t jj = init, iLerp = 0, eLerp = end - init; jj < end; jj++, iLerp++)
 			{
-				dataPreview[jj] = glm::smoothstep(
-					points[ii].color, 
-					points[ii+1].color, 
-					Vec4(jj/static_cast<float>(end)));
+				float lerpFactor = iLerp / float(eLerp);
+				dataPreview[jj] =
+					points[ii].color * (1-lerpFactor)
+					+ (lerpFactor) *points[ii + 1].color;
+
 			}
 		}
 		UpdateTexture();
 	}
+
 	
 	void UpdateTexture()
 	{

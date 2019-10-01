@@ -57,6 +57,9 @@ void TransferenceFunction::HandleEvent(const SDL_Event &e)
 				break;
 			case SDL_Scancode::SDL_SCANCODE_N:
 				points.push_back(TransferencePoint());
+
+				int last = points.size() - 1;
+				std::swap(points[last], points[last-1]);
 				UpdateTransfer();
 				break;
 		}
@@ -68,10 +71,6 @@ TransferenceFunction::TransferenceFunction(COMP_PARAMS) COMP_INIT
 {
 	points.emplace_back();
 	points.emplace_back();
-
-	points[0].color = { 0.7, 0, 0, 1};
-
-	//UpdateTransfer();
 }
 
 std::tuple<int, int> TransferenceFunction::GetClickedPoint(int x, int y)
