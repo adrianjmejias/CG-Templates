@@ -59,7 +59,7 @@ void TransferenceFunction::HandleEvent(const SDL_Event &e)
 				points.push_back(TransferencePoint());
 
 				int last = points.size() - 1;
-				std::swap(points[last], points[last-1]);
+				//std::swap(points[last], points[last-1]);
 				UpdateTransfer();
 				break;
 		}

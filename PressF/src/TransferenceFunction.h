@@ -93,8 +93,8 @@ public:
 
 		for (size_t ii = 0; ii < points.size(); ii++)
 		{
-			float lerpFactor = float(ii / (points.size() - 1));
-			indexes.push_back(space* lerpFactor);
+			float lerpFactor = (float(ii) / float(points.size()-1)) * space;
+			indexes.push_back(lerpFactor);
 		}
 
 		for (size_t ii = 0; ii < points.size() - 1; ii++)

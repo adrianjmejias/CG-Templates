@@ -447,57 +447,58 @@ void Application::LoopRender()
 
 	auto MVP = cubeTransform.GetAccumulated();
 	
-	//{
-	//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	//	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-	//	glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-	//	glEnable(GL_CULL_FACE);
-	//	glCullFace(GL_FRONT);
+	{
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
 
-	//	GLCALL(glBindVertexArray(cubeVAO));
+		GLCALL(glBindVertexArray(cubeVAO));
 
-	//	firstPass->Use();
-	//	firstPass->SetUniform("MVP", MVP);
+		firstPass->Use();
+		firstPass->SetUniform("MVP", MVP);
 
-	//	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
-	//}
-
-
-	//{
-
-	//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	//	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-	//	glEnable(GL_CULL_FACE);
-	//	glCullFace(GL_BACK);
+		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+	}
 
 
-	//	GLCALL(glBindVertexArray(cubeVAO));
+	{
 
-	//	lastPass->Use();
-	//	lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		transferFunc->Render(shaderUI, vol.quadVAO, win_width);
+
+		GLCALL(glBindVertexArray(cubeVAO));
+
+		lastPass->Use();
+		lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
 
 
-	//	glActiveTexture(GL_TEXTURE0);
-	//	glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
 
-	//	glActiveTexture(GL_TEXTURE1);
-	//	glBindTexture(GL_TEXTURE_3D, volumeId);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_3D, volumeId);
 
-	//	glActiveTexture(GL_TEXTURE2);
-	//	glBindTexture(GL_TEXTURE_1D, transferFunc->texPreview);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_1D, transferFunc->texPreview);
 
-	//	lastPass->SetUniform("bfCoords", 0);
-	//	lastPass->SetUniform("volume", 1);
-	//	lastPass->SetUniform("tf", 2);
-	//	lastPass->SetUniform("MVP", MVP);
-	//	lastPass->SetUniform("deltaTime", vol.timePassed);
+		lastPass->SetUniform("bfCoords", 0);
+		lastPass->SetUniform("volume", 1);
+		lastPass->SetUniform("tf", 2);
+		lastPass->SetUniform("MVP", MVP);
+		lastPass->SetUniform("deltaTime", vol.timePassed);
 
-	//	GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
 
-	//}
-	transferFunc->Render(shaderUI, vol.quadVAO, win_width);
+	}
+	
 
 
 
