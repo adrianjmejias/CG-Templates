@@ -119,18 +119,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 void Application::SetupScene()
 {
 	vol.Setup(volumeId);
-
-	//shaderQuad = shaders[4];
-	{
-		GameObject *go = new GameObject();
-		fc = go->AddComponent < FlyingController >();
-		camera = go->AddComponent < Camera >();
-		//cam = &go->AddComponent<CameraGL>();
-
-		go->transform.SetPosition(0, 0, -20);
-		rootNodes.push_back(go);
-	}
-
+	camera.reset (new OGLCamera(Vec3(0,0,-10)));
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -209,9 +198,9 @@ void Application::LoopUI()
 	ImGui::Begin("Lights");
 	{
 		
-		Transform &camTransform = *camera->transform;
-		ImGui::Text("Camera transform");
-		ImGuiTransform(camTransform);
+		//Transform &camTransform = *camera->transform;
+		//ImGui::Text("Camera transform");
+		//ImGuiTransform(camTransform);
 
 
 
@@ -278,6 +267,35 @@ void Application::LoopUpdate()
 void Application::LoopRender()
 {
 
+	const Uint8 *state = SDL_GetKeyboardState(NULL);
+	if (state[SDL_SCANCODE_W]) {
+		camera->ProcessKeyboard(OGLCamera_Movement::FORWARD, deltaTime);
+	}
+	if (state[SDL_SCANCODE_S]) {
+		camera->ProcessKeyboard(OGLCamera_Movement::BACKWARD, deltaTime);
+	}
+	if (state[SDL_SCANCODE_A]) {
+		camera->ProcessKeyboard(OGLCamera_Movement::LEFT, deltaTime);
+	}
+	if (state[SDL_SCANCODE_D]) {
+		camera->ProcessKeyboard(OGLCamera_Movement::RIGHT, deltaTime);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
 	Transform &camTransform = *fc->transform;
 	float ar = win_width / static_cast<float>(win_heigth);
@@ -296,12 +314,14 @@ void Application::LoopRender()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-
 
 		GLCALL(glBindVertexArray(vol.quadVAO));
 
+		auto VP = view * projection;
+		
+		rayCastShader->Use();
+		rayCastShader->SetUniform("VP", VP);
+		rayCastShader->SetUniform("inverseVP", glm::inverse(VP));
 
 		//lastPass->SetUniform("deltaTime", vol.timePassed);
 

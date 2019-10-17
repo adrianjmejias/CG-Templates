@@ -3,6 +3,7 @@
 #include "core.h"
 
 #include "Camera.h"
+#include "OGLCamera.h"
 #include "Light.h"
 
 #define ADD_MAP(NAME)\
@@ -140,7 +141,7 @@ public:
 	std::map<std::string, Texture*> texturesLoaded;
 
 	VolumeRush vol;
-	Camera* camera;
+	std::unique_ptr<OGLCamera> camera;
 	FlyingController * fc;
 	ShaderProgram* rayCastShader = nullptr;
 

@@ -135,6 +135,7 @@
     <ClInclude Include="PressF\src\Component.h" />
     <ClInclude Include="PressF\src\GameObject.h" />
     <ClInclude Include="PressF\src\Light.h" />
+    <ClInclude Include="PressF\src\OGLCamera.h" />
     <ClInclude Include="PressF\src\Shader.h" />
     <ClInclude Include="PressF\src\ShaderProgram.h" />
     <ClInclude Include="PressF\src\Texture.h" />

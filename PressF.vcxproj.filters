@@ -1182,6 +1182,7 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\src\OGLCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
