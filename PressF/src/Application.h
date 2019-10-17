@@ -4,8 +4,6 @@
 
 #include "Camera.h"
 #include "Light.h"
-#include "MeshRenderer.h"
-#include "TransferenceFunction.h"
 
 #define ADD_MAP(NAME)\
 		if (!mat.NAME.empty() && (texturesLoaded.find(mat.NAME) == texturesLoaded.end())) {\
@@ -66,13 +64,13 @@ struct VolumeRush
 		{
 			float quadVertices[] = {
 				// positions        	// texture Coords
-				-1.0f,-.75f,0.0f,
+				-1.0f,1.f,0.0f,
 				0.0f,
 				1.0f,
 				-1.0f,-1.0f,0.0f,
 				0.0f,
 				0.0f,
-				1.0f,-.75f,0.0f,
+				1.0f, 1.f,0.0f,
 				1.0f,
 				1.0f,
 				1.0f,-1.0f,	0.0f,
@@ -94,66 +92,6 @@ struct VolumeRush
 
 			nQuad = 4;
 		}
-	
-		{
-			glFrontFace(GL_CW);
-			float cubeVertices[] = {
-			// Back face
-			-0.5f, -0.5f, -0.5f, // Bottom-left
-			0.5f, -0.5f, -0.5f,  // bottom-right
-			0.5f, 0.5f, -0.5f,   // top-right
-			0.5f, 0.5f, -0.5f,   // top-right
-			-0.5f, 0.5f, -0.5f,  // top-left
-			-0.5f, -0.5f, -0.5f, // bottom-left
-			// Front face
-			-0.5f, -0.5f, 0.5f, // bottom-left
-			0.5f, 0.5f, 0.5f,   // top-right
-			0.5f, -0.5f, 0.5f,  // bottom-right
-			0.5f, 0.5f, 0.5f,   // top-right
-			-0.5f, -0.5f, 0.5f, // bottom-left
-			-0.5f, 0.5f, 0.5f,  // top-left
-			// Left face
-			-0.5f, 0.5f, 0.5f,   // top-right
-			-0.5f, -0.5f, -0.5f, // bottom-left
-			-0.5f, 0.5f, -0.5f,  // top-left
-			-0.5f, -0.5f, -0.5f, // bottom-left
-			-0.5f, 0.5f, 0.5f,   // top-right
-			-0.5f, -0.5f, 0.5f,  // bottom-right
-			// Right face
-			0.5f, 0.5f, 0.5f,   // top-left
-			0.5f, 0.5f, -0.5f,  // top-right
-			0.5f, -0.5f, -0.5f, // bottom-right
-			0.5f, -0.5f, -0.5f, // bottom-right
-			0.5f, -0.5f, 0.5f,  // bottom-left
-			0.5f, 0.5f, 0.5f,   // top-left
-			// Bottom face
-			-0.5f, -0.5f, -0.5f, // top-right
-			0.5f, -0.5f, 0.5f,   // bottom-left
-			0.5f, -0.5f, -0.5f,  // top-left
-			0.5f, -0.5f, 0.5f,   // bottom-left
-			-0.5f, -0.5f, -0.5f, // top-right
-			-0.5f, -0.5f, 0.5f,  // bottom-right
-			// Top face
-			-0.5f, 0.5f, -0.5f, // top-left
-			0.5f, 0.5f, -0.5f,  // top-right
-			0.5f, 0.5f, 0.5f,   // bottom-right
-			0.5f, 0.5f, 0.5f,   // bottom-right
-			-0.5f, 0.5f, 0.5f,  // bottom-left
-			-0.5f, 0.5f, -0.5f  // top-left
-			};
-
-			glGenVertexArrays(1, &cubeVAO);
-			glGenBuffers(1, &cubeVBO);
-			glBindVertexArray(cubeVAO);
-			glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
-			glBindVertexArray(0);
-		
-			nCube = sizeof(cubeVertices) / sizeof(cubeVertices[0]);
-		}
-
 	}
 	~VolumeRush()
 	{
@@ -170,7 +108,6 @@ class Application
 public:
 	//Every object created must have a new id
 	//unsigned int GLOBAL_ID; //replaced with extern
-	VolumeRush vol;
 	SDL_Window *win;
 	SDL_GLContext glContext;
 	int win_width = 705;
@@ -189,68 +126,41 @@ public:
 	float maxLayers = 200;
 
 	bool running;
-	bool captureMouse = true;
+	bool captureMouse = false;
 	bool show_demo_window = true;
 	bool show_another_window = true;
 	bool KeyPressed[256];
 	Vec4 bgColor{ 0.2f,0.2f,0.2f, 1 };
 
-	GameObject* actGO = nullptr;
-	int actCam = 0;
 	std::vector<ShaderProgram*> shaders;
 	std::vector<Light*> LIGHTS;
-	Model* lightsModel = nullptr;
-	TransferenceFunction *transferFunc;
-	//std::vector < Camera*> orderedCameras;
-	std::vector < Camera*> cameras;
-	std::vector<MeshRenderer*> renderers;
-	std::vector<Model*> models;
-	std::vector<Model*> modelsDebug;
-	std::vector<GameObject *> rootNodes;
-	std::vector<Material *> materials;
-	std::map<std::string, Shader*> shadersLoaded;
-	std::map<std::string, Material*> materialsLoaded;
-	std::map<std::string, Texture*> texturesLoaded;
-	std::unique_ptr<FrameBuffer> depthFB;
-	unsigned int VAO_PLANE, VBO_PLANE;
-	bool renderPlane = true;
-	bool renderScene = true;
-	FlyingController * fc;
-	ShaderProgram* depthPlaneShader = nullptr;
-	ShaderProgram* firstPass = nullptr;
-	ShaderProgram* lastPass = nullptr;
-	ShaderProgram* renderQuad = nullptr;
-	ShaderProgram* shaderUI = nullptr;
-	ShaderProgram* shaderQuad = nullptr;
 
-	Vec4 orthoSides{-80,80,-80,80};
-	Vec2 clippingPlane{ 1.f,400.f };
+	std::vector<GameObject *> rootNodes;
+	std::map<std::string, Shader*> shadersLoaded;
+	std::map<std::string, Texture*> texturesLoaded;
+
+	VolumeRush vol;
+	Camera* camera;
+	FlyingController * fc;
+	ShaderProgram* rayCastShader = nullptr;
+
+
 	unsigned int volumeId;
 public:
 
 	//static double DeltaTime() { return deltaTime; }
 
 
-	static Model* GLCreate(objl::Loader & fullModel);
 	void Steal(Component *);
 	void LoopEvents();
 	void Setup(const std::vector<std::string>&, const std::vector<std::tuple<std::string, std::string>>&);
 	void SetupScene();
-	Model* SetupModel(std::string objPath);
-	void SetupModels(const std::vector<std::string>& objPaths);
 	void SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths);
-
-
-
 
 	void LoopMain();
 	void LoopUI();
 	void LoopUpdate();
 	void LoopRender();
-
-	void DrawObjects(std::vector<const Mesh *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT)>  PreReqs);
-	void DrawObjects(std::vector<const MeshRenderer *> meshes, std::function<bool(const ShaderProgram& shader, const Material& MAT, const MeshRenderer& mesh)>  PreReqs);
-
 
 	Application();
 	~Application();

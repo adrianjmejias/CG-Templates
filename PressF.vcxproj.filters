@@ -39,25 +39,10 @@
     <ClInclude Include="PressF\src\Component.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\FrameBuffer.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
     <ClInclude Include="PressF\src\GameObject.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\Light.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\MeshRenderer.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\Model.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\OBJ_Loader.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\Physics.h">
       <Filter>PressF\src</Filter>
     </ClInclude>
     <ClInclude Include="PressF\src\Shader.h">
@@ -1197,12 +1182,6 @@
     <ClInclude Include="dependencies\glm\glm\vector_relational.hpp">
       <Filter>dependencies\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\src\Logger.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\src\TransferenceFunction.h">
-      <Filter>PressF\src</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\src\Application.cpp">
@@ -1214,25 +1193,10 @@
     <ClCompile Include="PressF\src\Component.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\FrameBuffer.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
     <ClCompile Include="PressF\src\GameObject.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\Light.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\MeshRenderer.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\Model.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\OBJ_Loader.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\Physics.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
     <ClCompile Include="PressF\src\Shader.cpp">
@@ -1265,11 +1229,9 @@
     <ClCompile Include="PressF\src\types.cpp">
       <Filter>PressF\src</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\src\Logger.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\src\TransferenceFunction.cpp">
-      <Filter>PressF\src</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\raycast.vert" />
+    <None Include="assets\shaders\raycast.frag" />
   </ItemGroup>
 </Project>

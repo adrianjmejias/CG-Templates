@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fstream>
 #include <tuple>
+#include <functional>
 
 #define STL_BYTE_SIZE(cont, type) (cont.size() * sizeof(type))
 
@@ -22,3 +23,8 @@ using Vec4 = glm::vec4;
 using iVec3 = glm::ivec3;
 using Mat4 = glm::mat4;
 
+#define PF_ASSERT(x) 
+#define GLCALL(x) x
+#define PF_ERROR(x) 
+#define PF_WARN(x) 
+#define PF_INFO(x) 

@@ -26,8 +26,6 @@ public:
 
 
 
-extern Camera* mainCamera;
-
 class Camera : public Component{
 
 public:

@@ -3,7 +3,6 @@
 
 extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
-extern Camera* mainCamera = nullptr;
 enum class Dirty;
 
 static unsigned int LoadVolume(const std::string &path, int width, int heigth, int depth)
@@ -93,21 +92,10 @@ static void Traverse(const std::vector<GameObject*> objects, std::function<void(
 
 void Application::Setup(const std::vector<std::string>& objPaths, const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
-	spdlog::set_pattern("[%M:%S %z] [%^%v%$]");
 	SetupShaders(shaderPaths);
-	SetupModels(objPaths);
 	SetupScene();
 
-
-
-	for (Model *model : models) {
-		for (Mesh &mesh : *model) {
-			auto matName = mesh.mat.name;
-			if (materialsLoaded.find(matName) == end(materialsLoaded)) {
-				materialsLoaded[matName] = &mesh.mat;
-			}
-		}
-	}
+	rayCastShader = shaders[0];
 
 
 
@@ -130,100 +118,18 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 
 void Application::SetupScene()
 {
-	depthFB = FrameBuffer::GetGBuffer(win_width, win_heigth); //FrameBuffer::GetShadowBuffer(win_width, win_heigth);
-
-	firstPass = shaders[0];
-	lastPass = shaders[1];
-	renderQuad = shaders[2];
-	shaderUI = shaders[3];
-	volumeId = LoadVolume("assets/models/bonsai.raw", 256, 256, 256);
 	vol.Setup(volumeId);
 
 	//shaderQuad = shaders[4];
 	{
 		GameObject *go = new GameObject();
 		fc = go->AddComponent < FlyingController >();
-		go->AddComponent < Camera >();
+		camera = go->AddComponent < Camera >();
 		//cam = &go->AddComponent<CameraGL>();
 
 		go->transform.SetPosition(0, 0, -20);
 		rootNodes.push_back(go);
 	}
-
-
-
-
-	for (Model *model : models) {
-		GameObject *papa = new GameObject();
-		for (Mesh &mesh : *model) {
-			GameObject *go = new GameObject();
-			MeshRenderer *ren = go->AddComponent<MeshRenderer>(&mesh);
-			mesh.push_back(ren);
-
-			/*go->transform.SetPosition(0, 0, 0);
-			go->transform.SetScale(3, 3, 3);
-			go->transform.Rotate(0, 90, 0);*/
-			go->transform.SetParent(&papa->transform);
-			//go->transform.SetPosition(glm::ballRand(3.f) + 2.f);
-			
-		}
-		rootNodes.push_back(papa);
-	}
-
-
-
-
-	transferFunc = rootNodes[2]->AddComponent<TransferenceFunction >();
-
-
-
-}
-
-Model * Application::SetupModel(std::string objPath)
-{
-
-	objl::Loader objlModel;
-
-	if (!objlModel.LoadFile(objPath))
-	{
-		PF_ERROR("Failed to load model {0}", objPath);
-		__debugbreak();
-	}
-	Model *model = GLCreate(objlModel);
-
-	//cargar texturas
-	const std::string basePath = objPath.substr(0, objPath.find_last_of("/"));
-	for (objl::Material& mat : objlModel.LoadedMaterials)
-	{
-		ADD_MAP(map_bump);
-		ADD_MAP(map_Ka);
-		ADD_MAP(map_Kd);
-		ADD_MAP(map_Ks);
-		ADD_MAP(map_d);
-	}
-
-	for (Mesh& mesh : *model)
-	{
-		ADD_MAP_TO_MATERIAL(map_bump);
-		ADD_MAP_TO_MATERIAL(map_Ka);
-		ADD_MAP_TO_MATERIAL(map_Kd);
-		ADD_MAP_TO_MATERIAL(map_Ks);
-		ADD_MAP_TO_MATERIAL(map_d);
-	}
-	return model;
-}
-
-void Application::SetupModels(const std::vector<std::string>& objPaths)
-{
-	for (const std::string& objPath : objPaths)
-	{
-		models.push_back(SetupModel(objPath));
-	}
-
-	lightsModel = SetupModel("assets/models/light/untitled.obj");
-	modelsDebug.push_back(lightsModel);
-
-
 
 }
 
@@ -299,58 +205,14 @@ void Application::LoopUI()
 
 	ImGui::ShowDemoWindow(&show_demo_window);
 
-	ImGui::Begin("Materials");
-	for (auto pair : materialsLoaded)
-	{
-		const std::string& matName = pair.first;
-		Material& mat = *pair.second;
-
-		if ((ImGui::TreeNode(matName.c_str())))
-		{
-			//ImGui::SliderFloat4("kD", &mat.kD[0], 0.f,1.f);	
-			ImGui::ColorEdit3("kD##2f", (float*)&mat.kD[0], ImGuiColorEditFlags_Float);
-			ImGui::ColorEdit3("kA##2f", (float*)&mat.kS[0], ImGuiColorEditFlags_Float);
-			ImGui::ColorEdit3("kS##2f", (float*)&mat.kA[0], ImGuiColorEditFlags_Float);
-			ImGui::SliderFloat("Ni", &mat.Ni, 0.f, 1.f);
-			ImGui::SliderFloat("Ns", &mat.Ns, 0.f, 3.f);
-			ImGui::SliderInt("Shader", &mat.illum, 0, (int)(shaders.size() - 1));
-			//mat.illum
-
-
-			switch (mat.illum)
-			{
-			case 3:
-				ImGui::SliderFloat("IOR Material", &mat.IOR, 0.f, 3.f);
-				ImGui::SliderFloat("IOR Air", &IOR_BG, 0.f, 3.f);
-				break;
-			case 8:
-				ImGui::SliderFloat("HeightScale", &heightScale, 0.f, 10.f);
-				ImGui::SliderFloat("MinLayers", &minLayers, 6.f, maxLayers);
-				ImGui::SliderFloat("MaxLayers", &maxLayers, minLayers, 400.f);
-
-				break;
-			default:
-				break;
-			}
-
-
-
-			ImGui::TreePop();
-		}
-	}
-	ImGui::End();
-
 
 	ImGui::Begin("Lights");
 	{
 		
-		Transform &camTransform = *mainCamera->transform;
+		Transform &camTransform = *camera->transform;
 		ImGui::Text("Camera transform");
 		ImGuiTransform(camTransform);
 
-
-		ImGui::SliderFloat4("orthoSize", &orthoSides[0], -100, 100);
-		ImGui::SliderFloat2("clipping", &clippingPlane[0], 1, 600);
 
 
 		for (Light* light : LIGHTS) {
@@ -398,18 +260,6 @@ void Application::LoopUI()
 	ImGui::End();
 
 
-
-	bool showSelected = actGO != nullptr;
-	ImGui::Begin("Selected Object", &showSelected);
-	{
-		//ImGui::LabelText(actGO->name.c_str(),);
-
-	}
-	ImGui::End();
-
-
-	transferFunc->RenderUI();
-
 	// Rendering
 	ImGui::Render();
 	SDL_GL_MakeCurrent(win, glContext);
@@ -427,8 +277,9 @@ void Application::LoopUpdate()
 
 void Application::LoopRender()
 {
-	Camera &cam = *cameras[actCam];
-	Transform camTransform = *cam.transform;
+
+	
+	Transform &camTransform = *fc->transform;
 	float ar = win_width / static_cast<float>(win_heigth);
 	camTransform.TryGetClean();
 	const Mat4 &view = Transform::GetView(camTransform);
@@ -440,30 +291,6 @@ void Application::LoopRender()
 
 	//vol.Render(deltaTime, view, projection, renderQuad);
 
-	GLuint cubeVAO = vol.cubeVAO;
-
-	GameObject *go = rootNodes[1];
-	Transform& cubeTransform = go->transform;
-
-	auto MVP = cubeTransform.GetAccumulated();
-	
-	{
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthFB->id);
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_FRONT);
-
-
-		GLCALL(glBindVertexArray(cubeVAO));
-
-		firstPass->Use();
-		firstPass->SetUniform("MVP", MVP);
-
-		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
-	}
-
-
 	{
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -472,69 +299,15 @@ void Application::LoopRender()
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 
-		transferFunc->Render(shaderUI, vol.quadVAO, win_width);
 
-		GLCALL(glBindVertexArray(cubeVAO));
-
-		lastPass->Use();
-		lastPass->SetUniform("windowSize", Vec2(win_width, win_heigth));
+		GLCALL(glBindVertexArray(vol.quadVAO));
 
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, depthFB->texture.id);
+		//lastPass->SetUniform("deltaTime", vol.timePassed);
 
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_3D, volumeId);
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_1D, transferFunc->texPreview);
-
-		lastPass->SetUniform("bfCoords", 0);
-		lastPass->SetUniform("volume", 1);
-		lastPass->SetUniform("tf", 2);
-		lastPass->SetUniform("MVP", MVP);
-		lastPass->SetUniform("deltaTime", vol.timePassed);
-
-		GLCALL(glDrawArrays(GL_TRIANGLES, 0, 36));
+		GLCALL(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
 
 	}
-	
-
-
-
-
-
-
-
-
-}
-
-void Application::DrawObjects(std::vector<const Mesh*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT)> PreReqs)
-{
-
-	auto meshesToRender = meshes;
-	for (const Mesh * const mesh : meshesToRender) {
-		const Material &MAT = mesh->mat;
-		const ShaderProgram &shader = *shaders[MAT.illum];
-
-		shader.Use();
-		GLCALL(glBindVertexArray(mesh->VAO));
-
-		PreReqs(shader, MAT);
-
-		for (auto obj : *mesh) {
-			PF_ASSERT(obj && "Renderer is null");
-			const Mat4 &MVP = obj->transform->MVP;
-			const glm::mat3 &normalMatrix = obj->transform->normalMatrix;
-
-			SET_UNIFORM(shader, MVP);
-			SET_UNIFORM(shader, normalMatrix);
-
-			GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
-		}
-	}
-	GLCALL(glBindVertexArray(0));
-
 }
 
 void Application::LoopEvents()
@@ -571,34 +344,6 @@ void Application::LoopEvents()
 				}
 				captureMouse = !captureMouse;
 				break;
-
-			case SDL_Scancode::SDL_SCANCODE_0:
-				renderPlane = !renderPlane;
-				break;
-			case SDL_Scancode::SDL_SCANCODE_9:
-				renderScene = !renderScene;
-				break;
-			case SDL_Scancode::SDL_SCANCODE_1:
-			case SDL_Scancode::SDL_SCANCODE_2:
-			case SDL_Scancode::SDL_SCANCODE_3:
-			case SDL_Scancode::SDL_SCANCODE_4:
-			case SDL_Scancode::SDL_SCANCODE_5:
-			{
-				int newCam = static_cast<int>(keyPressed) - static_cast<int>(SDL_Scancode::SDL_SCANCODE_1);
-				if (actCam != newCam) {
-					PF_INFO("Swapped to Camera {0}", newCam);
-					if (newCam < cameras.size()) {
-						actCam = newCam;
-						mainCamera = cameras[actCam];
-						mainCamera->gameObject->AddComponent(fc);
-						mainCamera->transform->SetDirty(Dirty::Model);
-					}
-					else {
-						PF_WARN("Camera {0} not available", newCam);
-					}
-				}
-			}
-			break;
 			default:
 				break;
 			}
@@ -631,171 +376,11 @@ void Application::LoopEvents()
 	}
 }
 
-Model * Application::GLCreate(objl::Loader & fullModel) {
-	Model * m = new Model();
-	Model &model = *m;
-	//data transform
-	//std::vector<Vertex> vertex;
-	//vertex.reserve(fullModel.LoadedVertices.size());
-	//for (const objl::Vertex& oVertex : fullModel.LoadedVertices) {
-	//	vertex.push_back(Vertex(oVertex));
-	//}
-
-	GLsizei totalIndices = 0;
-	model.reserve(fullModel.LoadedMeshes.size());
-
-
-
-
-
-	std::vector<Vertex> vertex{begin(fullModel.LoadedVertices), end(fullModel.LoadedVertices)};
-
-	std::vector<Vec3> tanPerFace;
-	tanPerFace.reserve(fullModel.LoadedIndices.size() / 3);
-
-	std::vector<std::vector<size_t> > vertexContrib{ vertex.size(), std::vector<size_t>() };
-
-	for (size_t iiFace = 0, iiReal = 0; iiReal < fullModel.LoadedIndices.size() - 2; iiFace++, iiReal += 3)
-	{
-		const int idx_a = fullModel.LoadedIndices[iiReal];
-		const int idx_b = fullModel.LoadedIndices[iiReal + 1];
-		const int idx_c = fullModel.LoadedIndices[iiReal + 2];
-
-		const Vertex &v_1 = vertex[idx_a];
-		const Vertex &v_2 = vertex[idx_b];
-		const Vertex &v_3 = vertex[idx_c];
-
-
-		// hago esto por legibilidad
-		const Vec3 &u{ v_1.uv[0],v_2.uv[0],v_3.uv[0] };
-		const Vec3 &v{ v_1.uv[1],v_2.uv[1],v_3.uv[1] };
-		const Vec3 p[3]{ v_1.pos,v_2.pos ,v_3.pos };
-
-
-		const float v20 = v[2] - v[0];
-		const float v10 = v[1] - v[0];
-
-		const float u10 = u[1] - u[0];
-		const float u20 = u[2] - u[0];
-
-		const Vec3 p10 = p[1] - p[0];
-		const Vec3 p20 = p[2] - p[0];
-
-
-		const Vec3 tan(((v20*p10) - (v10 * p20)) / ((u10*v20) - (v10*u20)));
-
-
-		tanPerFace.push_back(tan);
-
-		vertexContrib[idx_a].push_back(iiFace);
-		vertexContrib[idx_b].push_back(iiFace);
-		vertexContrib[idx_c].push_back(iiFace);
-	}
-
-	for (size_t ii = 0; ii < vertexContrib.size(); ii++)
-	{
-		Vec3 promTan{ 0,0,0 };
-
-
-		for (size_t indexFace : vertexContrib[ii])
-		{
-			promTan += tanPerFace[indexFace];
-		}
-
-		vertex[ii].tan = glm::normalize(promTan / static_cast<float>(vertexContrib[ii].size()));
-	}
-
-	for (int ii = 0; ii < fullModel.LoadedMeshes.size(); ii++) {
-		objl::Mesh& objlMesh = fullModel.LoadedMeshes[ii];
-		Mesh myMesh;
-		myMesh.name = objlMesh.MeshName;
-
-		std::vector<Vertex> meshVertex{begin(objlMesh.Vertices), end(objlMesh.Vertices) };
-		
-
-		myMesh.mat = objlMesh.MeshMaterial;
-		myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
-		myMesh.offset = totalIndices;
-
-		totalIndices += myMesh.nElem;
-
-		GLCALL(glGenVertexArrays(1, &myMesh.VAO));
-		GLCALL(glGenBuffers(1, &myMesh.EBO));
-		GLCALL(glGenBuffers(1, &myMesh.VBO));
-
-		GLCALL(glBindVertexArray(myMesh.VAO));
-		{
-			GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
-			GLCALL(glBufferData(GL_ARRAY_BUFFER, meshVertex.size() * sizeof(Vertex), meshVertex.data(), GL_STATIC_DRAW));
-
-			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, myMesh.EBO));
-			GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, objlMesh.Indices.size() * sizeof(unsigned int), objlMesh.Indices.data(), GL_STATIC_DRAW));
-
-			{
-				GLCALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, pos)));
-				GLCALL(glEnableVertexAttribArray(0));
-
-				GLCALL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-				GLCALL(glEnableVertexAttribArray(1));
-
-				GLCALL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, uv)));
-				GLCALL(glEnableVertexAttribArray(2));
-
-				GLCALL(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tan)));
-				GLCALL(glEnableVertexAttribArray(3));
-
-			}
-
-		}
-		GLCALL(glBindVertexArray(0));
-		model.push_back(myMesh);
-
-	}
-	
-	return m;
-}
-
 void Application::Steal(Component *comp)
 {
 	if (Light* l = dynamic_cast<Light*>(comp)) {
 		LIGHTS.push_back(l);
 	}
-
-	if (Camera * cam = dynamic_cast<Camera*>(comp)) {
-		if (cameras.size() < 1) {
-			mainCamera = cam;
-			mainCamera->power = 1;
-		}
-		cameras.push_back(cam);
-	}
-
-	if (MeshRenderer* ren = dynamic_cast<MeshRenderer*>(comp)) {
-		renderers.push_back(ren);
-	}
-}
-
-void Application::DrawObjects(std::vector<const MeshRenderer*> meshes, std::function<bool(const ShaderProgram&shader, const Material&MAT, const MeshRenderer&mesh)> PreReqs)
-{
-	auto meshesToRender = meshes;
-	for (const MeshRenderer * const meshRen : meshesToRender) {
-
-		const Mesh * mesh = meshRen->mesh;
-		const Material &MAT = mesh->mat;
-		const ShaderProgram &shader = *shaders[MAT.illum];
-
-		shader.Use();
-		GLCALL(glBindVertexArray(mesh->VAO));
-
-		if (PreReqs(shader, MAT, *meshRen)) {
-
-			const Mat4 &MVP = meshRen->transform->MVP;
-			SET_UNIFORM(shader, MVP);
-			GLCALL(glDrawElements(GL_TRIANGLES, mesh->nElem, GL_UNSIGNED_INT, 0));
-		}
-
-	}
-	GLCALL(glBindVertexArray(0));
-
 }
 
 Application::Application()
@@ -858,13 +443,7 @@ Application::~Application()
 
 	std::for_each(begin(shadersLoaded), end(shadersLoaded), [](std::pair<std::string, Shader*> p) {delete p.second; });
 	std::for_each(begin(texturesLoaded), end(texturesLoaded), [](std::pair<std::string, Texture*> p) {delete p.second; });
-	std::for_each(begin(models), end(models), [](Model* p) {delete p; });
-	std::for_each(begin(modelsDebug), end(modelsDebug), [](Model* p) {delete p; });
-	//std::for_each(begin(shaders), end(shaders), [](ShaderProgram* p) {delete p; });
 	
-	glDeleteTextures(1, &volumeId);
-	glDeleteVertexArrays(1, &VAO_PLANE);
-	glDeleteBuffers(1, &VBO_PLANE);
 
 	//delete cubeMap;
 	
