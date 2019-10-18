@@ -5,37 +5,6 @@ extern double deltaTime = 0;
 extern unsigned int GLOBAL_ID = 1;
 enum class Dirty;
 
-static unsigned int LoadVolume(const std::string &path, int width, int heigth, int depth)
-{
-	unsigned int id;
-	const int size = width * heigth * depth;
-	FILE *pFile;
-	GLubyte* pVolume = new GLubyte[size];
-	errno_t err;
-	if ((err = fopen_s(&pFile, path.c_str(), "rb")) != 0) {
-		std::cout << "ERROR:: Unable to load texture " << path << std::endl;
-		glDeleteTextures(1, &id);
-	}
-	else {
-		fread(pVolume, sizeof(GLubyte), size, pFile);
-		fclose(pFile);
-
-		// Load data into a 3D texture
-		glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_3D, id);
-
-		// Set the texture parameters
-		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, width, heigth, depth, 0, GL_RED, GL_UNSIGNED_BYTE, pVolume);
-		delete[] pVolume;
-	}
-
-	return id;
-}
 
 static void ImGuiTransform(Transform &t) {
 	if (ImGui::SliderFloat3("Rotation", &t.rotation[0], -360.f, 360.f)) {
@@ -119,7 +88,7 @@ void Application::Setup(const std::vector<std::string>& objPaths, const std::vec
 void Application::SetupScene()
 {
 	vol.Setup(volumeId);
-	camera.reset (new OGLCamera(Vec3(0,0,-10)));
+	camera.reset (new OGLCamera(Vec3(0,0,0)));
 }
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
@@ -297,12 +266,12 @@ void Application::LoopRender()
 
 
 	
-	Transform &camTransform = *fc->transform;
+	
 	float ar = win_width / static_cast<float>(win_heigth);
-	camTransform.TryGetClean();
-	const Mat4 &view = Transform::GetView(camTransform);
-	const Mat4 &projection = Transform::GetProjection(camTransform, true, 45.f);
-	const Mat4 &ortho = Transform::GetProjection(camTransform, false, 45.f);
+	
+	const Mat4 &view = camera->GetViewMatrix();
+	const Mat4 &projection = glm::perspective(glm::radians(camera->Zoom), (float)win_width / (float)win_heigth, 0.1f, 400.0f);
+	
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -321,6 +290,7 @@ void Application::LoopRender()
 		
 		rayCastShader->Use();
 		rayCastShader->SetUniform("VP", VP);
+		rayCastShader->SetUniform("camPos", camera->Position);
 		rayCastShader->SetUniform("inverseVP", glm::inverse(VP));
 
 		//lastPass->SetUniform("deltaTime", vol.timePassed);
@@ -385,6 +355,21 @@ void Application::LoopEvents()
 				break;
 			}
 		}
+
+		if (e.type == SDL_EventType::SDL_MOUSEMOTION)
+		{
+
+			if (!captureMouse)
+			{
+				camera->ProcessMouseMovement(e.motion.xrel, e.motion.yrel, true);
+			}
+		}
+		if (e.type == SDL_EventType::SDL_MOUSEWHEEL)
+		{
+
+				camera->ProcessMouseScroll(e.wheel.y);
+		}
+
 
 		for (auto go : rootNodes)
 		{
