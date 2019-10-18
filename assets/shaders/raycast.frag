@@ -1,4 +1,6 @@
 ﻿#version 330 core
+
+
 #define P2(x) (x*x)
 #define sdot(x,y) max(dot(x,y),0.f)
 #define PLANE 0
@@ -20,6 +22,7 @@ struct Material{
 	vec3 colorSpec;
 	float shininess;
 };
+
 struct Light 
 {
 	vec3 position;
@@ -48,7 +51,6 @@ struct Ray{
 	vec3 origin;
 	vec3 dir; 
 	int TTL; // max hits it supports
-//	vec4 color;
 };
 
 
@@ -73,7 +75,7 @@ vec3 getNormal(Object obj, vec3 hitPoint)
 	switch(obj.type)
 	{
 		case SPHERE:
-			return normalize( hitPoint - S_CENTER(obj));
+			return normalize(hitPoint - S_CENTER(obj));
 		default:
 		return vec3(1,0,0);
 
@@ -145,23 +147,19 @@ Hit intersection(Ray ray)
 			disc = sqrt(disc);
 			// hay colision
 			float t = (-fB - disc)/2;
-			float t1 = (-fB + disc)/2;
-
-			if(t1 > 0) // tomo el de menor distancia
+			
+			if(t < 0){ 
+				t = (-fB + disc)/2; 
+			}
+			
+			if(t >= 0) // valid point
 			{
-				if( t1 < t)
+				if(closestVal > t) // agarro el indice 
 				{
-					t = t1;
+					idxClosest = ii;
+					closestVal = t;
 				}
 			}
-
-			if(closestVal > t) // agarro el indice 
-			{
-				idxClosest = ii;
-				closestVal = t;
-			}
-
-
 		}
 		break;
 		case PLANE:

@@ -14,7 +14,7 @@ int main() {
 		}, 
 		{
 			//1 simple texture shader
-			std::make_tuple("raycast.vert", "raycast.frag"),
+			std::make_tuple("ray.vert", "ray.frag"),
 		});
 
 	app.LoopMain();
