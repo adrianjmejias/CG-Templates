@@ -63,18 +63,19 @@ struct VolumeRush
 		volume = volId;
 
 		{
+			const float sz = 1.f;
 			float quadVertices[] = {
 				// positions        	// texture Coords
-				-1.0f,1.f,0.0f,
+				-sz,sz,0.0f,
 				0.0f,
 				1.0f,
-				-1.0f,-1.0f,0.0f,
+				-sz,-sz,0.0f,
 				0.0f,
 				0.0f,
-				1.0f, 1.f,0.0f,
+				sz, sz,0.0f,
 				1.0f,
 				1.0f,
-				1.0f,-1.0f,	0.0f,
+				sz,-sz,	0.0f,
 				1.0f,
 				0.0f,
 			};

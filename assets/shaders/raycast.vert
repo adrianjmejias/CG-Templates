@@ -6,14 +6,19 @@ layout (location = 1) in vec2 uv;
 uniform mat4 VP, inverseVP;
 
 out vec4 windowPos;
-out vec4 worldPosSheared;
+out vec3 worldPos;
 
 
 
 void main()
 {
 	windowPos = vec4(pos, 1);
-	worldPosSheared = inverseVP * windowPos;
+	vec4 worldPosSheared = inverseVP * windowPos;
+	worldPos = worldPosSheared.xyz / worldPosSheared.w;
+
+	
+//	vec4 test = VP * (vec4(pos,1));
+
 
 	gl_Position = windowPos;
 }

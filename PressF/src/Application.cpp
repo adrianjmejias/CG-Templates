@@ -270,7 +270,7 @@ void Application::LoopRender()
 	float ar = win_width / static_cast<float>(win_heigth);
 	
 	const Mat4 &view = camera->GetViewMatrix();
-	const Mat4 &projection = glm::perspective(glm::radians(camera->Zoom), (float)win_width / (float)win_heigth, 0.1f, 400.0f);
+	const Mat4 &projection = glm::perspective(glm::radians(camera->Zoom), (float)win_width / (float)win_heigth, 0.1f, 100.0f);
 	
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glClearColor(bgColor.x, bgColor.y, bgColor.z, bgColor.a);
@@ -286,12 +286,12 @@ void Application::LoopRender()
 
 		GLCALL(glBindVertexArray(vol.quadVAO));
 
-		auto VP = view * projection;
+		auto VP = projection * view;
 		
 		rayCastShader->Use();
 		rayCastShader->SetUniform("VP", VP);
-		rayCastShader->SetUniform("camPos", camera->Position);
 		rayCastShader->SetUniform("inverseVP", glm::inverse(VP));
+		rayCastShader->SetUniform("camPos", camera->Position);
 
 		//lastPass->SetUniform("deltaTime", vol.timePassed);
 

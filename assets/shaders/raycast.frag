@@ -1,27 +1,37 @@
 ﻿#version 330 core
 #define P2(x) (x*x)
-
+#define sdot(x,y) max(dot(x,y),0.f)
 #define PLANE 0
 #define SPHERE 1
 
 #define SCENE_SZ 2
+#define LIGHTS_SZ 1
 
-#define C_CENTER(x) x.geo[0]
-#define C_RADIUS(x) x.geo[1][0]
+#define S_CENTER(x) x.geo[0]
+#define S_RADIUS(x) x.geo[1][0]
 
 #define P_CENTER(x) x.geo[0]
 #define P_NORMAL(x) x.geo[1]
 
 struct Material{
-	float IoReflaction;
+	float IoRefraction;
 	float IoReflection;
-	vec4 color;
+	vec3 colorDiff;
+	vec3 colorSpec;
+	float shininess;
+};
+struct Light 
+{
+	vec3 position;
+	vec3 colorDiff;
+	vec3 colorSpec;
+	vec3 att;
 };
 
 
 struct Object
 {
-	vec3 geo[2];
+	vec3 geo[3];
 	Material mat;
 	int type;
 };
@@ -29,16 +39,16 @@ struct Object
 struct Hit{
 	bool hit;
 	Material mat;
+	vec3 hitPoint;
+	vec3 normal;
+	float t;
 };
 
 struct Ray{
 	vec3 origin;
 	vec3 dir; 
-	vec3 value; //vlaue of the last point of the ray
 	int TTL; // max hits it supports
 //	vec4 color;
-	bool hit;
-	float reach; // max distance the ray can travel
 };
 
 
@@ -49,102 +59,247 @@ uniform vec3 camPos;
 uniform float rayStep = 0.01f;
 uniform float offset  = 0.01f;
 
-in vec4 worldPosSheared;
-in vec4 worldPos;
+in vec3 worldPos;
 
 out vec4 fragColor;
 
 Object scene[SCENE_SZ];
+Light lights[LIGHTS_SZ];
+vec3 ambientColor;
+uniform float airIoR = 1;
 
+vec3 getNormal(Object obj, vec3 hitPoint)
+{
+	switch(obj.type)
+	{
+		case SPHERE:
+			return normalize( hitPoint - S_CENTER(obj));
+		default:
+		return vec3(1,0,0);
+
+	}
+}
+
+
+Hit sphereIntersect(Ray ray, Object sphere) {
+	vec3 c = S_CENTER(sphere);
+	float r = S_RADIUS(sphere);
+	
+	vec3 o = ray.origin;
+	vec3 d = ray.dir;
+
+	float fB, fC;
+	vec3 oc = o - c;
+
+	fB = 2.f * dot(d, oc);
+	fC =  dot(oc, oc) - P2(r);
+
+	float disc = P2(fB) - 4*fC;
+	
+	if(disc < 0.0f) return Hit(false, sphere.mat, vec3(0), vec3(0), 0);
+	float discSrqt = sqrt(disc);
+
+	// hay colision
+	float t = (-fB - discSrqt)/2;
+	if(t < 0) t = (-fB + discSrqt)/2;
+	if(t < 0) return Hit(false, sphere.mat, vec3(0), vec3(0), 0);
+
+	vec3 hitPoint =  o + d * t;
+	
+	return Hit(true, sphere.mat, hitPoint, getNormal(sphere, hitPoint), t); 
+}
 
 Hit intersection(Ray ray)
 {
+//	Hit hit1 = sphereIntersect(ray, scene[0]);
+//	Hit hit2 = sphereIntersect(ray, scene[1]);
+//	return !hit1.hit || hit2.hit && hit2.t < hit1.t ? hit2 : hit1;
+
+
 	Hit res;
+	res.hit = false;
 	vec3 o = ray.origin;
 	vec3 d = ray.dir;
+	int idxClosest = -1;
+	float closestVal = 99999999;
+
 	for(int ii = 0; ii < SCENE_SZ; ii++)
 	{
-		if(scene[ii].type == SPHERE)
+
+	switch(scene[ii].type ){
+		case SPHERE:
+		
+		vec3 c = S_CENTER(scene[ii]);
+		float r = S_RADIUS(scene[ii]);
+
+		float fB, fC;
+		vec3 oc = o - c;
+
+		fB = 2.f * dot(d, oc);
+		fC =  dot(oc, oc) - P2(r);
+
+		float disc = P2(fB) - 4*fC;
+
+		if(disc >= 0)
 		{
+			disc = sqrt(disc);
+			// hay colision
+			float t = (-fB - disc)/2;
+			float t1 = (-fB + disc)/2;
 
-//		Asumamos |Rd| = 1 (normalizado) A = 1, simplificando así la ecuación de 2do. grado.
-//t0, t1 = (- B +/- (B^2 - 4*C) 1/2 ) / 2 donde t0 es para el caso (-) y t1 para el (+)
-//Si el discriminante es &lt; 0.0 entonces no hay ninguna raíz real y no hay intersección. Si hay raíz real
-//(Disc.&gt; = 0,0) entonces la raíz positiva menor es el punto de intersección más próximo. Así que sólo
-//se puede calcular t0 y si es positiva, entonces ya está, de lo contrario calcular t1. El punto de
-//intersección es:
-//Ri = [xi, yi, zi] = [x0 + xd * ti , y0 + yd * ti, z0 + zd * ti]
+			if(t1 > 0) // tomo el de menor distancia
+			{
+				if( t1 < t)
+				{
+					t = t1;
+				}
+			}
+
+			if(closestVal > t) // agarro el indice 
+			{
+				idxClosest = ii;
+				closestVal = t;
+			}
 
 
-		vec3 c = C_CENTER(scene[ii]);
-		float r = C_RADIUS(scene[ii]);
-
-		float tin, tout;
-		int idxFarthest;
-
-		float B, C;
-		//	B = 2 * (Xd * (X0 - Xc) + Yd * (Y0 - Yc) + Zd * (Z0 - Zc))
-			B= 2* (d.x * (o.x - c.x) + (d.y * (o.y - c.y)) + (d.z * (o.z - c.z)));
-		//	C = (X0 - Xc)^2 + (Y0 - Yc)^2 + (Z0 - Zc)^2 - Sr 2
-			C = P2(o.x - c.x) + P2(o.y - c.y) + P2(o.z - c.z) - P2(r);
 		}
-		else if(scene[ii].type == PLANE)
-		{
+		break;
+		case PLANE:
+		
 
+			
 
-
-
+//				if(closestVal < t) // agarro el indice 
+//				{
+//					idxClosest = ii;
+//					closestVal = t;
+//				}
+		break;
+		default:
+		break;
 		}
 	}
+
+
+	
+	
+	if((res.hit = idxClosest >= 0 && h.t > 0))
+	{
+		res.mat = scene[idxClosest].mat;
+		res.hitPoint = o + d * closestVal;
+		res.normal = getNormal(scene[idxClosest], res.hitPoint);
+	}
+
 
 	return res;
 }
 
 
+void SetupScene();
+float calcAttenuation(vec3 att, float d);
 
 void main()
 {
 
-	scene[0].type = SPHERE;
-	C_CENTER(scene[0]) = vec3(0,0,10);
-	C_RADIUS(scene[0]) = 2;
-	scene[0].mat.color = vec4(1,0,0,1);
+
+	SetupScene();
+
+	vec3 rayDir = normalize(worldPos - camPos);
+	vec3 acum = vec3(0);
+	vec3 mask = vec3(1);
+
+	Ray ray = Ray(
+		camPos,
+		rayDir,
+		1
+	);
 
 
-	scene[1].type = PLANE;
-	P_CENTER(scene[1]) = vec3(0,-2,10);
-	P_NORMAL(scene[1]) = vec3(0,1,0);
-	scene[1].mat.color = vec4(0,0,1,1);
-
-
-
-	vec4 worldPos = worldPosSheared/worldPosSheared.w;
-	vec3 rawRay = worldPos.xyz - camPos;
-//
-//	// init scene
-//
-//
-//	Ray ray = Ray(
-//		normalize(rawRay),
-//		worldPos,
-//		1,
-//		false,
-//		length(rawRay)
-//	);
-//	
-	
-//	for(float distTraveled; ray.TTL && distTraveled < ray.reach;)
+//	for(;;)
 //	{
-//
-//
-//
+
+		Hit h = intersection(ray);
+		
+		if(h.hit)
+		{
+			vec3 lightDir = lights[0].position - h.hitPoint;
+			float distToLight = length(lightDir);
+
+			lightDir = normalize(lightDir);
+			vec3 viewDir = normalize(camPos - h.hitPoint);
+			vec3 halfwayDir = normalize(lightDir + viewDir);
+
+			vec3 reflectDir = reflect(ray.dir, h.normal);
+			vec3 refractDir = refract(ray.dir, h.normal, airIoR/h.mat.IoRefraction);
+
+			float spec=pow(max(dot(h.normal,halfwayDir),0.f), h.mat.shininess);
+			float attenuation = calcAttenuation(lights[0].att, distToLight);
+
+			vec3 ambient  = ambientColor.rgb * 0;
+			vec3 diffuse  = lightDir * attenuation;// * h.mat.colorDiff.rgb ;
+			vec3 specular = lights[0].colorSpec * h.mat.colorSpec *attenuation *0;
+			
+			if(h.t < 0) acum = vec3(0.0, 1.0, 0.0);
+			else
+			acum += h.mat.colorDiff;//ambient + diffuse + specular;
+		}
+		else
+		{
+			acum = vec3(0);
+		}
+
+
+
 //	}
 
-fragColor = vec4(0,length(rawRay),0,1);
-fragColor.a = 1;
+	fragColor.xyz = acum;
+	fragColor.a = 1;
+
+//	fragColor = vec4(h.normal, 1);
+
+
+//	fragColor = vec4(0,0,1,1);
+//	fragColor = h.mat.color;
 
 //fragColor=vec4(1,0,0,1);
 
 }
 
 
+void SetupScene(){
+
+	scene[0].type = SPHERE;
+	S_CENTER(scene[0]) = vec3(0,0,-2);
+	S_RADIUS(scene[0]) = 1;
+	scene[0].mat.colorDiff = vec3(1,0,0);
+	scene[0].mat.colorSpec = vec3(0,1,0);
+	scene[0].mat.IoRefraction = 1.2;
+	scene[0].mat.shininess = 1;
+
+
+	scene[1].type = SPHERE;
+	S_CENTER(scene[1]) = vec3(4,0,-2);
+	S_RADIUS(scene[1]) = 1;
+	scene[1].mat.colorDiff = vec3(0,0,1);
+	scene[1].mat.colorSpec = vec3(0,1,0);
+	scene[1].mat.IoRefraction = 1.2;
+	scene[1].mat.shininess = 1;
+
+	lights[0].position = vec3(0,5,0);
+	lights[0].att = vec3(1, 0.f, 0.0f);
+	lights[0].colorSpec = vec3(1,1,1);
+	lights[0].colorDiff = vec3(1,1,1);
+	
+	ambientColor = vec3(0.3, 0.3, 0.3);
+}
+
+// d for distance
+// att are point light attenuation constants
+float calcAttenuation(vec3 att, float d)
+{
+	return 1.f/(
+	(att[2] * P2(d)) + // quadratic
+	(att[1] * d) + //linear
+	(att[0]) //constant
+	);
+}
