@@ -181,7 +181,7 @@ Hit intersection(Ray ray)
 
 	
 	
-	if((res.hit = idxClosest >= 0 ))
+	if((res.hit = idxClosest >= 0))
 	{
 		res.mat = scene[idxClosest].mat;
 		res.hitPoint = o + d * closestVal;
@@ -195,6 +195,30 @@ Hit intersection(Ray ray)
 
 void SetupScene();
 float calcAttenuation(vec3 att, float d);
+vec3 blinnPhong(Material mat, vec3 fragPos, vec3 normal)
+{
+	vec3 color;
+	vec3 lightDir = lights[0].position - fragPos;
+	float distToLight = length(lightDir);
+
+	lightDir = normalize(lightDir);
+	vec3 viewDir = normalize(camPos - fragPos);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+
+//	vec3 reflectDir = reflect(ray.dir, normal);
+//	vec3 refractDir = refract(ray.dir, normal, airIoR/mat.IoRefraction);
+	
+	float diff = sdot(viewDir,lightDir);
+	float spec = pow(sdot(normal,halfwayDir), mat.shininess);
+	float attenuation = calcAttenuation(lights[0].att, distToLight);
+
+	vec3 ambient  = ambientColor.rgb  ;
+	vec3 diffuse  = lights[0].colorDiff * mat.colorDiff * diff * attenuation;// * h.mat.colorDiff.rgb ;
+	vec3 specular = lights[0].colorSpec * mat.colorSpec * spec * attenuation;
+
+	return ambient + diffuse + specular;
+}
+
 
 void main()
 {
@@ -209,7 +233,7 @@ void main()
 	Ray ray = Ray(
 		camPos,
 		rayDir,
-		1
+		4
 	);
 
 
@@ -220,26 +244,19 @@ void main()
 		
 		if(h.hit)
 		{
-			vec3 lightDir = lights[0].position - h.hitPoint;
-			float distToLight = length(lightDir);
+			acum += blinnPhong(h.mat, h.hitPoint, h.normal);
 
-			lightDir = normalize(lightDir);
-			vec3 viewDir = normalize(camPos - h.hitPoint);
-			vec3 halfwayDir = normalize(lightDir + viewDir);
+			vec3 shadowDir = lights[0].position - h.hitPoint;
+			float shadowDistance = length(shadowDir);
+			shadowDir = normalize(shadowDir);
 
-			vec3 reflectDir = reflect(ray.dir, h.normal);
-			vec3 refractDir = refract(ray.dir, h.normal, airIoR/h.mat.IoRefraction);
+			Ray shadowRay = Ray(h.hitPoint + shadowDir*offset, shadowDir, 1);
+			Hit shadowHit = intersection(shadowRay);
 
-			float spec=pow(max(dot(h.normal,halfwayDir),0.f), h.mat.shininess);
-			float attenuation = calcAttenuation(lights[0].att, distToLight);
-
-			vec3 ambient  = ambientColor.rgb * 0;
-			vec3 diffuse  = lightDir * attenuation;// * h.mat.colorDiff.rgb ;
-			vec3 specular = lights[0].colorSpec * h.mat.colorSpec *attenuation *0;
-			
-			if(h.t < 0) acum = vec3(0.0, 1.0, 0.0);
-			else
-			acum += h.mat.colorDiff;//ambient + diffuse + specular;
+			if(shadowHit.hit && shadowHit.t < shadowDistance)
+			{
+				acum*= vec3(0.1f);
+			}
 		}
 		else
 		{
@@ -283,12 +300,12 @@ void SetupScene(){
 	scene[1].mat.IoRefraction = 1.2;
 	scene[1].mat.shininess = 1;
 
-	lights[0].position = vec3(0,5,0);
-	lights[0].att = vec3(1, 0.f, 0.0f);
+	lights[0].position = vec3(0,0,0);
+	lights[0].att = vec3(1, 0.1f, 0.02f);
 	lights[0].colorSpec = vec3(1,1,1);
 	lights[0].colorDiff = vec3(1,1,1);
 	
-	ambientColor = vec3(0.3, 0.3, 0.3);
+	ambientColor = vec3(0.1);
 }
 
 // d for distance
