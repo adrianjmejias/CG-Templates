@@ -6,7 +6,7 @@
 #define PLANE 0
 #define SPHERE 1
 
-#define SCENE_SZ 2
+#define SCENE_SZ 8
 #define LIGHTS_SZ 1
 
 #define S_CENTER(x) x.geo[0]
@@ -50,7 +50,7 @@ struct Hit{
 struct Ray{
 	vec3 origin;
 	vec3 dir; 
-	int TTL; // max hits it supports
+	int ttl; // max hits it supports
 };
 
 
@@ -76,48 +76,16 @@ vec3 getNormal(Object obj, vec3 hitPoint)
 	{
 		case SPHERE:
 			return normalize(hitPoint - S_CENTER(obj));
+		case PLANE:
+		return P_NORMAL(obj);
 		default:
 		return vec3(1,0,0);
 
 	}
 }
 
-
-Hit sphereIntersect(Ray ray, Object sphere) {
-	vec3 c = S_CENTER(sphere);
-	float r = S_RADIUS(sphere);
-	
-	vec3 o = ray.origin;
-	vec3 d = ray.dir;
-
-	float fB, fC;
-	vec3 oc = o - c;
-
-	fB = 2.f * dot(d, oc);
-	fC =  dot(oc, oc) - P2(r);
-
-	float disc = P2(fB) - 4*fC;
-	
-	if(disc < 0.0f) return Hit(false, sphere.mat, vec3(0), vec3(0), 0);
-	float discSrqt = sqrt(disc);
-
-	// hay colision
-	float t = (-fB - discSrqt)/2;
-	if(t < 0) t = (-fB + discSrqt)/2;
-	if(t < 0) return Hit(false, sphere.mat, vec3(0), vec3(0), 0);
-
-	vec3 hitPoint =  o + d * t;
-	
-	return Hit(true, sphere.mat, hitPoint, getNormal(sphere, hitPoint), t); 
-}
-
 Hit intersection(Ray ray)
 {
-//	Hit hit1 = sphereIntersect(ray, scene[0]);
-//	Hit hit2 = sphereIntersect(ray, scene[1]);
-//	return !hit1.hit || hit2.hit && hit2.t < hit1.t ? hit2 : hit1;
-
-
 	Hit res;
 
 	vec3 o = ray.origin;
@@ -163,7 +131,23 @@ Hit intersection(Ray ray)
 		}
 		break;
 		case PLANE:
-		
+
+			vec3 n = P_NORMAL(scene[ii]);
+			vec3 p = P_CENTER(scene[ii]);
+
+		  float denom = dot(n, d); 
+			if (denom > 1e-6) { 
+				vec3 p0l0 = p - o; 
+				float t = dot(p0l0, n) / denom; 
+				if (t >= 0)
+				{
+					if(closestVal > t) // agarro el indice 
+					{
+						idxClosest = ii;
+						closestVal = t;
+					}
+				} 
+			} 
 
 			
 
@@ -233,19 +217,20 @@ void main()
 	Ray ray = Ray(
 		camPos,
 		rayDir,
-		4
+		2
 	);
 
 
-//	for(;;)
-//	{
+	for(;ray.ttl >= 0; ray.ttl--)
+	{
 
 		Hit h = intersection(ray);
 		
 		if(h.hit)
 		{
-			acum += blinnPhong(h.mat, h.hitPoint, h.normal);
-
+			vec3 colorMaterial = blinnPhong(h.mat, h.hitPoint, h.normal);
+			mask*=colorMaterial;
+			acum+= mask ;
 			vec3 shadowDir = lights[0].position - h.hitPoint;
 			float shadowDistance = length(shadowDir);
 			shadowDir = normalize(shadowDir);
@@ -256,54 +241,108 @@ void main()
 			if(shadowHit.hit && shadowHit.t < shadowDistance)
 			{
 				acum*= vec3(0.1f);
+				ray.ttl = 0;
 			}
+			else
+			{
+				ray.dir = reflect(ray.dir, h.normal);
+				ray.origin = h.hitPoint  + ray.dir * offset;
+			}
+
 		}
 		else
 		{
-			acum = vec3(0);
+			ray.ttl = 0;
+//			acum = vec3(0);
 		}
-
-
-
-//	}
+	}
 
 	fragColor.xyz = acum;
 	fragColor.a = 1;
-
-//	fragColor = vec4(h.normal, 1);
-
-
-//	fragColor = vec4(0,0,1,1);
-//	fragColor = h.mat.color;
-
-//fragColor=vec4(1,0,0,1);
-
 }
 
 
 void SetupScene(){
+	int config = 0;
+	scene[config].type = SPHERE;
+	S_CENTER(scene[config]) = vec3(0,0,-2);
+	S_RADIUS(scene[config]) = 1;
+	scene[config].mat.colorDiff = vec3(1,0,0);
+	scene[config].mat.colorSpec = vec3(0,0.3,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
 
-	scene[0].type = SPHERE;
-	S_CENTER(scene[0]) = vec3(0,0,-2);
-	S_RADIUS(scene[0]) = 1;
-	scene[0].mat.colorDiff = vec3(1,0,0);
-	scene[0].mat.colorSpec = vec3(0,1,0);
-	scene[0].mat.IoRefraction = 1.2;
-	scene[0].mat.shininess = 1;
+	config = 1;
+	scene[config].type = SPHERE;
+	S_CENTER(scene[config]) = vec3(4,0,-2);
+	S_RADIUS(scene[config]) = 1;
+	scene[config].mat.colorDiff = vec3(0,0,1);
+	scene[config].mat.colorSpec = vec3(0,1,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 10;
 
 
-	scene[1].type = SPHERE;
-	S_CENTER(scene[1]) = vec3(4,0,-2);
-	S_RADIUS(scene[1]) = 1;
-	scene[1].mat.colorDiff = vec3(0,0,1);
-	scene[1].mat.colorSpec = vec3(0,1,0);
-	scene[1].mat.IoRefraction = 1.2;
-	scene[1].mat.shininess = 1;
+	config = 2;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(0,0,5);
+	P_NORMAL(scene[config]) = vec3(0,0,1);
+	scene[config].mat.colorDiff = vec3(1,0,0);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
 
-	lights[0].position = vec3(0,0,0);
-	lights[0].att = vec3(1, 0.1f, 0.02f);
-	lights[0].colorSpec = vec3(1,1,1);
-	lights[0].colorDiff = vec3(1,1,1);
+
+	config = 3;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(0,0,-8);
+	P_NORMAL(scene[config]) = vec3(0,0,-1);
+	scene[config].mat.colorDiff = vec3(0,1,0);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
+
+	config = 4;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(5,0,0);
+	P_NORMAL(scene[config]) = vec3(1,0,0);
+	scene[config].mat.colorDiff = vec3(0,1,1);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
+
+	config = 5;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(-5,0,0);
+	P_NORMAL(scene[config]) = vec3(-1,0,0);
+	scene[config].mat.colorDiff = vec3(1,1,0);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
+
+	config = 6;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(0,5,0);
+	P_NORMAL(scene[config]) = vec3(0,1,0);
+	scene[config].mat.colorDiff = vec3(0,0,1);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
+
+	config = 7;
+	scene[config].type = PLANE;
+	P_CENTER(scene[config]) = vec3(0,-5,0);
+	P_NORMAL(scene[config]) = vec3(0,-1,0);
+	scene[config].mat.colorDiff = vec3(1,0,1);
+	scene[config].mat.colorSpec = vec3(0,0,0);
+	scene[config].mat.IoRefraction = 1.2;
+	scene[config].mat.shininess = 1;
+
+
+	config = 0;
+	lights[config].position = vec3(0,2,0);
+	lights[config].att = vec3(0, 0.01f, 0.002f);
+	lights[config].colorSpec = vec3(1,1,1);
+	lights[config].colorDiff = vec3(1,1,1);
 	
 	ambientColor = vec3(0.1);
 }
