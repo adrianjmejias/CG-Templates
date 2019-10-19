@@ -93,7 +93,7 @@ void Application::SetupScene()
 
 void Application::SetupShaders(const std::vector<std::tuple<std::string, std::string>>& shaderPaths)
 {
-	const std::string baseShaderFolder = "assets/shaders/";
+	const std::string baseShaderFolder = "";//"assets/shaders/";
 	for (int ii = 0; ii < shaderPaths.size(); ii++)
 	{
 		auto tupleName = shaderPaths[ii];
