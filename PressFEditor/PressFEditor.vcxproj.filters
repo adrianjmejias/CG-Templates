@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Components">
+      <UniqueIdentifier>{6B7DD516-5735-1764-C03C-F0BFAC13B254}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PressFEditor\Components\Components.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PressFEditor\Components\Rotator.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PressFEditor\main.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PressFEditor\Components\Rotator.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="PressFEditor\main.cpp" />
+  </ItemGroup>
+</Project>

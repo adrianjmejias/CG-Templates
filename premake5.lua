@@ -2,7 +2,7 @@
 -- https://git-scm.com/book/en/v2/Git-Tools-Submodules
 workspace "PressF"
    architecture "x64"
-   startproject "PressF"
+   startproject "PressFEditor"
    configurations { "Debug", "Release", "Dist"}
 
 
@@ -11,8 +11,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = {}
 IncludeDir["glm"] = "dependencies/glm"
 IncludeDir["spdlog"] = "dependencies/spdlog/include"
-IncludeDir["Glad"] = "dependencies/Glad/include"
-IncludeDir["microui"] = "dependencies/microui/src"
+IncludeDir["glad"] = "dependencies/glad/include"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
 IncludeDir["obj"] = "dependencies/OBJ-Loader"
@@ -20,58 +19,47 @@ IncludeDir["ImGui"] = "dependencies/imgui/"
 
 
 group "Dependencies"
-	include "dependencies/Glad"
-	include "dependencies/nuklear"
+	include "dependencies/glad"
 	include "dependencies/imgui"
 group ""
 
 project "PressF"
-   kind "ConsoleApp"
+   kind "StaticLib"
    language "C++"
-   cppdialect "C++17" --StaticLib
-
+   cppdialect "C++17" 
+   location("%{prj.name}")
    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
    
    files { 
-      "%{prj.name}/src/**.h",
-      "%{prj.name}/src/**.cpp",
-      "dependencies/glm/glm/**.hpp",
-      "dependencies/glm/glm/**.inl",
-      -- "dependencies/nuklear/src/**.h",
-      -- "dependencies/nuklear/src/**.c"
+      "%{prj.name}/**.h",
+      "%{prj.name}/**.cpp",
    }
 
    includedirs {
       -- internal 
-      "%{prj.name}/src",
 
       -- dependencies
 		"%{IncludeDir.spdlog}",
-		"%{IncludeDir.nuklear}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.Glad}",
+		"%{IncludeDir.glad}",
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.obj}",
 		"%{IncludeDir.stb}",
-		"%{IncludeDir.microui}",
 		"%{IncludeDir.ImGui}"
    }
 
    libdirs
    {
-      "SDL2" ,"dependencies/SDL/lib/**"
+      "SDL2" ,
+      "dependencies/SDL/lib/**"
    }
 
    links {
-      "Glad",
+      "glad",
       "SDL2",
       "ImGui",
-      -- "nuklear"
    }
-
-   -- linkoptions { "``" }
-   -- prebuildcommands { "MyTool --dosomething" }
 
    filter "configurations:Debug"
       defines { "_CRT_SECURE_NO_WARNINGS", "DEBUG"}
@@ -80,3 +68,55 @@ project "PressF"
    filter "configurations:Release"
       defines { "NDEBUG" }
       optimize "On"
+
+      
+project "PressFEditor"
+kind "ConsoleApp"
+language "C++"
+cppdialect "C++17" --StaticLib
+location("%{prj.name}")
+targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+files { 
+   "%{prj.name}/**.h",
+   "%{prj.name}/**.cpp",
+}
+
+includedirs {
+   "%{IncludeDir.glm}",
+   "%{IncludeDir.glad}",
+   "%{IncludeDir.SDL}",
+   "%{IncludeDir.spdlog}",
+   -- "%{IncludeDir.stb}",
+   "%{IncludeDir.ImGui}",
+   "PressF"
+
+}
+
+libdirs
+{
+   "SDL2" ,
+   "dependencies/SDL/lib/**",
+   "PressF"
+}
+
+links {
+   "glad",
+   "SDL2",
+   "ImGui",
+   "PressF"
+}
+
+
+postbuildcommands {
+   -- Copy the SDL2 dll to the Bin folder.
+   '{COPY} "%{path.getabsolute("dependencies/SDL/lib/" .. cfg.architecture:gsub("x86_64", "x64") .. "/SDL2.dll")}" "%{cfg.targetdir}"'
+}
+filter "configurations:Debug"
+   defines { "_CRT_SECURE_NO_WARNINGS", "DEBUG"}
+   symbols "On"
+
+filter "configurations:Release"
+   defines { "NDEBUG" }
+   optimize "On"
