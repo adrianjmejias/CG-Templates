@@ -51,13 +51,18 @@ int main() {
 	//	}
 	//);
 	PF::ModelsManager& mm = engine.modelsManager;
-	PF::Model& model = mm.LoadAsset("hola");
+	PF::Model& model = mm.LoadAsset("assets/models/cuboPower/simpleQuad.obj");
 	
 	PF::Scene& scene = engine.AddScene(new PF::Scene("Example scene"));
 
 	PF::GameObject& ts1 = scene.AddGameObject(new PF::GameObject("test subject 1"));
-	scene.AddGameObject(new PF::GameObject("test subject 2"));
+	PF::GameObject& ts2 = scene.AddGameObject(new PF::GameObject("test subject 2"));
+
 	ts1.AddComponent<Rotator>();
+
+	ts2.AddComponent<ParticleSystem>()->Start();
+
+
 
 	PF_INFO("number of gameobjects %d", scene.rootObjects.size());
 	std::cout << "model loaded" << model.EBO;

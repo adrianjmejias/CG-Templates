@@ -15,17 +15,6 @@
 namespace PF
 {
 
-
-
-	class InputSystem {
-	public:
-		ImGuiIO& io;
-
-		InputSystem() : io(ImGui::GetIO())
-		{
-
-		}
-	};
 	class SceneManager
 	{
 	protected:
@@ -72,10 +61,6 @@ namespace PF
 		bool show_demo_window = true;
 		bool show_another_window = true;	
 
-		Engine()
-		{
-		}
-
         void InitContext();
 		void CleanContext();
 
@@ -83,7 +68,6 @@ namespace PF
 		void LoopEvents();
 		void LoopUpdate()
 		{
-
 			auto& io = ImGui::GetIO();
 			for (auto& s : scenesLoaded)
 			{
