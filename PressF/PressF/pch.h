@@ -1,6 +1,6 @@
 
 
-#include <glad/glad.h>
+#include "Rendering/OpenGL.h"
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <imgui.h>
@@ -15,5 +15,3 @@
 #include <tuple>
 #include "types.h"
 #include "Logger.h"
-
-template <typename TT> using uptr = std::unique_ptr<TT>;

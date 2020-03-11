@@ -2,130 +2,19 @@
 
 #include "pch.h"
 //#include "Physics.h"
-#include "OBJ_Loader.h"
+#
 //#include "Texture.h"
-
+#include "Rendering/Mesh.h"
 
 namespace PF
 {
 
 //class MeshRenderer;
-void Assign(Vec3& a, const objl::Vector3& b);
-void Assign(Vec2& a, const objl::Vector2& b);
-
-class Vertex {
-public:
-	Vec3 pos;
-	Vec3 normal;
-	Vec2 uv;
-	Vec3 tan;
-	Vertex(const objl::Vertex& v);
-};
-
-
-
-class Material 
-{
-public:
-	std::string name;
-	Vec3 kA{0,0,0};
-	Vec3 kD{0.8f,0.8f,0.8f };
-	Vec3 kS{ 0.8f,0.8f,0.8f };
-	float Ns;
-	float Ni;
-	float d;
-	float IOR = 1.2f;
-	int illum = 0;
-	std::string map_Ka;
-	std::string map_Kd;
-	std::string map_Ks;
-	std::string map_Ns;
-	std::string map_d;
-	std::string map_bump;
-	//Texture* smap_Ka = nullptr;
-	//Texture* smap_Kd = nullptr;
-	//Texture* smap_Ks = nullptr;
-	//Texture* smap_Ns = nullptr;
-	//Texture* smap_d = nullptr;
-	//Texture* smap_bump = nullptr;
-	Material();
-	Material(const objl::Material& m);
-	Material& operator = (const objl::Material &m)
-	{
-		Assign(kA, m.Ka);
-		Assign(kD, m.Kd);
-		Assign(kS, m.Ks);
-		Ns = m.Ns;
-		Ni = m.Ni;
-		d = m.d;
-		illum = m.illum;
-	/*	map_Ka = m.map_Ka;
-		map_Kd = m.map_Kd;
-		map_Ks = m.map_Ks;
-		map_Ns = m.map_Ns;
-		map_d = m.map_d;
-		map_bump = m.map_bump;*/
-		name = m.name;
-		return *this;
-	}
-};
-
-class Mesh  
-	//: public std::vector<MeshRenderer*>
-{
-public:
-	std::string name;
-	unsigned int VAO = 0, EBO= 0, VBO=0;
-	GLsizei offset, nElem;
-	Material mat;
-};
-
-class Model
-{
-public:
-	std::vector<Mesh> meshes;
-	unsigned int VAO, EBO, VBO;
-	Model();
-	~Model();
-};
 
 
 
 
 
-//Model * SetupModel(std::string objPath)
-//{
-//
-//	objl::Loader objlModel;
-//
-//	if (!objlModel.LoadFile(objPath))
-//	{
-//		//PF_ERROR("Failed to load model {0}", objPath);
-//		__debugbreak();
-//	}
-//	//Model *model = GLCreate(objlModel);
-//
-//	//cargar texturas
-//	const std::string basePath = objPath.substr(0, objPath.find_last_of("/"));
-//	/*for (objl::Material& mat : objlModel.LoadedMaterials)
-//	{
-//		ADD_MAP(map_bump);
-//		ADD_MAP(map_Ka);
-//		ADD_MAP(map_Kd);
-//		ADD_MAP(map_Ks);
-//		ADD_MAP(map_d);
-//	}
-//
-//	for (Mesh& mesh : *model)
-//	{
-//		ADD_MAP_TO_MATERIAL(map_bump);
-//		ADD_MAP_TO_MATERIAL(map_Ka);
-//		ADD_MAP_TO_MATERIAL(map_Kd);
-//		ADD_MAP_TO_MATERIAL(map_Ks);
-//		ADD_MAP_TO_MATERIAL(map_d);
-//	}*/
-//	return model;
-//}
 
 
 //inline Model * Application::GLCreate(objl::Loader & fullModel) {

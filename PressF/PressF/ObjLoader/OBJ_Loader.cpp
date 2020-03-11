@@ -1,289 +1,81 @@
-// OBJ_Loader.cpp
-//
-
 #include "OBJ_Loader.h"
-#define LZZ_INLINE inline
+
 namespace objl
 {
+	// Default Constructor
+
 	Vector2::Vector2()
 	{
 		X = 0.0f;
 		Y = 0.0f;
 	}
-}
-namespace objl
-{
+
+	// Variable Set Constructor
+
 	Vector2::Vector2(float X_, float Y_)
 	{
 		X = X_;
 		Y = Y_;
 	}
-}
-namespace objl
-{
-	bool Vector2::operator == (Vector2 const & other) const
+	bool Vector2::operator==(const Vector2& other) const
 	{
 		return (this->X == other.X && this->Y == other.Y);
 	}
-}
-namespace objl
-{
-	bool Vector2::operator != (Vector2 const & other) const
+	// Bool Not Equals Operator Overload
+	bool Vector2::operator!=(const Vector2& other) const
 	{
 		return !(this->X == other.X && this->Y == other.Y);
 	}
-}
-namespace objl
-{
-	Vector2 Vector2::operator + (Vector2 const & right) const
+	// Addition Operator Overload
+	Vector2 Vector2::operator+(const Vector2& right) const
 	{
 		return Vector2(this->X + right.X, this->Y + right.Y);
 	}
-}
-namespace objl
-{
-	Vector2 Vector2::operator - (Vector2 const & right) const
+	// Subtraction Operator Overload
+	Vector2 Vector2::operator-(const Vector2& right) const
 	{
 		return Vector2(this->X - right.X, this->Y - right.Y);
 	}
-}
-namespace objl
-{
-	Vector2 Vector2::operator * (float const & other) const
+	// Float Multiplication Operator Overload
+	Vector2 Vector2::operator*(const float& other) const
 	{
-		return Vector2(this->X *other, this->Y * other);
+		return Vector2(this->X * other, this->Y * other);
 	}
-}
-namespace objl
-{
-	Vector3::Vector3()
-	{
-		X = 0.0f;
-		Y = 0.0f;
-		Z = 0.0f;
-	}
-}
-namespace objl
-{
-	Vector3::Vector3(float X_, float Y_, float Z_)
-	{
-		X = X_;
-		Y = Y_;
-		Z = Z_;
-	}
-}
-namespace objl
-{
-	bool Vector3::operator == (Vector3 const & other) const
-	{
-		return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
-	}
-}
-namespace objl
-{
-	bool Vector3::operator != (Vector3 const & other) const
-	{
-		return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
-	}
-}
-namespace objl
-{
-	Vector3 Vector3::operator + (Vector3 const & right) const
-	{
-		return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
-	}
-}
-namespace objl
-{
-	Vector3 Vector3::operator - (Vector3 const & right) const
-	{
-		return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
-	}
-}
-namespace objl
-{
-	Vector3 Vector3::operator * (float const & other) const
-	{
-		return Vector3(this->X * other, this->Y * other, this->Z * other);
-	}
-}
-namespace objl
-{
-	Vector3 Vector3::operator / (float const & other) const
-	{
-		return Vector3(this->X / other, this->Y / other, this->Z / other);
-	}
-}
-namespace objl
-{
-	Material::Material()
-	{
-		name;
-		Ns = 0.0f;
-		Ni = 0.0f;
-		d = 0.0f;
-		illum = 0;
-	}
-}
-namespace objl
-{
-	Mesh::Mesh()
-	{
-	}
-}
-namespace objl
-{
-	Mesh::Mesh(std::vector <Vertex> & _Vertices, std::vector <unsigned int> & _Indices)
-	{
-		Vertices = _Vertices;
-		Indices = _Indices;
-	}
-}
-namespace objl
-{
-	namespace math
-	{
-		Vector3 CrossV3(Vector3 const a, Vector3 const b)
-		{
-			return Vector3(a.Y * b.Z - a.Z * b.Y,
-				a.Z * b.X - a.X * b.Z,
-				a.X * b.Y - a.Y * b.X);
-		}
-	}
-}
-namespace objl
-{
-	namespace math
-	{
-		float MagnitudeV3(Vector3 const in)
-		{
-			return (sqrtf(powf(in.X, 2) + powf(in.Y, 2) + powf(in.Z, 2)));
-		}
-	}
-}
-namespace objl
-{
-	namespace math
-	{
-		float DotV3(Vector3 const a, Vector3 const b)
-		{
-			return (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
-		}
-	}
-}
-namespace objl
-{
-	namespace math
-	{
-		float AngleBetweenV3(Vector3 const a, Vector3 const b)
-		{
-			float angle = DotV3(a, b);
-			angle /= (MagnitudeV3(a) * MagnitudeV3(b));
-			return angle = acosf(angle);
-		}
-	}
-}
-namespace objl
-{
-	namespace math
-	{
-		Vector3 ProjV3(Vector3 const a, Vector3 const b)
-		{
-			Vector3 bn = b / MagnitudeV3(b);
-			return bn * DotV3(a, bn);
-		}
-	}
-}
-namespace objl
-{
-	namespace algorithm
-	{
-		Vector3 operator * (float const & left, Vector3 const & right)
-		{
-			return Vector3(right.X * left, right.Y * left, right.Z * left);
-		}
-	}
-}
-namespace objl
-{
-	namespace algorithm
-	{
-		bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b)
-		{
-			Vector3 cp1 = math::CrossV3(b - a, p1 - a);
-			Vector3 cp2 = math::CrossV3(b - a, p2 - a);
 
-			if (math::DotV3(cp1, cp2) >= 0)
-				return true;
-			else
-				return false;
-		}
-	}
-}
-namespace objl
-{
-	namespace algorithm
-	{
-		Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3)
-		{
-			Vector3 u = t2 - t1;
-			Vector3 v = t3 - t1;
 
-			Vector3 normal = math::CrossV3(u, v);
+	// Load Materials from .mtl file
 
-			return normal;
-		}
-	}
-}
-namespace objl
-{
-	namespace algorithm
-	{
-		bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
-		{
-			// Test to see if it is within an infinite prism that the triangle outlines.
-			bool within_tri_prisim = SameSide(point, tri1, tri2, tri3) && SameSide(point, tri2, tri1, tri3)
-				&& SameSide(point, tri3, tri1, tri2);
 
-			// If it isn't it will never be on the triangle
-			if (!within_tri_prisim)
-				return false;
+	// Generate vertices from a list of positions, 
+	//	tcoords, normals and a face line
 
-			// Calulate Triangle's Normal
-			Vector3 n = GenTriNormal(tri1, tri2, tri3);
 
-			// Project the point onto this normal
-			Vector3 proj = math::ProjV3(point, n);
+	// Load a file into the loader
+	//
+	// If file is loaded return true
+	//
+	// If the file is unable to be found
+	// or unable to be loaded return false
 
-			// If the distance from the triangle to the point is 0
-			//	it lies on the triangle
-			if (math::MagnitudeV3(proj) == 0)
-				return true;
-			else
-				return false;
-		}
-	}
-}
-namespace objl
-{
+
+	// Default Constructor
+
 	Loader::Loader()
 	{
+
 	}
-}
-namespace objl
-{
+
 	Loader::~Loader()
 	{
 		LoadedMeshes.clear();
 	}
-}
-namespace objl
-{
+
 	bool Loader::LoadFile(std::string Path)
 	{
 		// If the file is not an .obj file return false
 		if (Path.substr(Path.size() - 4, 4) != ".obj")
 			return false;
+
 
 		std::ifstream file(Path);
 
@@ -450,6 +242,7 @@ namespace objl
 
 					indnum = (unsigned int)((LoadedVertices.size()) - vVerts.size()) + iIndices[i];
 					LoadedIndices.push_back(indnum);
+
 				}
 			}
 			// Get Mesh Material Name
@@ -467,7 +260,7 @@ namespace objl
 					while (1) {
 						tempMesh.MeshName = meshname + "_" + std::to_string(i);
 
-						for (auto &m : LoadedMeshes)
+						for (auto& m : LoadedMeshes)
 							if (m.MeshName == tempMesh.MeshName)
 								continue;
 						break;
@@ -503,6 +296,7 @@ namespace objl
 						pathtomat += temp[i] + "/";
 					}
 				}
+
 
 				pathtomat += algorithm::tail(curline);
 
@@ -559,10 +353,8 @@ namespace objl
 			return true;
 		}
 	}
-}
-namespace objl
-{
-	void Loader::GenVerticesFromRawOBJ(std::vector <Vertex> & oVerts, std::vector <Vector3> const & iPositions, std::vector <Vector2> const & iTCoords, std::vector <Vector3> const & iNormals, std::string icurline)
+
+	void Loader::GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts, const std::vector<Vector3>& iPositions, const std::vector<Vector2>& iTCoords, const std::vector<Vector3>& iNormals, std::string icurline)
 	{
 		std::vector<std::string> sface, svert;
 		Vertex vVert;
@@ -651,8 +443,8 @@ namespace objl
 		}
 
 		// take care of missing normals
-		// these may not be truly acurate but it is the
-		// best they get for not compiling a mesh with normals
+		// these may not be truly acurate but it is the 
+		// best they get for not compiling a mesh with normals	
 		if (noNormal)
 		{
 			Vector3 A = oVerts[0].Position - oVerts[1].Position;
@@ -666,10 +458,12 @@ namespace objl
 			}
 		}
 	}
-}
-namespace objl
-{
-	void Loader::VertexTriangluation(std::vector <unsigned int> & oIndices, std::vector <Vertex> const & iVerts)
+
+
+	// Triangulate a list of vertices into a face by printing
+	//	inducies corresponding with triangles within it
+
+	void Loader::VertexTriangluation(std::vector<unsigned int>& oIndices, const std::vector<Vertex>& iVerts)
 	{
 		// If there are 2 or less verts,
 		// no triangle can be created,
@@ -779,7 +573,7 @@ namespace objl
 				}
 
 				// If Vertex is not an interior vertex
-				double angle = math::AngleBetweenV3(pPrev.Position - pCur.Position, pNext.Position - pCur.Position) * (180 / 3.14159265359);
+				float angle = math::AngleBetweenV3(pPrev.Position - pCur.Position, pNext.Position - pCur.Position) * (180 / 3.14159265359);
 				if (angle <= 0 && angle >= 180)
 					continue;
 
@@ -834,9 +628,7 @@ namespace objl
 				break;
 		}
 	}
-}
-namespace objl
-{
+
 	bool Loader::LoadMaterials(std::string path)
 	{
 		// If the file is not a material file return false
@@ -997,5 +789,230 @@ namespace objl
 		else
 			return true;
 	}
+	Material::Material()
+	{
+		name;
+		Ns = 0.0f;
+		Ni = 0.0f;
+		d = 0.0f;
+		illum = 0;
+	}
+
+	// Default Constructor
+
+	Mesh::Mesh()
+	{
+
+	}
+
+	// Variable Set Constructor
+
+	Mesh::Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices)
+	{
+		Vertices = _Vertices;
+		Indices = _Indices;
+	}
+
+
+	namespace math
+	{
+		Vector3 CrossV3(const Vector3 a, const Vector3 b)
+		{
+			return Vector3(a.Y * b.Z - a.Z * b.Y,
+				a.Z * b.X - a.X * b.Z,
+				a.X * b.Y - a.Y * b.X);
+		}
+		float DotV3(const Vector3 a, const Vector3 b)
+		{
+			return (a.X * b.X) + (a.Y * b.Y) + (a.Z * b.Z);
+		}
+		float MagnitudeV3(const Vector3 in)
+		{
+			return (sqrtf(powf(in.X, 2) + powf(in.Y, 2) + powf(in.Z, 2)));
+		}
+		float AngleBetweenV3(const Vector3 a, const Vector3 b)
+		{
+			float angle = DotV3(a, b);
+			angle /= (MagnitudeV3(a) * MagnitudeV3(b));
+			return angle = acosf(angle);
+		}
+		Vector3 ProjV3(const Vector3 a, const Vector3 b)
+		{
+			Vector3 bn = b / MagnitudeV3(b);
+			return bn * DotV3(a, bn);
+		}
+	}
+
+	namespace algorithm
+	{
+		Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3)
+		{
+			Vector3 u = t2 - t1;
+			Vector3 v = t3 - t1;
+
+			Vector3 normal = math::CrossV3(u, v);
+
+			return normal;
+		}
+		bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b)
+		{
+			Vector3 cp1 = math::CrossV3(b - a, p1 - a);
+			Vector3 cp2 = math::CrossV3(b - a, p2 - a);
+
+			if (math::DotV3(cp1, cp2) >= 0)
+				return true;
+			else
+				return false;
+		}
+		Vector3 operator*(const float& left, const Vector3& right)
+		{
+			return Vector3(right.X * left, right.Y * left, right.Z * left);
+		}
+
+		inline void split(const std::string& in,
+			std::vector<std::string>& out,
+			std::string token)
+		{
+			out.clear();
+
+			std::string temp;
+
+			for (int i = 0; i < int(in.size()); i++)
+			{
+				std::string test = in.substr(i, token.size());
+
+				if (test == token)
+				{
+					if (!temp.empty())
+					{
+						out.push_back(temp);
+						temp.clear();
+						i += (int)token.size() - 1;
+					}
+					else
+					{
+						out.push_back("");
+					}
+				}
+				else if (i + token.size() >= in.size())
+				{
+					temp += in.substr(i, token.size());
+					out.push_back(temp);
+					break;
+				}
+				else
+				{
+					temp += in[i];
+				}
+			}
+		}
+		inline std::string firstToken(const std::string& in)
+		{
+			if (!in.empty())
+			{
+				size_t token_start = in.find_first_not_of(" \t");
+				size_t token_end = in.find_first_of(" \t", token_start);
+				if (token_start != std::string::npos && token_end != std::string::npos)
+				{
+					return in.substr(token_start, token_end - token_start);
+				}
+				else if (token_start != std::string::npos)
+				{
+					return in.substr(token_start);
+				}
+			}
+			return "";
+		}
+
+		inline std::string tail(const std::string& in)
+		{
+			size_t token_start = in.find_first_not_of(" \t");
+			size_t space_start = in.find_first_of(" \t", token_start);
+			size_t tail_start = in.find_first_not_of(" \t", space_start);
+			size_t tail_end = in.find_last_not_of(" \t");
+			if (tail_start != std::string::npos && tail_end != std::string::npos)
+			{
+				return in.substr(tail_start, tail_end - tail_start + 1);
+			}
+			else if (tail_start != std::string::npos)
+			{
+				return in.substr(tail_start);
+			}
+			return "";
+		}
+		bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3)
+		{
+			// Test to see if it is within an infinite prism that the triangle outlines.
+			bool within_tri_prisim = SameSide(point, tri1, tri2, tri3) && SameSide(point, tri2, tri1, tri3)
+				&& SameSide(point, tri3, tri1, tri2);
+
+			// If it isn't it will never be on the triangle
+			if (!within_tri_prisim)
+				return false;
+
+			// Calulate Triangle's Normal
+			Vector3 n = GenTriNormal(tri1, tri2, tri3);
+
+			// Project the point onto this normal
+			Vector3 proj = math::ProjV3(point, n);
+
+			// If the distance from the triangle to the point is 0
+			//	it lies on the triangle
+			if (math::MagnitudeV3(proj) == 0)
+				return true;
+			else
+				return false;
+		}
+	}
+
+
+	// Default Constructor
+
+	Vector3::Vector3()
+	{
+		X = 0.0f;
+		Y = 0.0f;
+		Z = 0.0f;
+	}
+
+	// Variable Set Constructor
+
+	Vector3::Vector3(float X_, float Y_, float Z_)
+	{
+		X = X_;
+		Y = Y_;
+		Z = Z_;
+	}
+
+
+	// Bool Equals Operator Overload
+	bool Vector3::operator==(const Vector3& other) const
+	{
+		return (this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+	}
+	// Bool Not Equals Operator Overload
+	bool Vector3::operator!=(const Vector3& other) const
+	{
+		return !(this->X == other.X && this->Y == other.Y && this->Z == other.Z);
+	}
+	// Addition Operator Overload
+	Vector3 Vector3::operator+(const Vector3& right) const
+	{
+		return Vector3(this->X + right.X, this->Y + right.Y, this->Z + right.Z);
+	}
+	// Subtraction Operator Overload
+	Vector3 Vector3::operator-(const Vector3& right) const
+	{
+		return Vector3(this->X - right.X, this->Y - right.Y, this->Z - right.Z);
+	}
+	// Float Multiplication Operator Overload
+	Vector3 Vector3::operator*(const float& other) const
+	{
+		return Vector3(this->X * other, this->Y * other, this->Z * other);
+	}
+	// Float Division Operator Overload
+	Vector3 Vector3::operator/(const float& other) const
+	{
+		return Vector3(this->X / other, this->Y / other, this->Z / other);
+	}
 }
-#undef LZZ_INLINE

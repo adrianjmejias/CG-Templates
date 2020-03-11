@@ -14,13 +14,15 @@ IncludeDir["spdlog"] = "dependencies/spdlog/include"
 IncludeDir["glad"] = "dependencies/glad/include"
 IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
-IncludeDir["obj"] = "dependencies/OBJ-Loader"
+IncludeDir["obj"] = "dependencies/OBJ-Loader/Source"
 IncludeDir["ImGui"] = "dependencies/imgui/"
 
 
 group "Dependencies"
 	include "dependencies/glad"
-	include "dependencies/imgui"
+   include "dependencies/imgui"
+   -- include "dependencies/OBJ-Loader"
+   
 group ""
 
 project "PressF"
@@ -58,7 +60,8 @@ project "PressF"
    links {
       "glad",
       "SDL2",
-      "ImGui",
+      "ImGui"
+      -- "ObjLoader"
    }
 
    filter "configurations:Debug"
@@ -88,7 +91,7 @@ includedirs {
    "%{IncludeDir.glad}",
    "%{IncludeDir.SDL}",
    "%{IncludeDir.spdlog}",
-   -- "%{IncludeDir.stb}",
+   "%{IncludeDir.stb}",
    "%{IncludeDir.ImGui}",
    "PressF"
 

@@ -50,8 +50,10 @@ int main() {
 	//		"assets/models/cuboPower/cuboPowerblend.obj"
 	//	}
 	//);
-	PF::ModelsManager& mm = engine.modelsManager;
-	PF::Model& model = mm.LoadAsset("assets/models/cuboPower/simpleQuad.obj");
+	//std::vector<PF::MeshRenderer&> mrs;
+
+	//PF::ModelsManager& mm = engine.modelsManager;
+	//PF::Model& model = mm.LoadAsset("../assets/models/cuboPower/simpleQuad.obj");
 	
 	PF::Scene& scene = engine.AddScene(new PF::Scene("Example scene"));
 
@@ -60,12 +62,16 @@ int main() {
 
 	ts1.AddComponent<Rotator>();
 
+	//PF::MeshRenderer& mr = ts1.AddComponent<PF::MeshRenderer>();
+
+	//mr.mesh = &model.meshes[0];
+
 	ts2.AddComponent<ParticleSystem>()->Start();
 
 
 
 	PF_INFO("number of gameobjects %d", scene.rootObjects.size());
-	std::cout << "model loaded" << model.EBO;
+	//std::cout << "model loaded" << model.EBO;
 
 	//app.LoadShaders(
 	//	{

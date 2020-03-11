@@ -1,113 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="PressF">
-      <UniqueIdentifier>{18FBC3CA-049D-EEA0-ED57-02F5D99875F1}</UniqueIdentifier>
+    <Filter Include="AssetsManagement">
+      <UniqueIdentifier>{9545B836-813E-D788-AA70-BC0D96C8B694}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PressF\AssetsManagement">
-      <UniqueIdentifier>{D7D2997D-430A-E214-4C14-4638B8CA080E}</UniqueIdentifier>
+    <Filter Include="CoreComponents">
+      <UniqueIdentifier>{D4E38443-C0B1-7849-A945-E96F95B254AE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ObjLoader">
+      <UniqueIdentifier>{57A7ABEE-C311-6065-0C50-110B78F93DBA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{E3AE1F7C-4F19-D4F2-9857-85980401B247}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Asset.h" />
+    <ClInclude Include="PressF\AssetsManagement\Asset.h">
+      <Filter>AssetsManagement</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\AssetsManagement\AssetsManager.h">
-      <Filter>PressF\AssetsManagement</Filter>
+      <Filter>AssetsManagement</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\AssetsManagement\ModelsManager.h">
-      <Filter>PressF\AssetsManagement</Filter>
+    <ClInclude Include="PressF\Component.h" />
+    <ClInclude Include="PressF\CoreComponents\CoreComponents.h">
+      <Filter>CoreComponents</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Component.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\CoreComponents\MeshRenderer.h">
+      <Filter>CoreComponents</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Engine.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\Engine.h" />
+    <ClInclude Include="PressF\GameObject.h" />
+    <ClInclude Include="PressF\Logger.h" />
+    <ClInclude Include="PressF\Model.h" />
+    <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h">
+      <Filter>ObjLoader</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\GameObject.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\PressF.h" />
+    <ClInclude Include="PressF\Rendering\Material.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Logger.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\Rendering\Mesh.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Model.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\Rendering\OpenGL.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\OBJ_Loader.h">
-      <Filter>PressF</Filter>
+    <ClInclude Include="PressF\Rendering\Texture.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\PressF.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\Scene.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\Shader.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\ShaderProgram.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\Transform.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\imgui_impl_opengl3.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\imgui_impl_sdl.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\pch.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\types.h">
-      <Filter>PressF</Filter>
-    </ClInclude>
+    <ClInclude Include="PressF\Scene.h" />
+    <ClInclude Include="PressF\Shader.h" />
+    <ClInclude Include="PressF\ShaderProgram.h" />
+    <ClInclude Include="PressF\Transform.h" />
+    <ClInclude Include="PressF\imgui_impl_opengl3.h" />
+    <ClInclude Include="PressF\imgui_impl_sdl.h" />
+    <ClInclude Include="PressF\pch.h" />
+    <ClInclude Include="PressF\types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Asset.cpp" />
+    <ClCompile Include="PressF\AssetsManagement\Asset.cpp">
+      <Filter>AssetsManagement</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\AssetsManagement\AssetsManager.cpp">
-      <Filter>PressF\AssetsManagement</Filter>
+      <Filter>AssetsManagement</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\AssetsManagement\ModelsManager.cpp">
-      <Filter>PressF\AssetsManagement</Filter>
+    <ClCompile Include="PressF\Component.cpp" />
+    <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp">
+      <Filter>CoreComponents</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Component.cpp">
-      <Filter>PressF</Filter>
+    <ClCompile Include="PressF\Engine.cpp" />
+    <ClCompile Include="PressF\GameObject.cpp" />
+    <ClCompile Include="PressF\Logger.cpp" />
+    <ClCompile Include="PressF\Model.cpp" />
+    <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp">
+      <Filter>ObjLoader</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Engine.cpp">
-      <Filter>PressF</Filter>
+    <ClCompile Include="PressF\Rendering\Material.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\GameObject.cpp">
-      <Filter>PressF</Filter>
+    <ClCompile Include="PressF\Rendering\Mesh.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Logger.cpp">
-      <Filter>PressF</Filter>
+    <ClCompile Include="PressF\Rendering\OpenGL.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Model.cpp">
-      <Filter>PressF</Filter>
+    <ClCompile Include="PressF\Rendering\Texture.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\OBJ_Loader.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Scene.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Shader.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\ShaderProgram.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Transform.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\imgui_impl_opengl3.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\imgui_impl_sdl.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\pch.cpp">
-      <Filter>PressF</Filter>
-    </ClCompile>
+    <ClCompile Include="PressF\Scene.cpp" />
+    <ClCompile Include="PressF\Shader.cpp" />
+    <ClCompile Include="PressF\ShaderProgram.cpp" />
+    <ClCompile Include="PressF\Transform.cpp" />
+    <ClCompile Include="PressF\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="PressF\imgui_impl_sdl.cpp" />
+    <ClCompile Include="PressF\pch.cpp" />
+    <ClCompile Include="PressF\types.cpp" />
   </ItemGroup>
 </Project>

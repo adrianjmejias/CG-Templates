@@ -4,27 +4,67 @@
 #include <string>
 #include <memory>
 
+#include "../Rendering/Mesh.h"
+#include "../Rendering/Material.h"
 
 
 namespace PF
 {
-
-	class Asset
+	template  <typename AssetType>
+	struct AssetMap : std::map<std::string, Owns<AssetType>>
 	{
 
+		bool HasAsset(std::string path)
+		{
+			return find(path) != end();
+		}
 	};
 
-
-
-	template <typename AssetType>
 	class AssetsManager
 	{
 	protected:
-		std::map<std::string, uptr<AssetType>> assets;
-
+		UInt lastId = 0;
+		AssetMap<Texture> textures;
+		AssetMap<Model> models;
+		AssetMap<Material> materials;
 	public:
 
-		virtual AssetType& LoadAsset(const std::string&) = 0;
+
+		virtual bool LoadModel(const std::string& path) {
+			CPUMesh loader;
+
+			if (!loader.LoadFile(path))
+			{
+				//PF_ERROR("Failed to load model {0}", objPath);
+				__debugbreak();
+			}
+
+
+			for (auto& mat : loader.LoadedMaterials)
+			{
+				if (!materials.HasAsset(mat.name))
+				{
+					Owns<Material> mPtr{ new Material() };
+
+					
+					mPtr->name = std::move(mat.name);
+					*mPtr = mat;
+					
+					//textures[] = Texture::TextureFromFile(mat.map_d);
+
+
+					materials[mat.name] = std::move(mPtr);
+				}
+			}
+			auto* m = loader.GPUInstantiate();
+			//auto it = assets.emplace(path, m);
+
+			return true; // *it.first->second;
+		}
+
+
+
+
 	private:
 	};
 }

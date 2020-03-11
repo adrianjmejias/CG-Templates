@@ -9,7 +9,7 @@ namespace PF
 	{
 	public:
 		std::string name;
-		std::vector<uptr<GameObject>> rootObjects;
+		std::vector<Owns<GameObject>> rootObjects;
 		Scene(const std::string& _name);
 
 

@@ -5,7 +5,7 @@
 #include <glm/gtc/random.hpp>
 #include <functional>
 #define STL_BYTE_SIZE(cont, type) (cont.size() * sizeof(type))
-
+//#include <OBJ_Loader.h>
 using Color = glm::vec4;
 using Vec3 = glm::vec3;
 using Vec2 = glm::vec2;
@@ -16,6 +16,15 @@ using Mat4 = glm::mat4;
 using Int = int;
 using Float = float;
 using UInt = unsigned int;
+
+template<typename ObjType>
+using Owns = std::unique_ptr<ObjType>;
+
+template<typename ObjType>
+using Shares = std::shared_ptr<ObjType>;
+
+template<typename ObjType>
+using Ref = std::weak_ptr<ObjType>;
 
 
 template <typename TT>
@@ -37,12 +46,10 @@ struct Range
 
 struct RangeFloat : public Range<Float>
 {
-
 };
 
 struct RangeInt : public Range<Int>
 {
-
 };
 
 
@@ -63,3 +70,11 @@ struct Clock
 	
 	}
 };
+
+
+
+
+//
+//
+//void Assign(Vec3& a, const objl::Vector3& b);
+//void Assign(Vec2& a, const objl::Vector2& b);

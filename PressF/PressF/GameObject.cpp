@@ -26,12 +26,15 @@ namespace PF{
 
 		GameObject* previousOwner = comp->gameObject;
 		PF_ASSERT(previousOwner && "component must always belong to a gameobject. shouldn't be created by new");
-		std::vector<uptr<Component>>& comps = previousOwner->components;
+		auto& comps = previousOwner->components;
 		// TODO: cambiar esto por swap al final y pop back para hacerlo orden 1
 		//std::remove_if(begin(components), end(components), [&](Component* c) {return c == comp; });
-		for (int ii = 0; ii < comps.size(); ii++)
+
+		Owns<Component> cptr;
+ 		for (int ii = 0; ii < comps.size(); ii++)
 		{
 			if (comps[ii].get() == comp) {
+				cptr = std::move(comps[ii]);
 				comps.erase(begin(comps) + ii);
 				ii = comps.size() + 1;
 			}
@@ -40,7 +43,7 @@ namespace PF{
 
 		comp->gameObject = this;
 		comp->transform = &transform;
-		components.emplace_back(comp);
+		components.push_back(std::move(cptr));
 		return comp;
 	}
 

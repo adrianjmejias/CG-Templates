@@ -28,7 +28,7 @@ namespace PF
 		unsigned int id = 0;
 	public:
 		std::string name = "No name";
-		std::vector<uptr<Component>> components;
+		std::vector<Owns<Component>> components;
 		Transform transform;
 		GameObject();
 		//GameObject(const std::string& _name);

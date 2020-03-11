@@ -10,7 +10,7 @@
 #include "imgui_impl_opengl3.h"
 #include <iostream>
 //#include "./AssetsManagement/AssetsManager.h"
-#include "AssetsManagement/ModelsManager.h"
+//#include "AssetsManagement/ModelsManager.h"
 
 namespace PF
 {
@@ -18,7 +18,7 @@ namespace PF
 	class SceneManager
 	{
 	protected:
-		std::vector<uptr<Scene>> scenesLoaded;
+		std::vector<Owns<Scene>> scenesLoaded;
 
 	public:
 		Scene& AddScene(Scene* scene)
@@ -50,7 +50,7 @@ namespace PF
     public:
 
 		EngineConfig config;
-		ModelsManager modelsManager;
+		//ModelsManager modelsManager;
 		//InputSystem input;
 		SDL_Window* win;
 		SDL_GLContext glContext;
