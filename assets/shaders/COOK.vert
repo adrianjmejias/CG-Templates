@@ -30,14 +30,14 @@ out vec3 n;
 
 void main()
 {
-	OBJ.m_pos = model * pos;
-	OBJ.norm = norm;
-	OBJ.uv = uv;
+	// OBJ.m_pos = pos;
+	// OBJ.norm = norm;
+	// OBJ.uv = uv;
 
 
 //	OBJ.w_pos = proj*(view*(OBJ.m_pos));
 	
-    gl_Position =  projection*view*model*pos;
+    gl_Position =  pos;
 
 }
 

@@ -9,9 +9,17 @@ struct GPUObject
 	operator unsigned int&() {
 		return id;
 	}
+
+	virtual void Bind() = 0;
 };
 
 struct VertexArrayObject : GPUObject{
+
+	virtual void Bind() override
+	{
+		glBindVertexArray(id);
+	}
+
 	~VertexArrayObject()
 	{
 		if (id)
@@ -22,6 +30,12 @@ struct VertexArrayObject : GPUObject{
 };
 
 struct VertexBufferObject : GPUObject{
+	glId type;
+	virtual void Bind() override
+	{
+		__debugbreak();
+		//glBindBuffer(id);
+	}
 	~VertexBufferObject()
 	{
 		if (id)

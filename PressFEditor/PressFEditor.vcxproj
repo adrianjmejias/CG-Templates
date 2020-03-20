@@ -78,7 +78,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -98,7 +98,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -121,7 +121,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\spdlog\include;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\PressF;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -138,11 +138,13 @@
     <ClInclude Include="PressFEditor\Components\Components.h" />
     <ClInclude Include="PressFEditor\Components\ParticleSystem.h" />
     <ClInclude Include="PressFEditor\Components\Rotator.h" />
+    <ClInclude Include="PressFEditor\Editor.h" />
     <ClInclude Include="PressFEditor\main.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressFEditor\Components\ParticleSystem.cpp" />
     <ClCompile Include="PressFEditor\Components\Rotator.cpp" />
+    <ClCompile Include="PressFEditor\Editor.cpp" />
     <ClCompile Include="PressFEditor\main.cpp" />
   </ItemGroup>
   <ItemGroup>

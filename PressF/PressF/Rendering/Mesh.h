@@ -23,27 +23,28 @@ namespace PF
 		GLsizei offset, nElem;
 		Ref<Material> defaultMaterial;
 		std::list<MeshRenderer*> renderersAssociated;
-	};
 
-	struct Model : Asset
- 	{
-		std::vector<GPUMesh> meshes;
-		Model();
-		~Model();
+		void Bind()
+		{
+			VAO.Bind();
+		}
+
+		void Render()
+		{
+			glDrawElements(GL_TRIANGLES, nElem, GL_UNSIGNED_INT, 0);
+		}
 	};
 
 	struct CPUMesh : public objl::Loader
 	{
 		std::string name;
-
-		Model * GPUInstantiate() {
-			Model * m = new Model();
-			Model &model = *m;
-
+		std::vector<GPUMesh*> GPUInstantiate() {
 			GLsizei totalIndices = 0;
-			model.meshes.reserve(LoadedMeshes.size());
 
-			std::vector<Vertex> vertex{begin(LoadedVertices), end(LoadedVertices)};
+			std::vector<GPUMesh*> meshes;
+			meshes.reserve(LoadedMeshes.size());
+
+			std::vector<Vertex> vertex{ begin(LoadedVertices), end(LoadedVertices) };
 
 			std::vector<Vec3> tanPerFace;
 			tanPerFace.reserve(LoadedIndices.size() / 3);
@@ -56,14 +57,14 @@ namespace PF
 				const int idx_b = LoadedIndices[iiReal + 1];
 				const int idx_c = LoadedIndices[iiReal + 2];
 
-				const Vertex &v_1 = vertex[idx_a];
-				const Vertex &v_2 = vertex[idx_b];
-				const Vertex &v_3 = vertex[idx_c];
+				const Vertex& v_1 = vertex[idx_a];
+				const Vertex& v_2 = vertex[idx_b];
+				const Vertex& v_3 = vertex[idx_c];
 
 
 				// hago esto por legibilidad
-				const Vec3 &u{ v_1.uv[0],v_2.uv[0],v_3.uv[0] };
-				const Vec3 &v{ v_1.uv[1],v_2.uv[1],v_3.uv[1] };
+				const Vec3& u{ v_1.uv[0],v_2.uv[0],v_3.uv[0] };
+				const Vec3& v{ v_1.uv[1],v_2.uv[1],v_3.uv[1] };
 				const Vec3 p[3]{ v_1.pos,v_2.pos ,v_3.pos };
 
 
@@ -77,7 +78,7 @@ namespace PF
 				const Vec3 p20 = p[2] - p[0];
 
 
-				const Vec3 tan(((v20*p10) - (v10 * p20)) / ((u10*v20) - (v10*u20)));
+				const Vec3 tan(((v20 * p10) - (v10 * p20)) / ((u10 * v20) - (v10 * u20)));
 
 				tanPerFace.push_back(tan);
 
@@ -101,11 +102,13 @@ namespace PF
 
 			for (int ii = 0; ii < LoadedMeshes.size(); ii++) {
 				objl::Mesh& objlMesh = LoadedMeshes[ii];
-				GPUMesh myMesh;
+
+				GPUMesh* ptrMesh = new GPUMesh();
+				GPUMesh &myMesh = *ptrMesh;
 				myMesh.name = objlMesh.MeshName;
 
-				std::vector<Vertex> meshVertex{begin(objlMesh.Vertices), end(objlMesh.Vertices) };
-		
+				std::vector<Vertex> meshVertex{ begin(objlMesh.Vertices), end(objlMesh.Vertices) };
+
 
 				//myMesh.defaultMaterial = objlMesh.MeshMaterial;
 				myMesh.nElem = static_cast<GLsizei>(objlMesh.Indices.size());
@@ -116,7 +119,7 @@ namespace PF
 				GLCALL(glGenVertexArrays(1, &myMesh.VAO.id));
 				GLCALL(glGenBuffers(1, &myMesh.EBO.id));
 				GLCALL(glGenBuffers(1, &myMesh.VBO.id));
-					
+
 				GLCALL(glBindVertexArray(myMesh.VAO));
 				{
 					GLCALL(glBindBuffer(GL_ARRAY_BUFFER, myMesh.VBO));
@@ -142,11 +145,19 @@ namespace PF
 
 				}
 				GLCALL(glBindVertexArray(0));
-				model.meshes.push_back(myMesh);
+				meshes.push_back(ptrMesh);
 			}
-	
-		return m;
-	}
 
-};
+			return meshes;
+		}
+	};
+
+	struct Model : public Asset
+	{
+		CPUMesh meshData;
+		std::vector<Owns<GPUMesh>> meshes;
+		Model();
+		~Model();
+	};
+
 }

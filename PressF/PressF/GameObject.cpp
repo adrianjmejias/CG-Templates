@@ -1,18 +1,37 @@
+#include "PressF/pch.h"
 #include "GameObject.h"
 namespace PF{
 
 	GameObject::GameObject() : transform(*this)
 	{
 		//id = GLOBAL_ID++;
-		name += std::to_string(id);
 	}
 
-	GameObject::GameObject(const std::string n) : transform(*this), name(n + std::to_string(id)) {}
+	GameObject::GameObject(const std::string n) : transform(*this) {}
 
 	GameObject::~GameObject()
 	{
 		//std::cout << "Bye GameObject"<<std::endl;
 
+	}
+
+
+	json GameObject::Serialize()
+	{
+		json j = Asset::Serialize();
+
+		j["transform"] = transform.Serialize();
+		j["components"] = json::array();
+		
+		int ii = 0;
+		for (auto& c : components)
+		{
+			json ja = c->Serialize();
+			j["components"].push_back(ja);
+			ii++;
+		}
+
+		return j;
 	}
 
 
@@ -60,3 +79,4 @@ namespace PF{
 		//std::cout << "Bye Component" << std::endl;
 	}
 }
+

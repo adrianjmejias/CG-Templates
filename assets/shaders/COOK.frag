@@ -12,6 +12,8 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
 uniform vec3 viewPos;
+
+
 uniform struct Material
 {
 	vec3 kD;
@@ -42,7 +44,7 @@ uniform sampler2D tex_kA;
 uniform sampler2D tex_bump;
 
 
-in struct {
+in struct Obj{
 	vec4 m_pos;
 	vec4 w_pos;
 	vec4 norm;
@@ -54,19 +56,9 @@ in vec3 n;
 
 out vec4 colorsito;
 
-
 void main()
 {
-	vec3 normal = normalize(OBJ.norm.xyz);
-	vec3 viewDir = normalize(OBJ.w_pos.xyz - viewPos);
-
-
-
-
-
-
-
-
-
-	colorsito = vec4(MAT.kD,1);
+	// vec3 normal = normalize(OBJ.norm.xyz);
+	// vec3 viewDir = normalize(OBJ.w_pos.xyz - viewPos);
+	colorsito = vec4(1,1,1,1);
 }

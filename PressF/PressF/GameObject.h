@@ -1,6 +1,6 @@
 #pragma once
 #include "Transform.h"
-
+#include "AssetsManagement/Asset.h"
 
 namespace PF
 {
@@ -9,25 +9,43 @@ namespace PF
 #define COMP_INIT : Component(go,t)
 
 
-	class Component
+	class Component: Serializable
 	{
+		int enabled = 0;
 	public:
-		int enabled = 1;
+
+		void SetActive(bool newState)
+		{
+			if (enabled != newState)
+			{
+				enabled = newState;
+				if (newState)
+				{
+					OnEnable();
+				}
+				else
+				{
+					OnDisable();
+				}
+			}
+		}
 		GameObject* gameObject;
 		Transform* transform;
 		Component();// COMP_PARAMS
 		virtual void Update(const ImGuiIO& io) = 0;
 		virtual void HandleEvent(const SDL_Event& e) = 0;
+		virtual void OnEnable() = 0;
+		virtual void OnDisable() = 0;
 		~Component();
+
+		virtual json Serialize() = 0;
 	};
 
-	class GameObject
+	class GameObject: Asset
 	{
 
 		friend class Application;
-		unsigned int id = 0;
 	public:
-		std::string name = "No name";
 		std::vector<Owns<Component>> components;
 		Transform transform;
 		GameObject();
@@ -42,12 +60,12 @@ namespace PF
 
 		Component* AddComponent(Component* comp);
 
+		json Serialize() override;
 
 		void Update(const ImGuiIO& io)
 		{
 			for (auto &c : components)
 			{
-
 				PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
 				c->Update(io);
 			}

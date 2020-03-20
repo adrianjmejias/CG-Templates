@@ -4,16 +4,19 @@
 	struct Particle
 	{
 		RangeFloat lifetime;
+
+		Vec3 position;
+		Vec3 velocity;
 		void UpdateTime(float deltaTime)
 		{
 			lifetime.min += deltaTime;
 
-			PF_INFO("particle lifetime { 0},  particle lifetime %{1}", lifetime.min, lifetime.GetPorcentage());
+			//PF_INFO("particle lifetime {0},  particle lifetime {1}", lifetime.min, lifetime.GetPorcentage());
 		}
 
-		void UpdateSimulation()
+		void UpdateSimulation(float deltaTime)
 		{
-
+			position += velocity * deltaTime;
 		}
 
 		void UpdateRender()
@@ -44,68 +47,21 @@
 		UInt firstEmitted = 0;
 		UInt nextToEmmit = 0;
 		Clock clockEmit;
-		virtual void Start()
-		{
-			clockEmit.time.min = 0;
-			clockEmit.time.max = spawningRate;
-			clockEmit.onTimePassed = [&]() { Emit(); };
 
 
-			particles.reserve(maxParticles);
-			for (UInt ii = 0; ii < maxParticles; ii++)
-			{
-				particles.emplace_back();
-			}
-		}
-
-		virtual void Emit()
-		{
-			particles[nextToEmmit] = Particle();
-			PF_INFO("emmited new particle {0}", nextToEmmit);
-
-			nextToEmmit = GetNextParticleIndex(nextToEmmit);
-		}
+		virtual void Start();
+		virtual void Emit();
 
 		// Inherited via Component
-		virtual void Update(const ImGuiIO& io) override
-		{
-			PF_INFO("Next particle in {0}", clockEmit.time.GetPorcentage());
-			clockEmit.Update(io.DeltaTime);
+		virtual void Update(const ImGuiIO& io) override;
+		virtual void HandleEvent(const SDL_Event& e) override;
+		inline UInt GetNextParticleIndex(UInt ii);
 
 
-			for (UInt ii = firstEmitted; ii != nextToEmmit; ii = GetNextParticleIndex(ii))
-			{
-				PF_INFO("Update particle { 0}", ii);
-				particles[ii].UpdateTime(io.DeltaTime);
-				PF_INFO("End Update particle { 0}", ii);
-			}
+		// Inherited via Component
+		virtual json Serialize() override;
 
-			while (firstEmitted != nextToEmmit && !particles[firstEmitted].IsAlive()) {
-				firstEmitted = GetNextParticleIndex(firstEmitted);
-			}
-
-			for (UInt ii = firstEmitted; ii != nextToEmmit; ii = GetNextParticleIndex(ii))
-			{
-				PF_INFO("Update particle { 0}", ii);
-				particles[ii].UpdateSimulation();
-				PF_INFO("End Update particle { 0}", ii);
-			}
-
-
-			if (nextToEmmit == 11)
-			{
-				__debugbreak();
-			}
-		}
-
-		virtual void HandleEvent(const SDL_Event& e) override
-		{
-		}
-
-		inline UInt GetNextParticleIndex(UInt ii)
-		{
-			return  (ii + 1) % maxParticles;
-		}
-
-	private:
+		// Inherited via Component
+		virtual void OnEnable() override;
+		virtual void OnDisable() override;
 	};

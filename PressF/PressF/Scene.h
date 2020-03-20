@@ -8,6 +8,11 @@ namespace PF
 	class Scene
 	{
 	public:
+
+		void Serialize()
+		{
+
+		}
 		std::string name;
 		std::vector<Owns<GameObject>> rootObjects;
 		Scene(const std::string& _name);

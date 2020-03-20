@@ -21,8 +21,17 @@
     <ClInclude Include="PressF\AssetsManagement\AssetsManager.h">
       <Filter>AssetsManagement</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\AssetsManagement\Serialization.h">
+      <Filter>AssetsManagement</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\Component.h" />
+    <ClInclude Include="PressF\CoreComponents\Camera.h">
+      <Filter>CoreComponents</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h">
+      <Filter>CoreComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\CoreComponents\InternalComponent.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h">
@@ -45,16 +54,24 @@
     <ClInclude Include="PressF\Rendering\OpenGL.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\Rendering\Renderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\ShaderParameters.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\ShaderProgram.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\Rendering\Texture.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Scene.h" />
-    <ClInclude Include="PressF\Shader.h" />
-    <ClInclude Include="PressF\ShaderProgram.h" />
     <ClInclude Include="PressF\Transform.h" />
     <ClInclude Include="PressF\imgui_impl_opengl3.h" />
     <ClInclude Include="PressF\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\pch.h" />
+    <ClInclude Include="PressF\stb_load.h" />
     <ClInclude Include="PressF\types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -64,7 +81,16 @@
     <ClCompile Include="PressF\AssetsManagement\AssetsManager.cpp">
       <Filter>AssetsManagement</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\AssetsManagement\Serialization.cpp">
+      <Filter>AssetsManagement</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\Component.cpp" />
+    <ClCompile Include="PressF\CoreComponents\Camera.cpp">
+      <Filter>CoreComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\CoreComponents\InternalComponent.cpp">
+      <Filter>CoreComponents</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp">
       <Filter>CoreComponents</Filter>
     </ClCompile>
@@ -84,16 +110,27 @@
     <ClCompile Include="PressF\Rendering\OpenGL.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\Rendering\Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\ShaderParameter.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\ShaderParameters.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\ShaderProgram.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\Rendering\Texture.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Scene.cpp" />
-    <ClCompile Include="PressF\Shader.cpp" />
-    <ClCompile Include="PressF\ShaderProgram.cpp" />
     <ClCompile Include="PressF\Transform.cpp" />
     <ClCompile Include="PressF\imgui_impl_opengl3.cpp" />
     <ClCompile Include="PressF\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\pch.cpp" />
+    <ClCompile Include="PressF\stb_load.cpp" />
     <ClCompile Include="PressF\types.cpp" />
   </ItemGroup>
 </Project>

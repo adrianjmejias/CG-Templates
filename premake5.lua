@@ -16,6 +16,8 @@ IncludeDir["SDL"] = "dependencies/SDL/include"
 IncludeDir["stb"] = "dependencies/stb"
 IncludeDir["obj"] = "dependencies/OBJ-Loader/Source"
 IncludeDir["ImGui"] = "dependencies/imgui/"
+IncludeDir["json"] = "dependencies/json/include"
+IncludeDir["filesystem"] = "dependencies/filesystem/include"
 
 
 group "Dependencies"
@@ -32,10 +34,16 @@ project "PressF"
    location("%{prj.name}")
    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
    objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-   
+
+
+   pchheader "%{prj.name}/pch.h"
+   pchsource "PressF/PressF/pch.cpp"
+
+   includedirs { "%{prj.name}/" } 
    files { 
       "%{prj.name}/**.h",
       "%{prj.name}/**.cpp",
+      "PressF/PressF/pch.cpp",
    }
 
    includedirs {
@@ -48,7 +56,10 @@ project "PressF"
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.obj}",
 		"%{IncludeDir.stb}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.json}",
+		"%{IncludeDir.filesystem}",
+      "%{IncludeDir.ImGui}"
+      
    }
 
    libdirs
@@ -92,9 +103,10 @@ includedirs {
    "%{IncludeDir.SDL}",
    "%{IncludeDir.spdlog}",
    "%{IncludeDir.stb}",
+   "%{IncludeDir.json}",
+   "%{IncludeDir.filesystem}",
    "%{IncludeDir.ImGui}",
    "PressF"
-
 }
 
 libdirs

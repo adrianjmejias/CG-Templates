@@ -29,7 +29,7 @@ namespace PF
 
 			glGenTextures(1, &tex->id);
 
-			unsigned char* data = stbi_load(tex->path.c_str(), &tex->width, &tex->height, &tex->nComponents, 0);
+			unsigned char* data = stbi_load(tex->path.c_str(), tex->width, tex->height , tex->nComponents, 0);
 			if (data)
 			{
 				switch (tex->nComponents)
@@ -67,6 +67,9 @@ namespace PF
 			return tex;
 		}
 
+		virtual void Bind() override
+		{
+		}
 
 		~Texture()
 		{

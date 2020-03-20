@@ -4,7 +4,7 @@
 //#include <SDL.h>
 #include "pch.h"
 #include "Scene.h"
-
+#include "AssetsManagement/AssetsManager.h"
 #include <imgui.h>
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
@@ -45,7 +45,7 @@ namespace PF
 		bool showFPS = true;
 	};
 
-    class Engine : public SceneManager
+    class Engine : public SceneManager, public AssetsManager
     {
     public:
 
@@ -63,21 +63,10 @@ namespace PF
 
         void InitContext();
 		void CleanContext();
-
-		void LoopMain();
+		void InitRender();
+		void EndRender();
+		void LoopImGui();
 		void LoopEvents();
-		void LoopUpdate()
-		{
-			auto& io = ImGui::GetIO();
-			for (auto& s : scenesLoaded)
-			{
-				s->Update(io);
-			}
-		}
-
+		void LoopUpdate();
     };
-
-
-
-	
-}
+}	

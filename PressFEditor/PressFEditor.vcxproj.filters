@@ -15,6 +15,7 @@
     <ClInclude Include="PressFEditor\Components\Rotator.h">
       <Filter>Components</Filter>
     </ClInclude>
+    <ClInclude Include="PressFEditor\Editor.h" />
     <ClInclude Include="PressFEditor\main.h" />
   </ItemGroup>
   <ItemGroup>
@@ -24,6 +25,7 @@
     <ClCompile Include="PressFEditor\Components\Rotator.cpp">
       <Filter>Components</Filter>
     </ClCompile>
+    <ClCompile Include="PressFEditor\Editor.cpp" />
     <ClCompile Include="PressFEditor\main.cpp" />
   </ItemGroup>
 </Project>

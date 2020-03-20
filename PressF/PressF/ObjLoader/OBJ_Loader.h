@@ -26,7 +26,6 @@
 #include <glm/glm.hpp>
 #endif // OBJL_GLM_IMPL
 
-
 // Namespace: OBJL
 //
 // Description: The namespace that holds eveyrthing that

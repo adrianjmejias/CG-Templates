@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "pch.h"
-
+#include "AssetsManagement/Serialization.h"
 namespace PF
 {
 
@@ -15,7 +15,7 @@ namespace PF
 
 	class Application;
 
-	class Transform {
+	class Transform : Serializable{
 		Dirty dirty;
 		Transform *parent = nullptr;
 		std::vector<Transform *> children;
@@ -36,7 +36,14 @@ namespace PF
 		GameObject& gameObject;
 		Transform::~Transform();
 
-
+		json Serialize()
+		{
+			json j;
+			j["position"] = Serialization::Serialize(position);
+			j["rotation"] = Serialization::Serialize(rotation);
+			j["scale"] = Serialization::Serialize(scale);
+			return j;
+		}
 
 
 		Transform& SetParent(Transform *other);

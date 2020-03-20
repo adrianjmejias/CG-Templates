@@ -7,7 +7,7 @@
 //* Funciones del API :
 //-Crear escena.
 //- Agregar Modelos(Con texturas e iluminación).
-//- Navegar escena.
+//- Navegar escena. 
 //- Salvar / Cargar escena.
 //- Mostrar / Ocultar FPS(Frames per Second).
 //- Detección de colisiones.
@@ -35,43 +35,9 @@
 //	implementar al menos 3 técnicas de post - procesamiento para compezar la
 //	calificación.
 int main() {
-	PF::Engine engine;
-	engine.InitContext();
+	Editor editor;
 
-	//app.SetupContext();
-	////app.LoadModels({});
-	////app.LoadShaders({});
-	////PF::Scene scene;
-	//engine.LoadModels(
-	//		{
-	//		"assets/models/cuboPower/simpleQuad.obj",
-	//		//"assets/models/cuboPower/simpleCube.obj",
-	//		//"assets/models/cuboPower/clown.obj",
-	//		"assets/models/cuboPower/cuboPowerblend.obj"
-	//	}
-	//);
-	//std::vector<PF::MeshRenderer&> mrs;
-
-	//PF::ModelsManager& mm = engine.modelsManager;
-	//PF::Model& model = mm.LoadAsset("../assets/models/cuboPower/simpleQuad.obj");
-	
-	PF::Scene& scene = engine.AddScene(new PF::Scene("Example scene"));
-
-	PF::GameObject& ts1 = scene.AddGameObject(new PF::GameObject("test subject 1"));
-	PF::GameObject& ts2 = scene.AddGameObject(new PF::GameObject("test subject 2"));
-
-	ts1.AddComponent<Rotator>();
-
-	//PF::MeshRenderer& mr = ts1.AddComponent<PF::MeshRenderer>();
-
-	//mr.mesh = &model.meshes[0];
-
-	ts2.AddComponent<ParticleSystem>()->Start();
-
-
-
-	PF_INFO("number of gameobjects %d", scene.rootObjects.size());
-	//std::cout << "model loaded" << model.EBO;
+	editor.Init();
 
 	//app.LoadShaders(
 	//	{
@@ -103,21 +69,6 @@ int main() {
 	//	//// NORMAL_MAPPING 11 tex disp 
 	//	//std::make_tuple("BASIC.vert", "BASIC.frag"),
 	//	});
-		
-
-
-
-	engine.LoopMain();
-	//app.LoopMain();
-
-	while (engine.running)
-	{
-		engine.LoopMain();
-	}
-
-	engine.CleanContext();
-
-
 
 	return 0;
 }

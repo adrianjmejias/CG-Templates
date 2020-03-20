@@ -1,3 +1,4 @@
+#include "PressF/pch.h"
 #include "Engine.h"
 
 
@@ -16,10 +17,12 @@ namespace PF
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		win = SDL_CreateWindow("PressF",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			win_width, win_heigth, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+			win_width, win_heigth, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI );
 		glContext = SDL_GL_CreateContext(win);
-		SDL_GetWindowSize(win, &win_width, &win_heigth);
+		//SDL_GetWindowSize(win, &win_width, &win_heigth);
 		SDL_SetWindowResizable(win, (SDL_bool)true);
+		//SDL_SetWindowBordered(win, SDL_FALSE);
+
 
 
 		if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
@@ -52,6 +55,7 @@ namespace PF
 		ImGui_ImplSDL2_InitForOpenGL(win, glContext);
 		ImGui_ImplOpenGL3_Init();
 	}
+	
 	void Engine::CleanContext()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
@@ -63,46 +67,52 @@ namespace PF
 		SDL_Quit();
 	}
 
-	void Engine::LoopMain()
+	void Engine::InitRender()
 	{
-			//std::cout << "looping";
 			glViewport(0, 0, win_width, win_heigth);
-
-
-			LoopEvents();
-			LoopUpdate();
-			/*
-
-				LoopRender();
-
-				LoopUI();
-			*/
-
-
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplSDL2_NewFrame(win);
 			ImGui::NewFrame();
-			auto io = ImGui::GetIO();
 
+			glClear(GL_COLOR_BUFFER_BIT);
+			glClearColor(0,0,0, 1);
+	}
 
-			if (ImGui::Begin("Engine"))
+	void Engine::LoopUpdate()
+	{
+		auto& io = ImGui::GetIO();
+		for (auto& s : scenesLoaded)
+		{
+			s->Update(io);
+		}
+	}
+
+	void Engine::EndRender()
+	{
+		ImGui::Render();
+
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		SDL_GL_SwapWindow(win);
+	}
+
+	void Engine::LoopImGui()
+	{
+	
+		auto io = ImGui::GetIO();
+
+		if (ImGui::Begin("Engine"))
+		{
+
+			if (ImGui::Checkbox("Show FPS", &config.showFPS))
 			{
-
-				if (ImGui::Checkbox("Show FPS", &config.showFPS))
-				{
-					ImGui::Text("FPS: %f", io.Framerate);
-				}
-
-				ImGui::End();
+				ImGui::Text("FPS: %f", io.Framerate);
 			}
 
-			ImGui::ShowDemoWindow(&show_demo_window);
+			ImGui::End();
+		}
 
-			ImGui::Render();
-
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			SDL_GL_SwapWindow(win);
+		ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
 	void Engine::LoopEvents()
@@ -124,7 +134,13 @@ namespace PF
 					running = false;
 					break;
 				case SDL_Scancode::SDL_SCANCODE_R:
-					//PF_INFO("Recompiling");
+					PF_INFO("Recompiling");
+
+					for (auto& [key, val] : shaders)
+					{
+						val->ReCompile();
+					}
+
 					/*for (size_t ii = 0; ii < shaders.size(); ii++)
 					{
 					auto shader = shaders[ii];
@@ -192,9 +208,4 @@ namespace PF
 			ImGui_ImplSDL2_ProcessEvent(&e);
 		}
 	}
-
-
-
-
-	
 }
