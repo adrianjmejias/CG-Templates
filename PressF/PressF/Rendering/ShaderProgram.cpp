@@ -108,44 +108,19 @@ namespace PF
         glUseProgram(id);
     }
 
-    // utility uniform functions
-    // ------------------------------------------------------------------------
+
 
      void ShaderProgram::SetUniform(const std::string& name, bool value) const
     {
         glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value);
     }
 
-    // ------------------------------------------------------------------------
-
      void ShaderProgram::SetUniform(const std::string& name, int value) const
     {
         glUniform1i(glGetUniformLocation(id, name.c_str()), value);
     }
 
-    // utility function for checking shader compilation/linking errors.
-    // ------------------------------------------------------------------------
 
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
-
-
-    // ------------------------------------------------------------------------
 
      void ShaderProgram::SetUniform(const std::string& name, float value) const
     {

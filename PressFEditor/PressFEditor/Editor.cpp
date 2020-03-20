@@ -1,5 +1,10 @@
 #include "Editor.h"
 
+
+
+
+
+
 void Editor::Init()
 {
 	engine.InitContext();
@@ -21,7 +26,7 @@ void Editor::Init()
 	//engine.load
 
 
-	engine.LoadModel("quad", "../assets/models/adri.obj");
+	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
 
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
@@ -33,10 +38,9 @@ void Editor::Init()
 
 	//defaultMat->AddParameter(new PF::ShaderInt());
 
-	PF::Scene& scene = engine.AddScene(new PF::Scene("Example scene"));
 
-	PF::GameObject& ts1 = scene.AddGameObject(new PF::GameObject("test subject 1"));
-	PF::GameObject& ts2 = scene.AddGameObject(new PF::GameObject("test subject 2"));
+	PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
+	PF::GameObject& ts2 = engine.AddGameObject(new PF::GameObject("test subject 2"));
 
 	ts1.AddComponent<Rotator>();
 	PF::MeshRenderer* ms = ts1.AddComponent<PF::MeshRenderer>();
@@ -44,7 +48,7 @@ void Editor::Init()
 	PF::Camera* cam = ts2.AddComponent<PF::Camera>();
 
 
-	auto model = engine.GetModel("quad");
+	auto model = engine.assetManager.GetModel("quad");
 	auto mesh = model->meshes[0].get();
 	ms->mat = mesh->defaultMaterial;
 	ms->mesh = mesh;
@@ -59,7 +63,7 @@ void Editor::Init()
 
 	ts2.AddComponent<ParticleSystem>()->Start();
 
-	PF_INFO("number of gameobjects {0}", scene.rootObjects.size());
+	//PF_INFO("number of gameobjects {0}", scene.rootObjects.size());
 
 	while (engine.running)
 	{

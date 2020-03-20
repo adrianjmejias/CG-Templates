@@ -4,7 +4,6 @@
 class Rotator : public PF::Component
 {
 public:
-	[[Serialize]]
 	Vec3 speed{ 0,0,1.f };
 
 	// Inherited via Component
@@ -17,5 +16,8 @@ public:
 	// Inherited via Component
 	virtual void OnEnable() override;
 	virtual void OnDisable() override;
+
+	// Inherited via Component
+	virtual void Start() override;
 	// Inherited via Component
 };

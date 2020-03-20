@@ -1,6 +1,6 @@
 #include "PressF/pch.h"
 #include "MeshRenderer.h"
-
+#include "../Rendering/Renderer.h"
 
 namespace PF
 {
@@ -23,8 +23,13 @@ namespace PF
 	}
 	void MeshRenderer::OnEnable()
 	{
+		Renderer::GetInstance()->RegisterMesh(this);
 	}
 	void MeshRenderer::OnDisable()
+	{
+		Renderer::GetInstance()->UnRegisterMesh(this);
+	}
+	void MeshRenderer::Start()
 	{
 	}
 }

@@ -1,5 +1,5 @@
 #pragma once 
-#include "../Component.h"
+#include "PressF/EntityComponent/Component.h"
 
 namespace PF
 {
@@ -13,5 +13,8 @@ namespace PF
 		// Inherited via Component
 		virtual void OnEnable() override;
 		virtual void OnDisable() override;
+
+		// Inherited via Component
+		virtual void Start() override;
 	};
 }

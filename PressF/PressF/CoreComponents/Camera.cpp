@@ -44,5 +44,9 @@ namespace PF
 	void Camera::OnDisable()
 	{
 	}
+
+	void Camera::Start()
+	{
+	}
 	
 }

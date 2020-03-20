@@ -7,7 +7,7 @@
 namespace PF
 {
 	template  <typename Key, typename AssetType>
-	struct AssetMapBase : public std::map<std::string, Owns<AssetType>>
+	struct AssetMapBase : public std::unordered_map<std::string, Owns<AssetType>>
 	{
 		bool HasAsset(const std::string& path)
 		{
@@ -38,13 +38,13 @@ namespace PF
 	struct AssetsManager
 	{
 	protected:
+	public:
 		UInt lastId = 0;
 		AssetMap<Texture> textures;
 		AssetMap<Model> models;
 		AssetMap<Material> materials;
 		AssetMap<ShaderProgram> shaders;
 
-	public:
 		Model* AddModel()
 		{
 

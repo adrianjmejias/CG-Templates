@@ -16,8 +16,6 @@
 #include <fstream>
 #include <tuple>
 
-
-
 #include "AssetsManagement/Serialization.h"
-#include "types.h"
-#include "Logger.h"
+#include "PressF/Core/types.h"
+#include "PressF/Core/Logger.h"

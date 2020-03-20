@@ -15,7 +15,8 @@ void Rotator::HandleEvent(const SDL_Event& e)
 		PF_INFO("it works");
 	}
 }
-[[hola ]]
+
+
 json Rotator::Serialize()
 {
 	json j;
@@ -31,5 +32,9 @@ void Rotator::OnEnable()
 }
 
 void Rotator::OnDisable()
+{
+}
+
+void Rotator::Start()
 {
 }

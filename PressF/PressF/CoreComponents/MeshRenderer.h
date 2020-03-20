@@ -1,6 +1,7 @@
 #pragma once
-#include "../Component.h"
-#include "../Rendering/Mesh.h"
+#include "PressF/pch.h"
+#include "PressF/EntityComponent/Component.h"
+#include "PressF/Rendering/Mesh.h"
 
 
 
@@ -23,6 +24,10 @@ namespace PF
 		virtual void OnEnable() override;
 
 		virtual void OnDisable() override;
+
+
+		// Inherited via Component
+		virtual void Start() override;
 
 	};
 }

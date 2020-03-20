@@ -1,50 +1,13 @@
 #pragma once
+#include "PressF/AssetsManagement/Asset.h"
 #include "Transform.h"
-#include "AssetsManagement/Asset.h"
+#include "Component.h"
 
 namespace PF
 {
 
-#define COMP_PARAMS GameObject* go, Transform *t
-#define COMP_INIT : Component(go,t)
-
-
-	class Component: Serializable
-	{
-		int enabled = 0;
-	public:
-
-		void SetActive(bool newState)
-		{
-			if (enabled != newState)
-			{
-				enabled = newState;
-				if (newState)
-				{
-					OnEnable();
-				}
-				else
-				{
-					OnDisable();
-				}
-			}
-		}
-		GameObject* gameObject;
-		Transform* transform;
-		Component();// COMP_PARAMS
-		virtual void Update(const ImGuiIO& io) = 0;
-		virtual void HandleEvent(const SDL_Event& e) = 0;
-		virtual void OnEnable() = 0;
-		virtual void OnDisable() = 0;
-		~Component();
-
-		virtual json Serialize() = 0;
-	};
-
 	class GameObject: Asset
 	{
-
-		friend class Application;
 	public:
 		std::vector<Owns<Component>> components;
 		Transform transform;
@@ -62,14 +25,13 @@ namespace PF
 
 		json Serialize() override;
 
-		void Update(const ImGuiIO& io)
-		{
-			for (auto &c : components)
-			{
-				PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
-				c->Update(io);
-			}
-		}
+		void Update(const ImGuiIO& io);
+
+		void OnEnable();
+
+		void OnDisable();
+
+		void Start();
 	};
 
 	template<typename TT, typename ...Args>

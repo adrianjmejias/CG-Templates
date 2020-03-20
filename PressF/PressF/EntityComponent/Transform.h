@@ -1,21 +1,17 @@
 ﻿#pragma once
-#include "pch.h"
-#include "AssetsManagement/Serialization.h"
+#include "PressF/pch.h"
+
 namespace PF
 {
-
-
 	class GameObject;
-	class Transform;
+
 	enum class Dirty {
 		None,
 		Acum,
 		Model,
 	};
 
-	class Application;
-
-	class Transform : Serializable{
+	class Transform : Serializable {
 		Dirty dirty;
 		Transform *parent = nullptr;
 		std::vector<Transform *> children;

@@ -20,7 +20,7 @@ namespace PF
 		Int width;
 		Int height;
 		Int nComponents;
-		ColorFormat format;
+		ColorFormat format = ColorFormat::RED;
 
 		static Owns<Texture> Texture::TextureFromFile(const std::string& _path)
 		{

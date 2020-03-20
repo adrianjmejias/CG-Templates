@@ -7,7 +7,7 @@ namespace PF
 	struct Asset: public Serializable
 	{
 	public:
-		unsigned int assetId;
+		unsigned int assetId = 0;
 		std::string name;
 		std::string path;
 

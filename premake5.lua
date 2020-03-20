@@ -38,7 +38,7 @@ project "PressF"
 
    pchheader "%{prj.name}/pch.h"
    pchsource "PressF/PressF/pch.cpp"
-
+   -- forceincludes { "PressF" }
    includedirs { "%{prj.name}/" } 
    files { 
       "%{prj.name}/**.h",

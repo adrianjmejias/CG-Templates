@@ -134,16 +134,19 @@
   <ItemGroup>
     <ClInclude Include="PressF\AssetsManagement\Asset.h" />
     <ClInclude Include="PressF\AssetsManagement\AssetsManager.h" />
+    <ClInclude Include="PressF\AssetsManagement\Scene.h" />
     <ClInclude Include="PressF\AssetsManagement\Serialization.h" />
-    <ClInclude Include="PressF\Component.h" />
+    <ClInclude Include="PressF\Core\Engine.h" />
+    <ClInclude Include="PressF\Core\Logger.h" />
+    <ClInclude Include="PressF\Core\types.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
-    <ClInclude Include="PressF\CoreComponents\InternalComponent.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
-    <ClInclude Include="PressF\Engine.h" />
-    <ClInclude Include="PressF\GameObject.h" />
-    <ClInclude Include="PressF\Logger.h" />
-    <ClInclude Include="PressF\Model.h" />
+    <ClInclude Include="PressF\EntityComponent\Component.h" />
+    <ClInclude Include="PressF\EntityComponent\GameObject.h" />
+    <ClInclude Include="PressF\EntityComponent\Transform.h" />
+    <ClInclude Include="PressF\ImGui\imgui_impl_opengl3.h" />
+    <ClInclude Include="PressF\ImGui\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h" />
     <ClInclude Include="PressF\PressF.h" />
     <ClInclude Include="PressF\Rendering\Material.h" />
@@ -153,26 +156,24 @@
     <ClInclude Include="PressF\Rendering\ShaderParameters.h" />
     <ClInclude Include="PressF\Rendering\ShaderProgram.h" />
     <ClInclude Include="PressF\Rendering\Texture.h" />
-    <ClInclude Include="PressF\Scene.h" />
-    <ClInclude Include="PressF\Transform.h" />
-    <ClInclude Include="PressF\imgui_impl_opengl3.h" />
-    <ClInclude Include="PressF\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\pch.h" />
     <ClInclude Include="PressF\stb_load.h" />
-    <ClInclude Include="PressF\types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\AssetsManagement\Asset.cpp" />
     <ClCompile Include="PressF\AssetsManagement\AssetsManager.cpp" />
+    <ClCompile Include="PressF\AssetsManagement\Scene.cpp" />
     <ClCompile Include="PressF\AssetsManagement\Serialization.cpp" />
-    <ClCompile Include="PressF\Component.cpp" />
+    <ClCompile Include="PressF\Core\Engine.cpp" />
+    <ClCompile Include="PressF\Core\Logger.cpp" />
+    <ClCompile Include="PressF\Core\types.cpp" />
     <ClCompile Include="PressF\CoreComponents\Camera.cpp" />
-    <ClCompile Include="PressF\CoreComponents\InternalComponent.cpp" />
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp" />
-    <ClCompile Include="PressF\Engine.cpp" />
-    <ClCompile Include="PressF\GameObject.cpp" />
-    <ClCompile Include="PressF\Logger.cpp" />
-    <ClCompile Include="PressF\Model.cpp" />
+    <ClCompile Include="PressF\EntityComponent\Component.cpp" />
+    <ClCompile Include="PressF\EntityComponent\GameObject.cpp" />
+    <ClCompile Include="PressF\EntityComponent\Transform.cpp" />
+    <ClCompile Include="PressF\ImGui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="PressF\ImGui\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp" />
     <ClCompile Include="PressF\Rendering\Material.cpp" />
     <ClCompile Include="PressF\Rendering\Mesh.cpp" />
@@ -182,15 +183,10 @@
     <ClCompile Include="PressF\Rendering\ShaderParameters.cpp" />
     <ClCompile Include="PressF\Rendering\ShaderProgram.cpp" />
     <ClCompile Include="PressF\Rendering\Texture.cpp" />
-    <ClCompile Include="PressF\Scene.cpp" />
-    <ClCompile Include="PressF\Transform.cpp" />
-    <ClCompile Include="PressF\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="PressF\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PressF\stb_load.cpp" />
-    <ClCompile Include="PressF\types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dependencies\glad\glad.vcxproj">

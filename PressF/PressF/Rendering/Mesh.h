@@ -20,8 +20,8 @@ namespace PF
 		std::string name;
 		VertexArrayObject VAO;
 		VertexBufferObject EBO, VBO;
-		GLsizei offset, nElem;
-		Ref<Material> defaultMaterial;
+		GLsizei offset =0, nElem=0;
+		Ref<Material> defaultMaterial = nullptr;
 		std::list<MeshRenderer*> renderersAssociated;
 
 		void Bind()

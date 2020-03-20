@@ -1,7 +1,19 @@
 #include "PressF/pch.h"
 #include "Engine.h"
 
-
+//static void GLAPIENTRY
+//MessageCallback(GLenum source,
+//	GLenum type,
+//	GLuint id,
+//	GLenum severity,
+//	GLsizei length,
+//	const GLchar* message,
+//	const void* userParam)
+//{
+//	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+//		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+//		type, severity, message);
+//}
 namespace PF
 {
 	void Engine::InitContext()
@@ -39,7 +51,8 @@ namespace PF
 			<< GLVersion.minor << std::endl;
 		/* OpenGL setup */
 		glViewport(0, 0, win_width, win_heigth);
-
+	/*	glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0);*/
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -54,6 +67,10 @@ namespace PF
 		// Setup Platform/Renderer bindings
 		ImGui_ImplSDL2_InitForOpenGL(win, glContext);
 		ImGui_ImplOpenGL3_Init();
+
+
+
+		renderer = Renderer::GetInstance();
 	}
 	
 	void Engine::CleanContext()
@@ -66,6 +83,18 @@ namespace PF
 		SDL_DestroyWindow(win);
 		SDL_Quit();
 	}
+
+
+	void Engine::OnEnable()
+	{
+		scene.OnEnable();
+	}
+
+	void Engine::OnDisable()
+	{
+		scene.OnDisable();
+	}
+
 
 	void Engine::InitRender()
 	{
@@ -81,10 +110,10 @@ namespace PF
 	void Engine::LoopUpdate()
 	{
 		auto& io = ImGui::GetIO();
-		for (auto& s : scenesLoaded)
-		{
-			s->Update(io);
-		}
+		//for (auto& s : scenesLoaded)
+		//{
+		//	s->Update(io);
+		//}
 	}
 
 	void Engine::EndRender()
@@ -136,7 +165,7 @@ namespace PF
 				case SDL_Scancode::SDL_SCANCODE_R:
 					PF_INFO("Recompiling");
 
-					for (auto& [key, val] : shaders)
+					for (auto& [key, val] : assetManager.shaders)
 					{
 						val->ReCompile();
 					}

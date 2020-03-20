@@ -43,7 +43,7 @@ class Editor
 	ImGui::FileBrowser fbrowser;
 
 public: 
+	Editor() = default;
 	void Init();
-
 	void LoopImGui();
 };

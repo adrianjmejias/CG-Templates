@@ -1,5 +1,6 @@
 #include "PressF/pch.h"
 #include "GameObject.h"
+#include "Component.h"
 namespace PF{
 
 	GameObject::GameObject() : transform(*this)
@@ -12,7 +13,6 @@ namespace PF{
 	GameObject::~GameObject()
 	{
 		//std::cout << "Bye GameObject"<<std::endl;
-
 	}
 
 
@@ -32,6 +32,42 @@ namespace PF{
 		}
 
 		return j;
+	}
+
+	void GameObject::Update(const ImGuiIO& io)
+	{
+		for (auto& c : components)
+		{
+			PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
+			c->Update(io);
+		}
+	}
+
+	 void GameObject::OnEnable()
+	{
+		for (auto& c : components)
+		{
+			PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
+			c->OnEnable();
+		}
+	}
+
+	 void GameObject::OnDisable()
+	{
+		for (auto& c : components)
+		{
+			PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
+			c->OnDisable();
+		}
+	}
+
+	 void GameObject::Start()
+	{
+		for (auto& c : components)
+		{
+			PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
+			c->Start();
+		}
 	}
 
 
@@ -64,19 +100,6 @@ namespace PF{
 		comp->transform = &transform;
 		components.push_back(std::move(cptr));
 		return comp;
-	}
-
-
-
-
-
-	Component::Component() //COMP_PARAMS : transform(t), gameObject(go)
-	{
-	}
-
-	Component::~Component()
-	{
-		//std::cout << "Bye Component" << std::endl;
 	}
 }
 
