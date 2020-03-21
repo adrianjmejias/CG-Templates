@@ -9,7 +9,6 @@ struct GPUObject
 	operator unsigned int&() {
 		return id;
 	}
-
 	virtual void Bind() = 0;
 };
 

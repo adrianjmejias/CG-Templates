@@ -12,7 +12,7 @@ namespace PF
 	{
 	public:
 		std::vector<Shares<ShaderParameter>> parameters;
-		Shares<ShaderProgram> shader;
+		Ref<ShaderProgram> shader;
 		 
 		//Shares<ShaderParameter> operator[](const std::string& idx)
 		//{

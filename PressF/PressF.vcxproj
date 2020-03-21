@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="PressF\AssetsManagement\Asset.h" />
+    <ClInclude Include="PressF\AssetsManagement\AssetMap.h" />
     <ClInclude Include="PressF\AssetsManagement\AssetsManager.h" />
     <ClInclude Include="PressF\AssetsManagement\Scene.h" />
     <ClInclude Include="PressF\AssetsManagement\Serialization.h" />

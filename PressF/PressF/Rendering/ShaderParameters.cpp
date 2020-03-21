@@ -4,7 +4,7 @@
 
 namespace PF
 {
-	void ShaderParameter::Bind(const Shares<ShaderProgram>& s) {
+	void ShaderParameter::Bind(const Ref<ShaderProgram>& s) {
 		value->Bind(name, s);
 	}
 

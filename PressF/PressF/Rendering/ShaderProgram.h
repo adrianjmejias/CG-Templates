@@ -40,12 +40,12 @@ namespace PF
 
         // constructor generates the shader on the fly
         // ------------------------------------------------------------------------
-        ShaderProgram(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
+        ShaderProgram(std::string vertexPath, std::string fragmentPath, std::string geometryPath = "");
         // activate the shader
         // ------------------------------------------------------------------------
+        ~ShaderProgram();
         
         void ReCompile();
-        
         
         void Bind() override;
         // utility uniform functions

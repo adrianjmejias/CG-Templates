@@ -10,18 +10,16 @@ namespace PF
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
 
-     ShaderProgram::ShaderProgram(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
+     ShaderProgram::ShaderProgram(std::string vertexPath, std::string fragmentPath, std::string geometryPath)
     {
         // 1. retrieve the vertex/fragment source code from filePath
-         vPath = vertexPath;
-         fPath = fragmentPath;
+         vPath = (vertexPath);
+         fPath = (fragmentPath);
          ReCompile();
     }
 
      void ShaderProgram::ReCompile()
      {
-         const char* vertexPath = vPath.c_str();
-         const char* fragmentPath = fPath.c_str();
          const char* geometryPath = nullptr;
 
          std::string vertexCode;
@@ -37,8 +35,8 @@ namespace PF
          try
          {
              // open files
-             vShaderFile.open(vertexPath);
-             fShaderFile.open(fragmentPath);
+             vShaderFile.open(vPath.c_str());
+             fShaderFile.open(fPath.c_str());
              std::stringstream vShaderStream, fShaderStream;
              // read file's buffer contents into streams
              vShaderStream << vShaderFile.rdbuf();
@@ -88,6 +86,11 @@ namespace PF
              CheckCompileErrors(geometry, "GEOMETRY");
          }
          // shader Program
+         if (id)
+         {
+             glDeleteProgram(id);
+         }
+
          id = glCreateProgram();
          glAttachShader(id, vertex);
          glAttachShader(id, fragment);
@@ -103,11 +106,19 @@ namespace PF
 
      }
 
-     void ShaderProgram::Bind()
+    void ShaderProgram::Bind()
     {
         glUseProgram(id);
     }
 
+
+     ShaderProgram::~ShaderProgram()
+     {
+         if (id)
+         {
+            glDeleteProgram(id);
+         }
+     }
 
 
      void ShaderProgram::SetUniform(const std::string& name, bool value) const
@@ -119,8 +130,6 @@ namespace PF
     {
         glUniform1i(glGetUniformLocation(id, name.c_str()), value);
     }
-
-
 
      void ShaderProgram::SetUniform(const std::string& name, float value) const
     {

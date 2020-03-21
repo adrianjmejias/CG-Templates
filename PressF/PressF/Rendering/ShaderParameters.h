@@ -7,7 +7,7 @@ namespace PF
 
 	struct ShaderParameterValue
 	{
-		virtual void Bind(const std::string name, const Shares<ShaderProgram>& shader) = 0;
+		virtual void Bind(const std::string name, const Ref<ShaderProgram>& shader) = 0;
 	};
 
     struct ShaderParameter
@@ -23,8 +23,7 @@ namespace PF
 		template <typename TT, typename ...Args>
 		static ShaderParameter* Create(const std::string& _name, Args&&... params);
 
-		virtual void Bind(const Shares<ShaderProgram>& s);
-
+		virtual void Bind(const Ref<ShaderProgram>& s);
 	};
 
 
@@ -41,7 +40,7 @@ namespace PF
 	{
 		ShaderInt(Int& val): Int(val){}
 
-		virtual void Bind(const std::string name, const Shares<ShaderProgram>& shader) override
+		virtual void Bind(const std::string name, const Ref<ShaderProgram>& shader) override
 		{
 			shader->SetUniform(name, *this);
 		}
@@ -51,7 +50,7 @@ namespace PF
 	{
 		ShaderVec3(Vec3& val) : Vec3(val) {}
 
-		virtual void Bind(const std::string name, const Shares<ShaderProgram>& shader) override
+		virtual void Bind(const std::string name, const Ref<ShaderProgram>& shader) override
 		{
 			shader->SetUniform(name, *this);
 		}

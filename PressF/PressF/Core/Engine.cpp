@@ -104,9 +104,9 @@ namespace PF
 
 		
 		scene.Update(io);
-
-
 		renderer->Render();
+
+
 		//for (auto& s : scenesLoaded)
 		//{
 		//	s->Update(io);

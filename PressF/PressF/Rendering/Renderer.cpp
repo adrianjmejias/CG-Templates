@@ -35,6 +35,8 @@ namespace PF
 
 	void Renderer::Render()
 	{
+
+		Camera *c = cameras.top();
 		for (auto [mesh, mrList] : objects)
 		{
 			mesh->Bind();
@@ -42,6 +44,8 @@ namespace PF
 			{
 				mr->mat->Bind();
 				mr->mat->shader->SetUniform("model", mr->transform->GetAccumulated());
+				mr->mat->shader->SetUniform("view", c->transform->GetAccumulated());
+				//mr->mat->shader->SetUniform("view", c->());
 				mesh->Render();
 			}
 		}

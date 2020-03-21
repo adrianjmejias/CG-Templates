@@ -36,6 +36,9 @@
     <ClInclude Include="PressF\AssetsManagement\Asset.h">
       <Filter>AssetsManagement</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\AssetsManagement\AssetMap.h">
+      <Filter>AssetsManagement</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\AssetsManagement\AssetsManager.h">
       <Filter>AssetsManagement</Filter>
     </ClInclude>
