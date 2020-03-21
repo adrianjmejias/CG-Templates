@@ -169,7 +169,6 @@
     <ClInclude Include="PressF\Rendering\ShaderProgram.h" />
     <ClInclude Include="PressF\Rendering\Texture.h" />
     <ClInclude Include="PressF\pch.h" />
-    <ClInclude Include="PressF\stb_load.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\AssetsManagement\Asset.cpp" />
@@ -198,7 +197,6 @@
     <ClCompile Include="PressF\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PressF\stb_load.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\dependencies\glad\glad.vcxproj">

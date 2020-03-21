@@ -82,6 +82,11 @@ namespace PF
 		SDL_Quit();
 	}
 
+	void Engine::Start()
+	{
+		scene.Start();
+	}
+
 	void Engine::InitRender()
 	{
 			glViewport(0, 0, win_width, win_heigth);
@@ -97,7 +102,11 @@ namespace PF
 	{
 		auto& io = ImGui::GetIO();
 
+		
 		scene.Update(io);
+
+
+		renderer->Render();
 		//for (auto& s : scenesLoaded)
 		//{
 		//	s->Update(io);

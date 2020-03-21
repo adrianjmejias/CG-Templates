@@ -1,5 +1,6 @@
 #include "PressF/pch.h"
 #include "Camera.h"
+#include "PressF/Rendering/Renderer.h"
 
 
 namespace PF
@@ -38,15 +39,17 @@ namespace PF
 
 	void Camera::OnEnable()
 	{
-		transform->Translate(0, 0, -4);
+		PF::Renderer::GetInstance()->RegisterCamera(this);
 	}
 
 	void Camera::OnDisable()
 	{
+		PF::Renderer::GetInstance()->UnRegisterCamera(this);
 	}
 
 	void Camera::Start()
 	{
+		transform->Translate(0, 0, -4);
 	}
 	
 }

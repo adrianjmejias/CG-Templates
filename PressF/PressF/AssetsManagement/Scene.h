@@ -11,15 +11,13 @@ namespace PF
 
 		std::string name;
 		std::vector<Owns<GameObject>> rootObjects;
+		Scene();
 		Scene(const std::string& _name);
 
 
 		GameObject& AddGameObject(GameObject* go);
 		void Serialize();
-		Scene();
 		void Update(const ImGuiIO& io);
-		void OnEnable();
-		void OnDisable();
 		void Start();
 	};
 }

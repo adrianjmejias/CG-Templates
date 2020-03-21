@@ -27,25 +27,15 @@ namespace PF
 		}
 	}
 
-	void Scene::OnEnable()
-	{
-		for (auto& go : rootObjects)
-		{
-			go->OnEnable();
-		}
-	}
-
-	void Scene::OnDisable()
-	{
-		for (auto& go : rootObjects)
-		{
-			go->OnDisable();
-		}
-	}
-
-
 	void Scene::Start()
 	{
-
+		for (auto& go : rootObjects)
+		{
+			for (auto& c : go->components)
+			{
+				c->Start();
+				c->OnActiveStateChange();
+			}
+		}
 	}
 }

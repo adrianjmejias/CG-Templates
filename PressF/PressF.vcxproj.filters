@@ -140,7 +140,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\pch.h" />
-    <ClInclude Include="PressF\stb_load.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressF\AssetsManagement\Asset.cpp">
@@ -213,6 +212,5 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\pch.cpp" />
-    <ClCompile Include="PressF\stb_load.cpp" />
   </ItemGroup>
 </Project>

@@ -8,7 +8,7 @@ namespace PF
 
 	class Component : Serializable
 	{
-		int enabled = 0;
+		int enabled = 1;
 	public:
 		void SetActive(bool newState);
 		void OnActiveStateChange();

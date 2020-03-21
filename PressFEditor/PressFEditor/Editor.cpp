@@ -61,10 +61,10 @@ void Editor::Init()
 
 	//mr.mesh = &model.meshes[0];
 
-	ts2.AddComponent<ParticleSystem>()->Start();
+	//ts2.AddComponent<ParticleSystem>()->Start();
 
 	//PF_INFO("number of gameobjects {0}", scene.rootObjects.size());
-
+	engine.Start();
 	while (engine.running)
 	{
 		engine.LoopEvents();

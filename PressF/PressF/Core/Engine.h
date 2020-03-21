@@ -63,11 +63,7 @@ namespace PF
         void InitContext();
 		void CleanContext();
 
-		void OnEnable();
-
-		void OnDisable();
-
-
+		void Start();
 		void InitRender();
 		void EndRender();
 		void LoopImGui();

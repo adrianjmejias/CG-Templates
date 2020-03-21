@@ -1,58 +1,52 @@
 #pragma once
 #include "../pch.h"
-#include "../CoreComponents/CoreComponents.h"
+
+#include "PressF/CoreComponents/Camera.h"
+#include "PressF/CoreComponents/MeshRenderer.h"
 
 namespace PF
 {
+	static std::function<bool(Camera*,Camera*)> cameraComparer = [](Camera* l, Camera* r) -> bool { return *(l->priority) < *(r->priority); };
 	struct Renderer
 	{
 		static Owns<Renderer> instance;
-		static Renderer* GetInstance()
-		{
-			if (instance.get() == nullptr)
-			{
-				instance.reset(new Renderer());
-			}
-			return instance.get();
-		}
-
-
 		std::unordered_map<GPUMesh*, std::list<MeshRenderer*>> objects;
-		void RegisterMesh(MeshRenderer * mesh)
+		std::priority_queue < Camera*, std::vector<Camera*>, decltype(cameraComparer)> cameras{ cameraComparer };
+
+		static Renderer* GetInstance();
+
+		void RegisterMesh(MeshRenderer* mesh);
+
+		void UnRegisterMesh(MeshRenderer* mesh);
+
+		void RegisterCamera(Camera *cam)
 		{
-			objects[mesh->mesh].push_back(mesh);
+			cameras.push(cam);
 		}
 
-		void UnRegisterMesh(MeshRenderer *mesh)
-		{
-			auto mrList = objects[mesh->mesh];
-			//std::remove(mrList.begin(), mrList.end(), mesh);
-			mrList.erase(std::find(mrList.begin(), mrList.end(), mesh));
-		}
+		void UnRegisterCamera(Camera *cam)
+		{	
+			std::list<Camera*> cams;
 
-		void RegisterCamera()
-		{
-
-		}
-
-		void UnRegisterCamera()
-		{
-
-		}
-
-
-		void Render()
-		{
-			for (auto [mesh, mrList] : objects)
+			// esto esta horrible, arreglar despues
+			while (!cameras.empty())
 			{
-				mesh->Bind();
-				for (auto mr : mrList)
+				Camera* c = cameras.top();
+
+				if (c != cam)
 				{
-					mr->mat->Bind();
-					mesh->Render();
+					cams.push_back(c);
 				}
 			}
+
+			while (!cams.empty())
+			{
+				cameras.push(cams.front());
+				cams.pop_front();
+			}
 		}
+
+		void Render();
 
 		Ref<Camera> mainCamera = nullptr;
 	};
