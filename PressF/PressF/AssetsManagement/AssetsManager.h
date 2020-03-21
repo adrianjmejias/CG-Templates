@@ -39,7 +39,7 @@ namespace PF
 	{
 	protected:
 	public:
-		UInt lastId = 0;
+		UInt lastId{ 0 };
 		AssetMap<Texture> textures;
 		AssetMap<Model> models;
 		AssetMap<Material> materials;

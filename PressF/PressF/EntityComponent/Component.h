@@ -11,6 +11,8 @@ namespace PF
 		int enabled = 0;
 	public:
 		void SetActive(bool newState);
+		void OnActiveStateChange();
+
 		GameObject* gameObject;
 		Transform* transform;
 		Component();// COMP_PARAMS

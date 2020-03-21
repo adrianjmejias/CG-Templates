@@ -7,6 +7,15 @@
     <Filter Include="Core">
       <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Types">
+      <UniqueIdentifier>{526248CE-3E1A-8A1B-A721-637793F8240C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Types\Base">
+      <UniqueIdentifier>{1C029557-888D-021C-919E-8510FDA85E1C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Types\Extensions">
+      <UniqueIdentifier>{31C8B0CB-9D34-6CC6-6628-0424D2538E2E}</UniqueIdentifier>
+    </Filter>
     <Filter Include="CoreComponents">
       <UniqueIdentifier>{D4E38443-C0B1-7849-A945-E96F95B254AE}</UniqueIdentifier>
     </Filter>
@@ -42,8 +51,47 @@
     <ClInclude Include="PressF\Core\Logger.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Core\types.h">
+    <ClInclude Include="PressF\Core\OpenGL.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Base.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\BaseDataType.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Color.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Float.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Int.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Mat4.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\UInt.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Vec2.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Vec3.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Vec4.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Extensions\Clock.h">
+      <Filter>Core\Types\Extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Extensions\Range.h">
+      <Filter>Core\Types\Extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\Types\types.h">
+      <Filter>Core\Types</Filter>
     </ClInclude>
     <ClInclude Include="PressF\CoreComponents\Camera.h">
       <Filter>CoreComponents</Filter>
@@ -77,9 +125,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Rendering\Mesh.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\Rendering\OpenGL.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Rendering\Renderer.h">
@@ -116,8 +161,11 @@
     <ClCompile Include="PressF\Core\Logger.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Core\types.cpp">
+    <ClCompile Include="PressF\Core\OpenGL.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Core\Types\types.cpp">
+      <Filter>Core\Types</Filter>
     </ClCompile>
     <ClCompile Include="PressF\CoreComponents\Camera.cpp">
       <Filter>CoreComponents</Filter>
@@ -147,9 +195,6 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Rendering\Mesh.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Rendering\OpenGL.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Rendering\Renderer.cpp">

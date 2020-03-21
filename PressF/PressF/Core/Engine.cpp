@@ -68,8 +68,6 @@ namespace PF
 		ImGui_ImplSDL2_InitForOpenGL(win, glContext);
 		ImGui_ImplOpenGL3_Init();
 
-
-
 		renderer = Renderer::GetInstance();
 	}
 	
@@ -83,18 +81,6 @@ namespace PF
 		SDL_DestroyWindow(win);
 		SDL_Quit();
 	}
-
-
-	void Engine::OnEnable()
-	{
-		scene.OnEnable();
-	}
-
-	void Engine::OnDisable()
-	{
-		scene.OnDisable();
-	}
-
 
 	void Engine::InitRender()
 	{
@@ -110,6 +96,8 @@ namespace PF
 	void Engine::LoopUpdate()
 	{
 		auto& io = ImGui::GetIO();
+
+		scene.Update(io);
 		//for (auto& s : scenesLoaded)
 		//{
 		//	s->Update(io);

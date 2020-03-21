@@ -41,11 +41,11 @@
 	class ParticleSystem : public PF::Component
 	{
 	public:
-		Float spawningRate = 3;
+		Float spawningRate{ 3 };
 		std::vector<Particle> particles;
-		UInt maxParticles = 500;
-		UInt firstEmitted = 0;
-		UInt nextToEmmit = 0;
+		UInt maxParticles{ 500 };
+		UInt firstEmitted{ 0 };
+		UInt nextToEmmit = { 0 };
 		Clock clockEmit;
 
 
@@ -55,7 +55,7 @@
 		// Inherited via Component
 		virtual void Update(const ImGuiIO& io) override;
 		virtual void HandleEvent(const SDL_Event& e) override;
-		inline UInt GetNextParticleIndex(UInt ii);
+		inline unsigned int GetNextParticleIndex(UInt ii);
 
 
 		// Inherited via Component

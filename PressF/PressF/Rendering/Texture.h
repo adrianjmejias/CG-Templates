@@ -1,6 +1,7 @@
 #pragma once
-#include "OpenGL.h"
-#include "../AssetsManagement/Asset.h"
+#include "PressF/Core/OpenGL.h"
+#include "PressF/AssetsManagement//Asset.h"
+
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -29,7 +30,7 @@ namespace PF
 
 			glGenTextures(1, &tex->id);
 
-			unsigned char* data = stbi_load(tex->path.c_str(), tex->width, tex->height , tex->nComponents, 0);
+			unsigned char* data = stbi_load(tex->path.c_str(), &tex->width.value, &tex->height.value , &tex->nComponents.value, 0);
 			if (data)
 			{
 				switch (tex->nComponents)

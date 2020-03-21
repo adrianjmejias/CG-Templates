@@ -1,6 +1,6 @@
 #pragma once
-#include "../pch.h"
-#include "OpenGL.h"
+#include "PressF/pch.h"
+#include "PressF/Core/OpenGL.h"
 
 namespace PF
 {

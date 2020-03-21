@@ -1,6 +1,5 @@
 
 
-#include "Rendering/OpenGL.h"
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <imgui.h>
@@ -17,5 +16,6 @@
 #include <tuple>
 
 #include "AssetsManagement/Serialization.h"
-#include "PressF/Core/types.h"
+#include "PressF/Core/Types/types.h"
+#include "Core/OpenGL.h"
 #include "PressF/Core/Logger.h"

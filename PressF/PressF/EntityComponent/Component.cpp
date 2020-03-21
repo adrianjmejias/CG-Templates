@@ -17,14 +17,17 @@ namespace PF
 		if (enabled != newState)
 		{
 			enabled = newState;
-			if (newState)
-			{
-				OnEnable();
-			}
-			else
-			{
-				OnDisable();
-			}
+			OnActiveStateChange();	
+		}
+	}
+
+	void Component::OnActiveStateChange()
+	{
+		if (enabled) {
+			OnEnable();
+		}
+		else {
+			OnDisable();
 		}
 	}
 

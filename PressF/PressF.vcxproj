@@ -138,7 +138,20 @@
     <ClInclude Include="PressF\AssetsManagement\Serialization.h" />
     <ClInclude Include="PressF\Core\Engine.h" />
     <ClInclude Include="PressF\Core\Logger.h" />
-    <ClInclude Include="PressF\Core\types.h" />
+    <ClInclude Include="PressF\Core\OpenGL.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Base.h" />
+    <ClInclude Include="PressF\Core\Types\Base\BaseDataType.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Color.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Float.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Int.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Mat4.h" />
+    <ClInclude Include="PressF\Core\Types\Base\UInt.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Vec2.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Vec3.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Vec4.h" />
+    <ClInclude Include="PressF\Core\Types\Extensions\Clock.h" />
+    <ClInclude Include="PressF\Core\Types\Extensions\Range.h" />
+    <ClInclude Include="PressF\Core\Types\types.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
@@ -151,7 +164,6 @@
     <ClInclude Include="PressF\PressF.h" />
     <ClInclude Include="PressF\Rendering\Material.h" />
     <ClInclude Include="PressF\Rendering\Mesh.h" />
-    <ClInclude Include="PressF\Rendering\OpenGL.h" />
     <ClInclude Include="PressF\Rendering\Renderer.h" />
     <ClInclude Include="PressF\Rendering\ShaderParameters.h" />
     <ClInclude Include="PressF\Rendering\ShaderProgram.h" />
@@ -166,7 +178,8 @@
     <ClCompile Include="PressF\AssetsManagement\Serialization.cpp" />
     <ClCompile Include="PressF\Core\Engine.cpp" />
     <ClCompile Include="PressF\Core\Logger.cpp" />
-    <ClCompile Include="PressF\Core\types.cpp" />
+    <ClCompile Include="PressF\Core\OpenGL.cpp" />
+    <ClCompile Include="PressF\Core\Types\types.cpp" />
     <ClCompile Include="PressF\CoreComponents\Camera.cpp" />
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp" />
     <ClCompile Include="PressF\EntityComponent\Component.cpp" />
@@ -177,7 +190,6 @@
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp" />
     <ClCompile Include="PressF\Rendering\Material.cpp" />
     <ClCompile Include="PressF\Rendering\Mesh.cpp" />
-    <ClCompile Include="PressF\Rendering\OpenGL.cpp" />
     <ClCompile Include="PressF\Rendering\Renderer.cpp" />
     <ClCompile Include="PressF\Rendering\ShaderParameter.cpp" />
     <ClCompile Include="PressF\Rendering\ShaderParameters.cpp" />
