@@ -137,14 +137,12 @@
   <ItemGroup>
     <ClInclude Include="PressFEditor\Components\CameraController.h" />
     <ClInclude Include="PressFEditor\Components\Components.h" />
-    <ClInclude Include="PressFEditor\Components\ParticleSystem.h" />
     <ClInclude Include="PressFEditor\Components\Rotator.h" />
     <ClInclude Include="PressFEditor\Editor.h" />
     <ClInclude Include="PressFEditor\main.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressFEditor\Components\CameraController.cpp" />
-    <ClCompile Include="PressFEditor\Components\ParticleSystem.cpp" />
     <ClCompile Include="PressFEditor\Components\Rotator.cpp" />
     <ClCompile Include="PressFEditor\Editor.cpp" />
     <ClCompile Include="PressFEditor\main.cpp" />

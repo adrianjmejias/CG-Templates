@@ -56,24 +56,27 @@ namespace PF
 			ShaderProgram* s;
 
 			*mPtr = mat;
+			auto its = shaders.find(std::to_string(mat.illum));
+			if (its != shaders.end())
+			{
+				s = its->second.get();
+			}
+			else
+			{
+				s = new ShaderProgram({
+					"../assets/shaders/COOK.vert",
+					"../assets/shaders/COOK.frag"
+					});
+				shaders[std::to_string(mat.illum)].reset(s);
+			}
 
-			/*	if ((s = shaders.GetAsset(std::to_string(mat.illum))))
-			{*/
-			s = new ShaderProgram({
-				"../assets/shaders/COOK.vert",
-				"../assets/shaders/COOK.frag"
-				});
-			shaders[std::to_string(mat.illum)].reset(s);
-			//}
-
-			mPtr->shader = (s);
+			mPtr->shader = s;
 			mPtr->name = mat.name;
 
 			//textures[] = Texture::TextureFromFile(mat.map_d);
 			materials[mat.name] = std::move(mPtr);
 
 		}
-
 
 		for (int ii = 0; ii < gpumeshes.size(); ii++)
 		{

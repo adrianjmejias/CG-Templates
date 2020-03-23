@@ -8,13 +8,14 @@ struct Range
 	TT min{ 0 };
 	TT max{ 10 };
 
-	TT GetInterpolation(float t)
+	constexpr TT GetInterpolation(float t)
 	{
-		return min * t + (max - min) * t;
+		TT a{min.value * t + (max.value - min.value) * t};
+		return a;
 	}
-	float GetPorcentage()
+	constexpr float GetPorcentage()
 	{
-		return max / static_cast<float>(min);
+		return max.value / static_cast<float>(min.value);
 	}
 };
 
@@ -23,5 +24,9 @@ struct RangeFloat : public Range<Float>
 };
 
 struct RangeInt : public Range<Int>
+{
+};
+
+struct RangeVec3 : public Range<Vec3>
 {
 };

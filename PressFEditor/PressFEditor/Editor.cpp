@@ -1,7 +1,25 @@
 #include "Editor.h"
 
 
+namespace PF
+{
+	std::vector<GameObject*> GetAsSeparateGameObjects(Model& model)
+	{
+		std::vector<GameObject*> gos;
 
+		gos.reserve(model.meshes.size());
+
+		for (auto& m : model.meshes)
+		{
+			GameObject* go{ new GameObject(m->name) };
+			MeshRenderer* mr = go->AddComponent<MeshRenderer>();
+			mr->mesh = m.get();
+			mr->mat = m->defaultMaterial;
+			gos.push_back(go);
+		}
+		return gos;
+	}
+}
 
 
 
@@ -25,26 +43,36 @@ void Editor::Init()
 
 	//engine.load
 
-
-	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
-
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
 
-	PF::Material* defaultMat = new PF::Material();
-
-	
 
 
-	//defaultMat->AddParameter(new PF::ShaderInt());
 
+	engine.assetManager.LoadModel("quad", "../assets/models/big.obj");
+
+	auto model = engine.assetManager.GetModel("quad");
+	std::vector<PF::GameObject*> gos = PF::GetAsSeparateGameObjects(*model);
+
+
+	for (auto go : gos)
+	{
+		engine.AddGameObject(go);
+	}
 
 	PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
-	PF::GameObject& ts2 = engine.AddGameObject(new PF::GameObject("test subject 2"));
-
 	ts1.AddComponent<Rotator>();
-	PF::MeshRenderer* ms = ts1.AddComponent<PF::MeshRenderer>();
 
+
+	//PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
+	//ps->mesh = mesh;
+	//ps->mat = mesh->defaultMaterial;
+
+
+
+
+
+	PF::GameObject& ts2 = engine.AddGameObject(new PF::GameObject("test subject 2"));
 	PF::Camera* cam = ts2.AddComponent<PF::Camera>();
 	ts2.AddComponent<CameraController>();
 	cam->Yaw = -5601.39600;
@@ -53,22 +81,16 @@ void Editor::Init()
 	cam->updateCameraVectors();
 
 
-	auto model = engine.assetManager.GetModel("quad");
-	auto mesh = model->meshes[0].get();
-	ms->mat = mesh->defaultMaterial;
-	ms->mesh = mesh;
 
-	json j = ts1.Serialize();
 
-	std::ofstream o("pretty.json");
-	o << j << std::endl;
-	//PF::MeshRenderer& mr = ts1.AddComponent<PF::MeshRenderer>();
 
-	//mr.mesh = &model.meshes[0];
 
-	//ts2.AddComponent<ParticleSystem>()->Start();
 
-	//PF_INFO("number of gameobjects {0}", scene.rootObjects.size());
+	//json j = ts1.Serialize();
+
+	//std::ofstream o("pretty.json");
+	//o << j << std::endl;
+
 	engine.Start();
 	while (engine.running)
 	{

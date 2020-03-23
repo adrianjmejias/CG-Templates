@@ -17,7 +17,7 @@ namespace PF
 		Transform* transform;
 		Component();// COMP_PARAMS
 		virtual void Update(const ImGuiIO& io) = 0;
-		virtual void HandleEvent(const SDL_Event& e) = 0;
+		//virtual void HandleEvent(const SDL_Event& e) = 0;
 		virtual void OnEnable() = 0;
 		virtual void OnDisable() = 0;
 		virtual void Start() = 0;

@@ -16,10 +16,6 @@ void CameraController::Update(const ImGuiIO& io)
 	std::cout << std::endl;
 }
 
-void CameraController::HandleEvent(const SDL_Event& e)
-{
-}
-
 void CameraController::OnEnable()
 {
 }

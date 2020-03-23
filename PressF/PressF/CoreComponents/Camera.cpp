@@ -45,10 +45,6 @@ namespace PF
 
 	}
 
-	void Camera::HandleEvent(const SDL_Event& e)
-	{
-	}
-
 	json Camera::Serialize()
 	{
 		return json();

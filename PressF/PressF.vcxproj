@@ -143,6 +143,7 @@
     <ClInclude Include="PressF\Core\OpenGL.h" />
     <ClInclude Include="PressF\Core\Types\Base\Base.h" />
     <ClInclude Include="PressF\Core\Types\Base\BaseDataType.h" />
+    <ClInclude Include="PressF\Core\Types\Base\Bool.h" />
     <ClInclude Include="PressF\Core\Types\Base\Color.h" />
     <ClInclude Include="PressF\Core\Types\Base\Float.h" />
     <ClInclude Include="PressF\Core\Types\Base\Int.h" />
@@ -157,7 +158,9 @@
     <ClInclude Include="PressF\Core\Window.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
+    <ClInclude Include="PressF\CoreComponents\Light.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
+    <ClInclude Include="PressF\CoreComponents\ParticleSystem.h" />
     <ClInclude Include="PressF\EntityComponent\Component.h" />
     <ClInclude Include="PressF\EntityComponent\GameObject.h" />
     <ClInclude Include="PressF\EntityComponent\Transform.h" />
@@ -190,7 +193,9 @@
     <ClCompile Include="PressF\Core\Types\types.cpp" />
     <ClCompile Include="PressF\Core\Window.cpp" />
     <ClCompile Include="PressF\CoreComponents\Camera.cpp" />
+    <ClCompile Include="PressF\CoreComponents\Light.cpp" />
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp" />
+    <ClCompile Include="PressF\CoreComponents\ParticleSystem.cpp" />
     <ClCompile Include="PressF\EntityComponent\Component.cpp" />
     <ClCompile Include="PressF\EntityComponent\GameObject.cpp" />
     <ClCompile Include="PressF\EntityComponent\Transform.cpp" />

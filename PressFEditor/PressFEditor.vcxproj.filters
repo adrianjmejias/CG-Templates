@@ -12,9 +12,6 @@
     <ClInclude Include="PressFEditor\Components\Components.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="PressFEditor\Components\ParticleSystem.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="PressFEditor\Components\Rotator.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -23,9 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PressFEditor\Components\CameraController.cpp">
-      <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="PressFEditor\Components\ParticleSystem.cpp">
       <Filter>Components</Filter>
     </ClCompile>
     <ClCompile Include="PressFEditor\Components\Rotator.cpp">

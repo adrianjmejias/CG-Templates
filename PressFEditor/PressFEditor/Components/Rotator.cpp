@@ -6,17 +6,6 @@ void Rotator::Update(const ImGuiIO& io)
 	//PF_INFO("Rotation : {0}", transform->GetRotation().z);
 }
 
-void Rotator::HandleEvent(const SDL_Event& e)
-{
-	auto& io = ImGui::GetIO();
-
-	if (ImGui::IsKeyDown('w'))
-	{
-		PF_INFO("it works");
-	}
-}
-
-
 json Rotator::Serialize()
 {
 	json j;

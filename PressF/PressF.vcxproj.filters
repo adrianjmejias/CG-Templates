@@ -75,6 +75,9 @@
     <ClInclude Include="PressF\Core\Types\Base\BaseDataType.h">
       <Filter>Core\Types\Base</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\Core\Types\Base\Bool.h">
+      <Filter>Core\Types\Base</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\Core\Types\Base\Color.h">
       <Filter>Core\Types\Base</Filter>
     </ClInclude>
@@ -117,7 +120,13 @@
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\CoreComponents\Light.h">
+      <Filter>CoreComponents</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h">
+      <Filter>CoreComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\CoreComponents\ParticleSystem.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
     <ClInclude Include="PressF\EntityComponent\Component.h">
@@ -208,7 +217,13 @@
     <ClCompile Include="PressF\CoreComponents\Camera.cpp">
       <Filter>CoreComponents</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\CoreComponents\Light.cpp">
+      <Filter>CoreComponents</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp">
+      <Filter>CoreComponents</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\CoreComponents\ParticleSystem.cpp">
       <Filter>CoreComponents</Filter>
     </ClCompile>
     <ClCompile Include="PressF\EntityComponent\Component.cpp">

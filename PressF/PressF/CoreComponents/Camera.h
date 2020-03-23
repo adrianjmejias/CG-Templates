@@ -34,7 +34,6 @@ namespace PF
 
 		// Inherited via Component
 		virtual void Update(const ImGuiIO& io) override;
-		virtual void HandleEvent(const SDL_Event& e) override;
 		virtual json Serialize() override;
 
 		// Inherited via Component

@@ -2,29 +2,17 @@
 
 
 
-//Implementar un API(Application Programming Interface) para creación de
-//escenas 3D con diversos efectos.
-//* Funciones del API :
-//-Crear escena.
 //- Agregar Modelos(Con texturas e iluminación).
 //- Navegar escena. 
 //- Salvar / Cargar escena.
 //- Detección de colisiones.
-//- Activar / Desactivar efectos :
 
 
 
 // Estereoscopía.
 
-
 // Necesitamos la distancia intraocular (IOD)
 // distancia del plano imagen 
-
-
-
-
-
-
 
 
 

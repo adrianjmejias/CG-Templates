@@ -102,12 +102,8 @@ namespace PF
 			ImGui::End();
 		}
 
-
 		scene.Update(io);
 		renderer->Render();
-		//Quad::Instance()->Bind();
-		//Quad::Instance()->Draw();
-
 
 	}
 
@@ -127,9 +123,11 @@ namespace PF
 
 		if (ImGui::Begin("Engine"))
 		{
-
-			if (ImGui::Checkbox("Show FPS", &config.showFPS))
+			ImGui::Checkbox("Show FPS", &config.showFPS);
+				
+			if (config.showFPS)
 			{
+				ImGui::SameLine();
 				ImGui::Text("FPS: %f", io.Framerate);
 			}
 
@@ -137,9 +135,6 @@ namespace PF
 
 
 			assetManager.ImGui();
-
-
-
 		}
 
 		ImGui::ShowDemoWindow(&show_demo_window);
