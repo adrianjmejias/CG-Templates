@@ -8,7 +8,7 @@ namespace PF
 	}
 	void ShaderParameter::ImGui()
 	{
-		ImGui::Text(name.c_str()); ImGui::SameLine(); value->ImGui(name.c_str());
+		value->ImGui(name.c_str());
 	}
 	void ShaderParameter::Bind(const Ref<ShaderProgram>& s) {
 		value->Bind(name, s);

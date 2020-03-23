@@ -81,6 +81,7 @@ bool Transform::TryGetClean()
 Transform * Transform::SetDirty(Dirty newVal) {
 	if (static_cast<int>(dirty) < static_cast<int>(newVal)) {
 		dirty = newVal;
+		wasDirtyThisFrame = true;
 	}
 	return this;
 }

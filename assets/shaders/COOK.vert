@@ -14,10 +14,10 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-uniform sampler2D tex_kD;
-uniform sampler2D tex_kS;
-uniform sampler2D tex_kA;
-uniform sampler2D tex_bump;
+// uniform sampler2D tex_kD;
+// uniform sampler2D tex_kS;
+// uniform sampler2D tex_kA;
+// uniform sampler2D tex_bump;
 
 out struct Obj{
 	vec4 m_pos;
@@ -30,12 +30,13 @@ out vec3 n;
 
 void main()
 {
-	// OBJ.m_pos = pos;
-	// OBJ.norm = norm;
-	// OBJ.uv = uv;
+	OBJ.m_pos = model * pos;
+	OBJ.w_pos = projection*(view*(model*pos));
+	OBJ.norm = norm;
+	OBJ.uv = uv;
 
 
-    gl_Position = projection*(view*(model*pos));
+    gl_Position = OBJ.w_pos;
 }
 
 

@@ -120,6 +120,9 @@
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\CoreComponents\EngineConfig.h">
+      <Filter>CoreComponents</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\CoreComponents\Light.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>

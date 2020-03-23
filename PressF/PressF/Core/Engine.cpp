@@ -97,14 +97,16 @@ namespace PF
 		if (ImGui::Begin("Hierarchy"))
 		{
 			scene.ImGui();
-
-
 			ImGui::End();
 		}
 
 		scene.Update(io);
 		renderer->Render();
 
+		for (auto &go : scene.rootObjects)
+		{
+			go->transform.wasDirtyThisFrame = false;
+		}
 	}
 
 	void Engine::EndRender()

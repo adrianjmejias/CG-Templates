@@ -11,9 +11,9 @@ void CameraController::Update(const ImGuiIO& io)
 
 
 
-	std::cout << "Rotation \t" << transform->GetRotation() << "|";
-	std::cout << "Position \t" << transform->GetPosition();
-	std::cout << std::endl;
+	//std::cout << "Rotation \t" << transform->GetRotation() << "|";
+	//std::cout << "Position \t" << transform->GetPosition();
+	//std::cout << std::endl;
 }
 
 void CameraController::OnEnable()

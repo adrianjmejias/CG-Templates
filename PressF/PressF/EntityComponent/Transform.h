@@ -28,6 +28,7 @@ namespace PF
 		Mat4 MVP = Mat4(1);
 		glm::mat3 normalMatrix;
 	public:
+		bool wasDirtyThisFrame = false;
 		Transform(GameObject& go);
 		GameObject& gameObject;
 		Transform::~Transform();

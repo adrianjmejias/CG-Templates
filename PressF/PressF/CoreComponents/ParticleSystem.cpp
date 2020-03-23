@@ -81,8 +81,6 @@ namespace PF{
 			}
 		
 			CheckExpiredParticles();
-
-
 		}
 	}
 

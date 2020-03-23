@@ -158,6 +158,7 @@
     <ClInclude Include="PressF\Core\Window.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
+    <ClInclude Include="PressF\CoreComponents\EngineConfig.h" />
     <ClInclude Include="PressF\CoreComponents\Light.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
     <ClInclude Include="PressF\CoreComponents\ParticleSystem.h" />

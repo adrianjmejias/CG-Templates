@@ -49,7 +49,7 @@ void Editor::Init()
 
 
 
-	engine.assetManager.LoadModel("quad", "../assets/models/big.obj");
+	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
 
 	auto model = engine.assetManager.GetModel("quad");
 	std::vector<PF::GameObject*> gos = PF::GetAsSeparateGameObjects(*model);
@@ -79,11 +79,9 @@ void Editor::Init()
 	cam->Pitch = -70.9999771;
 	cam->transform->SetPosition({ 2.38617706 , 7.60761261, -1.88124359 });
 	cam->updateCameraVectors();
+	*cam->speed = 50.f;
 
-
-
-
-
+	PF::Light* l = ts2.AddComponent<PF::Light>();
 
 
 	//json j = ts1.Serialize();

@@ -19,15 +19,15 @@ namespace PF
 	public:
 		std::vector<Shares<ShaderParameter>> parameters;
 		Ref<ShaderProgram> shader;
-		
-		Material();
-		template <typename TT, typename ...Args >
-		void AddParameter(const std::string& name, Args&&... params);
-		virtual void Bind();
+		bool usesLight = true;
 
 		Material& operator=(objl::Material& m);
 
+		virtual void Bind();
 		virtual void ImGui();
+
+		template <typename TT, typename ...Args >
+		void AddParameter(const std::string& name, Args&&... params);
 	};
 
 

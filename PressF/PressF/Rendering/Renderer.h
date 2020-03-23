@@ -33,11 +33,9 @@ namespace PF
 		void RegisterLight(Light* l);
 		void UnRegisterLight(Light* l);
 
-
-
-
-
 		void Render();
+
+		void BindLigths(ShaderProgram &shader);
 
 	};
 }

@@ -7,8 +7,8 @@
 
 namespace PF
 {
-	void Assign(Vec3& a, const objl::Vector3& b);
-	void Assign(Vec2& a, const objl::Vector2& b);
+	constexpr void Assign(Vec3& a, const objl::Vector3& b);
+	constexpr void Assign(Vec2& a, const objl::Vector2& b);
 	class MeshRenderer;
 
 	struct Vertex {

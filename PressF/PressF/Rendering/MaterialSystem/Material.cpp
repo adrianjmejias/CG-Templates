@@ -4,9 +4,6 @@
 namespace PF
 {
 
-	Material::Material() {
-	}
-
 	void Material::Bind()
 	{
 		//ShaderParameter* p = new ShaderInt();
@@ -19,15 +16,46 @@ namespace PF
 	}
 	Material& Material::operator=(objl::Material& m)
 	{
-		AddParameter<ShaderColor>("kA", ToVec3(m.Ka));
-		AddParameter<ShaderColor>("kd", ToVec3(m.Kd));
-		AddParameter<ShaderColor>("kS", ToVec3(m.Ks));
-		//AddParameter<ShaderInt>("mode", 0);
-
 		name = m.name;
-		//AddParameter<ShaderVec3>("nS", m.Ns);
-		//AddParameter<ShaderVec3>("nI", m.Ni);
-		//AddParameter<ShaderVec3>("d", m.d);
+
+		AddParameter<ShaderColor>("kA", ToVec3(m.Ka));
+		AddParameter<ShaderColor>("kD", ToVec3(m.Kd));
+		AddParameter<ShaderColor>("kS", ToVec3(m.Ks));
+
+		/*
+		-- Ns
+		Specifies the specular exponent for the current material.  This defines 
+		the focus of the specular highlight.
+ 
+		 "exponent" is the value for the specular exponent.  A high exponent 
+		results in a tight, concentrated highlight.  Ns values normally range 
+		from 0 to 1000.
+		*/
+		AddParameter<ShaderFloat>("nS", Float{ m.Ns });
+		AddParameter<ShaderFloat>("roughness", Float{ 1 });
+
+		
+
+		//  -- Ni optical_density
+
+		//	Specifies the optical density for the surface.This is also known as
+		//	index of refraction.
+
+		//	"optical_density" is the value for the optical density.The values can
+		//	range from 0.001 to 10.  A value of 1.0 means that light does not bend
+		//	as it passes through an object.Increasing the optical_density
+		//	increases the amount of bending.Glass has an index of refraction of
+		//	about 1.5.Values of less than 1.0 produce bizarre results and are not
+		//	recommended.
+
+		AddParameter<ShaderFloat>("nI", Float{ m.Ni });
+
+
+
+
+		//AddParameter<ShaderFloat>("d", m.d);
+
+
 		//d = m.d;
 		//illum = m.illum;
 		//map_Ka = m.map_Ka;
@@ -36,10 +64,8 @@ namespace PF
 		//map_Ns = m.map_Ns;
 		//map_d = m.map_d;
 		//map_bump = m.map_bump;
-		//AddParameter()
 
 
-		//name = std::move(m.name);
 		return *this;
 	}
 	void Material::ImGui()

@@ -18,13 +18,13 @@ namespace PF
 
 	}
 
-	void Assign(Vec3& a, const objl::Vector3& b) {
+	constexpr void Assign(Vec3& a, const objl::Vector3& b) {
 		a.x = b.X;
 		a.y = b.Y;
 		a.z = b.Z;
 	}
 
-	void Assign(Vec2& a, const objl::Vector2& b) {
+	constexpr void Assign(Vec2& a, const objl::Vector2& b) {
 		a.x = b.X;
 		a.y = b.Y;
 	}
@@ -97,6 +97,8 @@ namespace PF
 
 			vertex[ii].tan = glm::normalize(promTan / static_cast<float>(vertexContrib[ii].size()));
 		}
+
+
 
 		for (int ii = 0; ii < LoadedMeshes.size(); ii++) {
 			objl::Mesh& objlMesh = LoadedMeshes[ii];

@@ -22,14 +22,14 @@ namespace PF
 		LightType type = LightType::POINT;
 		Color kShadow{ 0,0,0 };
 
-		Color kA{ 1,1,1 };
-		Color kD{ 0.5,0.5,0.5 };
-		Color kS{ 0.5,0.5,0.5 };
+		Color kA{ 1,0,0 };
+		Color kD{ 0,1,0 };
+		Color kS{ 0,0,1 };
 
 		Color kE{ 0,0,0 };
 
 		Color shadowColor{ 0,0,0 };
-		Vec3 attenuation{ 0,0,0 };
+		Vec3 attenuation{ 0.1,0,0.5f };
 		Float innerAngle{ 15.f };
 		Float outterAngle{ 20.f };
 

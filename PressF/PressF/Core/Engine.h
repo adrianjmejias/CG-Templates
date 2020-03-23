@@ -33,10 +33,7 @@ namespace PF
 	//		}
 	//	}
 	//};
-	struct EngineConfig
-	{
-		bool showFPS = true;
-	};
+
 
     class Engine
     {
