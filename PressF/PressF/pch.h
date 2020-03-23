@@ -10,11 +10,14 @@
 #include <initializer_list>
 #include <iostream>
 #include <queue>
+#include <bitset>
 #include <sstream>
 #include <utility>
 #include <fstream>
 #include <tuple>
 
+
+#include "PressF/Core/KeyCodes.h"
 #include "AssetsManagement/Serialization.h"
 #include "PressF/Core/Types/types.h"
 #include "Core/OpenGL.h"

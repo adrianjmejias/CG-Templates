@@ -29,6 +29,9 @@ namespace PF
 
 		void OnEnable();
 
+
+		void ImGui();
+
 		void OnDisable();
 
 		void Start();

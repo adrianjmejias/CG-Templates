@@ -21,7 +21,17 @@ namespace PF
 		virtual void OnEnable() = 0;
 		virtual void OnDisable() = 0;
 		virtual void Start() = 0;
+		virtual void ImGui() = 0;
 		~Component();
 		virtual json Serialize() = 0;
 	};
+
+	//void ImGuiRender(const Component* c)
+	//{
+	//	if (ImGui::TreeNode(typeid(Rotator).name()))
+	//	{
+
+	//	}
+
+	//}
 }

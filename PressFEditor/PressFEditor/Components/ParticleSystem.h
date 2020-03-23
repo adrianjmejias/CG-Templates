@@ -4,7 +4,6 @@
 	struct Particle
 	{
 		RangeFloat lifetime;
-
 		Vec3 position;
 		Vec3 velocity;
 		void UpdateTime(float deltaTime)
@@ -41,9 +40,14 @@
 	class ParticleSystem : public PF::Component
 	{
 	public:
+		PF::GPUMesh mesh;
+		PF::Material mat;
+
 		Float spawningRate{ 3 };
-		std::vector<Particle> particles;
 		UInt maxParticles{ 500 };
+		std::vector<Particle> particles;
+
+
 		UInt firstEmitted{ 0 };
 		UInt nextToEmmit = { 0 };
 		Clock clockEmit;
@@ -64,4 +68,7 @@
 		// Inherited via Component
 		virtual void OnEnable() override;
 		virtual void OnDisable() override;
+
+		// Inherited via Component
+		virtual void ImGui() override;
 	};

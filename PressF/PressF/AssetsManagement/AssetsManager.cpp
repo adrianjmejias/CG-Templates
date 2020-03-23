@@ -13,6 +13,19 @@ namespace PF
 
 
 
+	void AssetsManager::ImGui()
+	{
+		textures.ImGui();
+		models.ImGui();
+		shaders.ImGui();
+		materials.ImGui();
+	}
+
+	Model* AssetsManager::GetModel(const std::string& key)
+	{
+		return models[key].get();
+	}
+
 	bool AssetsManager::LoadModel(const std::string& key, const std::string& path) {
 
 		Owns<Model> model(new Model());
@@ -24,7 +37,6 @@ namespace PF
 			//PF_ERROR("Failed to load model {0}", objPath);
 			__debugbreak();
 		}
-
 
 		auto gpumeshes = loader.GPUInstantiate();
 

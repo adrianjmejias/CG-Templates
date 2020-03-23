@@ -3,10 +3,35 @@
 
 namespace PF
 {
+
+	enum class ProjectionType
+	{
+		Perspective,
+		Projection,
+	};
+
+	enum class ClearType
+	{
+		Skybox,
+		SolidColor,
+	};
+
+
 	class Camera : public Component
 	{
 	public:
-		UInt priority;
+		Vec2 clippingPlanes{0.1f, 200.f};
+		Vec4 viewportRect{0, 1, 0, 1};
+		Int priority{ 0 };
+		Mat4 projection;
+
+		ClearType clearType = ClearType::SolidColor;
+		ProjectionType cameraType = ProjectionType::Perspective;
+		Float fov{ 45 };
+
+		std::bitset<8> cullingMask;
+
+
 		// Inherited via Component
 		virtual void Update(const ImGuiIO& io) override;
 		virtual void HandleEvent(const SDL_Event& e) override;
@@ -18,5 +43,46 @@ namespace PF
 
 		// Inherited via Component
 		virtual void Start() override;
+
+		Mat4 GetProjectionMatrix();
+
+		// Inherited via Component
+		virtual void ImGui() override;
+
+
+        // Camera Attributes
+        glm::vec3 Front;
+        glm::vec3 Up;
+		glm::vec3 Right;
+		glm::vec3 WorldUp;
+        // Euler Angles
+        float Yaw;
+        float Pitch;
+        // Camera options
+		Float speed{ 1 };
+		Float MouseSensitivity{ 1 };
+        float& Zoom = fov;
+
+		Camera() : WorldUp{ Transform::WorldUp() }, Front{ Transform::WorldFront() }, Yaw{ -90.0f }, Pitch{ 0.0f }
+        {
+            updateCameraVectors();
+        }
+
+        // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+		static glm::mat4 GetViewMatrix(const Vec3& pos, const Vec3& front, const Vec3& up);
+
+
+		Mat4 GetViewMatrix();
+		
+
+        // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
+		void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
+
+        // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
+        void ProcessMouseScroll(float yoffset);
+        void updateCameraVectors();
+
+    private:
+        // Calculates the front vector from the Camera's (updated) Euler Angles
 	};
 }

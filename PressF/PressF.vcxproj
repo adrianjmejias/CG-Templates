@@ -76,7 +76,7 @@
       <PrecompiledHeaderFile>PressF/pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\dependencies\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -96,7 +96,7 @@
       <PrecompiledHeaderFile>PressF/pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\dependencies\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -119,7 +119,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PressF/pch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\dependencies\spdlog\include;..\dependencies\glm;..\dependencies\glad\include;..\dependencies\SDL\include;..\dependencies\OBJ-Loader\Source;..\dependencies\stb;..\dependencies\json\include;..\dependencies\filesystem\include;..\dependencies\imgui;..\dependencies\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -138,6 +138,7 @@
     <ClInclude Include="PressF\AssetsManagement\Scene.h" />
     <ClInclude Include="PressF\AssetsManagement\Serialization.h" />
     <ClInclude Include="PressF\Core\Engine.h" />
+    <ClInclude Include="PressF\Core\KeyCodes.h" />
     <ClInclude Include="PressF\Core\Logger.h" />
     <ClInclude Include="PressF\Core\OpenGL.h" />
     <ClInclude Include="PressF\Core\Types\Base\Base.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="PressF\Core\Types\Extensions\Clock.h" />
     <ClInclude Include="PressF\Core\Types\Extensions\Range.h" />
     <ClInclude Include="PressF\Core\Types\types.h" />
+    <ClInclude Include="PressF\Core\Window.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
@@ -163,12 +165,18 @@
     <ClInclude Include="PressF\ImGui\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h" />
     <ClInclude Include="PressF\PressF.h" />
-    <ClInclude Include="PressF\Rendering\Material.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Material.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderColor.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderFloat.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderInt.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameters.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderVec3.h" />
+    <ClInclude Include="PressF\Rendering\MaterialSystem\ShaderProgram.h" />
     <ClInclude Include="PressF\Rendering\Mesh.h" />
     <ClInclude Include="PressF\Rendering\Renderer.h" />
-    <ClInclude Include="PressF\Rendering\ShaderParameters.h" />
-    <ClInclude Include="PressF\Rendering\ShaderProgram.h" />
     <ClInclude Include="PressF\Rendering\Texture.h" />
+    <ClInclude Include="PressF\Rendering\Utility\Quad.h" />
     <ClInclude Include="PressF\pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +188,7 @@
     <ClCompile Include="PressF\Core\Logger.cpp" />
     <ClCompile Include="PressF\Core\OpenGL.cpp" />
     <ClCompile Include="PressF\Core\Types\types.cpp" />
+    <ClCompile Include="PressF\Core\Window.cpp" />
     <ClCompile Include="PressF\CoreComponents\Camera.cpp" />
     <ClCompile Include="PressF\CoreComponents\MeshRenderer.cpp" />
     <ClCompile Include="PressF\EntityComponent\Component.cpp" />
@@ -188,13 +197,13 @@
     <ClCompile Include="PressF\ImGui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="PressF\ImGui\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp" />
-    <ClCompile Include="PressF\Rendering\Material.cpp" />
+    <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp" />
+    <ClCompile Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.cpp" />
+    <ClCompile Include="PressF\Rendering\MaterialSystem\ShaderProgram.cpp" />
     <ClCompile Include="PressF\Rendering\Mesh.cpp" />
     <ClCompile Include="PressF\Rendering\Renderer.cpp" />
-    <ClCompile Include="PressF\Rendering\ShaderParameter.cpp" />
-    <ClCompile Include="PressF\Rendering\ShaderParameters.cpp" />
-    <ClCompile Include="PressF\Rendering\ShaderProgram.cpp" />
     <ClCompile Include="PressF\Rendering\Texture.cpp" />
+    <ClCompile Include="PressF\Rendering\Utility\Quad.cpp" />
     <ClCompile Include="PressF\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

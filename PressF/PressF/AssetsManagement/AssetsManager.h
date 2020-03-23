@@ -1,8 +1,8 @@
 #pragma once
 #include "PressF/pch.h"
 #include "PressF/Rendering/Mesh.h"
-#include "PressF/Rendering/Material.h"
 #include "AssetMap.h"
+//#include "PressF/Rendering/MaterialSystem/Material.h"
 
 namespace PF
 {
@@ -12,25 +12,24 @@ namespace PF
 	protected:
 	public:
 		UInt lastId{ 0 };
-		AssetMap<Texture> textures;
-		AssetMap<Model> models;
-		AssetMap<Material> materials;
-		AssetMap<ShaderProgram> shaders;
+		AssetMap<Texture> textures{ "Texture Manager" };
+		AssetMap<Model> models{ "Model Manager" };
+		AssetMap<Material> materials{ "Material Manager" };
+		AssetMap<ShaderProgram> shaders{ "ShaderProgram Manager" };
 
-		Model* AddModel()
-		{
 
-		}
-		
-		Material* AddMaterial(Material* mat)
-		{
-			//materials[mat->name].reset(mat);
-		}
+		virtual void ImGui();
+		//Model* AddModel()
+		//{
 
-		Model* GetModel(const std::string& key)
-		{
-			return models[key].get();
-		}
+		//}
+		//
+		//Material* AddMaterial(Material* mat)
+		//{
+		//	//materials[mat->name].reset(mat);
+		//}
+
+		Model* GetModel(const std::string& key);
 
 		bool LoadModel(const std::string& key, const std::string& path);
 	};

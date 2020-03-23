@@ -56,9 +56,11 @@ in vec3 n;
 
 out vec4 colorsito;
 
+
+uniform vec3 kA;
 void main()
 {
 	// vec3 normal = normalize(OBJ.norm.xyz);
 	// vec3 viewDir = normalize(OBJ.w_pos.xyz - viewPos);
-	colorsito = vec4(1,1,1,1);
+	colorsito = vec4(kA, 1);
 }

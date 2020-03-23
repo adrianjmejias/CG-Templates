@@ -19,35 +19,11 @@ namespace PF
 
 		void UnRegisterMesh(MeshRenderer* mesh);
 
-		void RegisterCamera(Camera *cam)
-		{
-			cameras.push(cam);
-		}
+		void RegisterCamera(Camera* cam);
 
-		void UnRegisterCamera(Camera *cam)
-		{	
-			std::list<Camera*> cams;
-
-			// esto esta horrible, arreglar despues
-			while (!cameras.empty())
-			{
-				Camera* c = cameras.top();
-
-				if (c != cam)
-				{
-					cams.push_back(c);
-				}
-			}
-
-			while (!cams.empty())
-			{
-				cameras.push(cams.front());
-				cams.pop_front();
-			}
-		}
+		void UnRegisterCamera(Camera* cam);
 
 		void Render();
 
-		Ref<Camera> mainCamera = nullptr;
 	};
 }

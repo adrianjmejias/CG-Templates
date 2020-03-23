@@ -8,7 +8,7 @@ namespace PF{
 		//id = GLOBAL_ID++;
 	}
 
-	GameObject::GameObject(const std::string n) : transform(*this) {}
+	GameObject::GameObject(const std::string n) : Asset(n), transform(*this) {}
 
 	GameObject::~GameObject()
 	{
@@ -48,9 +48,23 @@ namespace PF{
 		for (auto& c : components)
 		{
 			PF_ASSERT(c.get() != nullptr && " components shouldnt be null");
+			//ImGuiRender(*c);
 			c->OnEnable();
 		}
 	}
+
+	 void GameObject::ImGui()
+	 {
+		 if (ImGui::TreeNode(name.c_str()))
+		 {
+			 for (auto& c : components)
+			 {
+				 c->ImGui();
+			 }
+
+			 ImGui::TreePop();
+		 }
+	 }
 
 	 void GameObject::OnDisable()
 	{

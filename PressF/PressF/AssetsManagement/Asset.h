@@ -8,11 +8,18 @@ namespace PF
 	{
 	public:
 		unsigned int assetId = 0;
-		std::string name;
+		std::string name= "GameObject";
 		std::string path;
 
+		Asset() = default;
+		Asset(const std::string& n);
 		// Inherited via Serializable
 		virtual json Serialize() override;
+
+		virtual void ImGui()
+		{
+			ImGui::Text(name.c_str());
+		}
 	};
 }	
 

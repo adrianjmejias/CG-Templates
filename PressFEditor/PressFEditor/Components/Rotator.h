@@ -4,7 +4,7 @@
 class Rotator : public PF::Component
 {
 public:
-	Vec3 speed{ 0,0,1.f };
+	Vec3 speed{ 1.f, 1.f ,1.f };
 
 	// Inherited via Component
 	virtual void Update(const ImGuiIO& io) override;
@@ -19,5 +19,8 @@ public:
 
 	// Inherited via Component
 	virtual void Start() override;
+
+	// Inherited via Component
+	virtual void ImGui() override;
 	// Inherited via Component
 };

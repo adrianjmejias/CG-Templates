@@ -33,10 +33,41 @@ namespace PF
 		}
 	}
 
+	void Renderer::RegisterCamera(Camera* cam)
+	{
+		cameras.push(cam);
+	}
+
+	void Renderer::UnRegisterCamera(Camera* cam)
+	{
+		std::list<Camera*> cams;
+
+		// esto esta horrible, arreglar despues
+		while (!cameras.empty())
+		{
+			Camera* c = cameras.top();
+
+			if (c != cam)
+			{
+				cams.push_back(c);
+			}
+		}
+
+		while (!cams.empty())
+		{
+			cameras.push(cams.front());
+			cams.pop_front();
+		}
+	}
+
 	void Renderer::Render()
 	{
 
 		Camera *c = cameras.top();
+		c->transform->TryGetClean();
+		const Mat4& projection = c->GetProjectionMatrix();
+		const Mat4& view = c->GetViewMatrix();
+
 		for (auto [mesh, mrList] : objects)
 		{
 			mesh->Bind();
@@ -44,9 +75,11 @@ namespace PF
 			{
 				mr->mat->Bind();
 				mr->mat->shader->SetUniform("model", mr->transform->GetAccumulated());
-				mr->mat->shader->SetUniform("view", c->transform->GetAccumulated());
-				//mr->mat->shader->SetUniform("view", c->());
+				mr->mat->shader->SetUniform("view", view);
+				mr->mat->shader->SetUniform("projection", projection);
 				mesh->Render();
+				//mr->mat->shader->SetUniform("view", c->());
+				
 			}
 		}
 	}

@@ -32,6 +32,11 @@ namespace PF
 	void MeshRenderer::Start()
 	{
 	}
+	void MeshRenderer::ImGui()
+	{
+		//ImGui::Text(MeshRenderer.)
+
+	}
 }
 
 

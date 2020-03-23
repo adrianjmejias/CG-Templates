@@ -31,6 +31,15 @@
     <Filter Include="Rendering">
       <UniqueIdentifier>{E3AE1F7C-4F19-D4F2-9857-85980401B247}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\MaterialSystem">
+      <UniqueIdentifier>{467D168D-32A2-650D-5BED-4A9D4771642B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\MaterialSystem\Parameters">
+      <UniqueIdentifier>{A979BCF2-1533-279D-9E92-41770A4BDD0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\Utility">
+      <UniqueIdentifier>{26A0B10F-92B6-AFA5-DB2D-3BC74783802D}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PressF\AssetsManagement\Asset.h">
@@ -49,6 +58,9 @@
       <Filter>AssetsManagement</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Core\Engine.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Core\KeyCodes.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Core\Logger.h">
@@ -96,6 +108,9 @@
     <ClInclude Include="PressF\Core\Types\types.h">
       <Filter>Core\Types</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\CoreComponents\Camera.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
@@ -124,8 +139,29 @@
       <Filter>ObjLoader</Filter>
     </ClInclude>
     <ClInclude Include="PressF\PressF.h" />
-    <ClInclude Include="PressF\Rendering\Material.h">
-      <Filter>Rendering</Filter>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Material.h">
+      <Filter>Rendering\MaterialSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderColor.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderFloat.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderInt.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameters.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderVec3.h">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\MaterialSystem\ShaderProgram.h">
+      <Filter>Rendering\MaterialSystem</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Rendering\Mesh.h">
       <Filter>Rendering</Filter>
@@ -133,14 +169,11 @@
     <ClInclude Include="PressF\Rendering\Renderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Rendering\ShaderParameters.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="PressF\Rendering\ShaderProgram.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="PressF\Rendering\Texture.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\Utility\Quad.h">
+      <Filter>Rendering\Utility</Filter>
     </ClInclude>
     <ClInclude Include="PressF\pch.h" />
   </ItemGroup>
@@ -169,6 +202,9 @@
     <ClCompile Include="PressF\Core\Types\types.cpp">
       <Filter>Core\Types</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\Core\Window.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\CoreComponents\Camera.cpp">
       <Filter>CoreComponents</Filter>
     </ClCompile>
@@ -193,8 +229,14 @@
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp">
       <Filter>ObjLoader</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Rendering\Material.cpp">
-      <Filter>Rendering</Filter>
+    <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp">
+      <Filter>Rendering\MaterialSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.cpp">
+      <Filter>Rendering\MaterialSystem\Parameters</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\MaterialSystem\ShaderProgram.cpp">
+      <Filter>Rendering\MaterialSystem</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Rendering\Mesh.cpp">
       <Filter>Rendering</Filter>
@@ -202,17 +244,11 @@
     <ClCompile Include="PressF\Rendering\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Rendering\ShaderParameter.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Rendering\ShaderParameters.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\Rendering\ShaderProgram.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="PressF\Rendering\Texture.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\Utility\Quad.cpp">
+      <Filter>Rendering\Utility</Filter>
     </ClCompile>
     <ClCompile Include="PressF\pch.cpp" />
   </ItemGroup>

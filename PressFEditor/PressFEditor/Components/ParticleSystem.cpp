@@ -89,3 +89,10 @@ void ParticleSystem::OnEnable()
 void ParticleSystem::OnDisable()
 {
 }
+
+void ParticleSystem::ImGui()
+{
+	
+
+
+}

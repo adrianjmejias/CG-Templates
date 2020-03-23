@@ -5,7 +5,6 @@ workspace "PressF"
    startproject "PressFEditor"
    configurations { "Debug", "Release", "Dist"}
 
-
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
@@ -18,13 +17,20 @@ IncludeDir["obj"] = "dependencies/OBJ-Loader/Source"
 IncludeDir["ImGui"] = "dependencies/imgui/"
 IncludeDir["json"] = "dependencies/json/include"
 IncludeDir["filesystem"] = "dependencies/filesystem/include"
-
+IncludeDir["assimp"] = "dependencies/assimp/include"
 
 group "Dependencies"
 	include "dependencies/glad"
    include "dependencies/imgui"
+   -- include "dependencies/assimp"
    -- include "dependencies/OBJ-Loader"
-   
+
+
+   externalproject "assimp"
+      location "dependencies/assimp"
+      uuid "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
+      kind "StaticLib"
+      language "C++"
 group ""
 
 project "PressF"
@@ -58,8 +64,8 @@ project "PressF"
 		"%{IncludeDir.stb}",
 		"%{IncludeDir.json}",
 		"%{IncludeDir.filesystem}",
-      "%{IncludeDir.ImGui}"
-      
+      "%{IncludeDir.ImGui}",
+      "%{IncludeDir.assimp}",
    }
 
    libdirs
@@ -71,7 +77,8 @@ project "PressF"
    links {
       "glad",
       "SDL2",
-      "ImGui"
+      "ImGui",
+      -- "assimp"
       -- "ObjLoader"
    }
 
@@ -100,12 +107,14 @@ files {
 includedirs {
    "%{IncludeDir.glm}",
    "%{IncludeDir.glad}",
+   "%{IncludeDir.obj}",
    "%{IncludeDir.SDL}",
    "%{IncludeDir.spdlog}",
    "%{IncludeDir.stb}",
    "%{IncludeDir.json}",
    "%{IncludeDir.filesystem}",
    "%{IncludeDir.ImGui}",
+   "%{IncludeDir.assimp}",
    "PressF"
 }
 

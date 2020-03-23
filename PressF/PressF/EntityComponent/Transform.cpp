@@ -113,6 +113,7 @@ Mat4 Transform::GetProjection(const Transform & t, bool isPerspective, float asp
 }
 
 Mat4 Transform::GetView(const Transform & t) {
+	
 	return glm::lookAt(t.position, t.position + t.front, t.up);
 }
 

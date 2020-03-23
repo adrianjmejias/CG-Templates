@@ -27,6 +27,14 @@ namespace PF
 		}
 	}
 
+	void Scene::ImGui()
+	{
+		for (auto& go : rootObjects)
+		{
+			go->ImGui();
+		}
+	}
+
 	void Scene::Start()
 	{
 		for (auto& go : rootObjects)

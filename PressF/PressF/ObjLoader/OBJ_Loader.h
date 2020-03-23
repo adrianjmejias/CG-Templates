@@ -1,6 +1,8 @@
-// OBJ_Loader.h - A Single Header OBJ Model Loader
+// OBJ_Loader.h
+//
 
-#pragma once
+#ifndef LZZ_OBJ_Loader_h
+#define LZZ_OBJ_Loader_h
 
 // Iostream - STD I/O Library
 #include <iostream>
@@ -17,235 +19,283 @@
 // Math.h - STD math Library
 #include <math.h>
 
-// Print progress to console while loading (large models)
-#define OBJL_CONSOLE_OUTPUT
-//#define OBJL_DEFAULT_IMPL
-#define OBJL_GLM_IMPL
-
-#ifdef OBJL_GLM_IMPL
-#include <glm/glm.hpp>
-#endif // OBJL_GLM_IMPL
-
-// Namespace: OBJL
-//
-// Description: The namespace that holds eveyrthing that
-//	is needed and used for the OBJ Model Loader
+#define LZZ_INLINE inline
 namespace objl
 {
-	// Structure: Vector2
-	//
-	// Description: A 2D Vector that Holds Positional Data
-#ifdef OBJL_GLM_IMPL
-	struct Vector2 : glm::vec2 {
-		float &X = x;
-		float &Y = y;
-
-
-#elif defined OBJL_DEFAULT_IMPL
-	struct Vector2{
-		// Positional Variables
-		union { float X, x; };
-		union { float Y, y; };
-
-#endif
-		// Default Constructor
+	struct Vector2
+	{
 		Vector2();
-		// Variable Set Constructor
 		Vector2(float X_, float Y_);
-		// Bool Equals Operator Overload
-		bool operator==(const Vector2& other) const;
-		// Bool Not Equals Operator Overload
-		bool operator!=(const Vector2& other) const;
-		// Addition Operator Overload
-		Vector2 operator+(const Vector2& right) const;
-		// Subtraction Operator Overload
-		Vector2 operator-(const Vector2& right) const;
-		// Float Multiplication Operator Overload
-		Vector2 operator*(const float& other) const;
-
-		Vector2 operator=(const Vector2& o)
-		{
-			x = o.x;
-			y = o.y;
-			return (*this);
-		}
+		bool operator == (Vector2 const & other) const;
+		bool operator != (Vector2 const & other) const;
+		Vector2 operator + (Vector2 const & right) const;
+		Vector2 operator - (Vector2 const & right) const;
+		Vector2 operator * (float const & other) const;
+		float X;
+		float Y;
 	};
-	
-	// Structure: Vector3
-	//
-	// Description: A 3D Vector that Holds Positional Data
-
-#ifdef OBJL_GLM_IMPL
-	struct Vector3 : glm::vec3 {
-		// Positional Variables
-		float &X = x;
-		float &Y = y;
-		float &Z = z;
-	
-#elif defined OBJL_DEFAULT_IMPL
+}
+namespace objl
+{
 	struct Vector3
 	{
-		// Positional Variables
-		union { float X, x; };
-		union { float Y, y; };
-		union { float Z, z; };
-
-#endif
-
-
-
-		// Default Constructor
 		Vector3();
-		// Variable Set Constructor
 		Vector3(float X_, float Y_, float Z_);
-		// Bool Equals Operator Overload
-		bool operator==(const Vector3& other) const;
-		// Bool Not Equals Operator Overload
-		bool operator!=(const Vector3& other) const;
-		// Addition Operator Overload
-		Vector3 operator+(const Vector3& right) const;
-		// Subtraction Operator Overload
-		Vector3 operator-(const Vector3& right) const;
-		// Float Multiplication Operator Overload
-		Vector3 operator*(const float& other) const;
-		// Float Division Operator Overload
-		Vector3 operator/(const float& other) const;
-
-		Vector3 operator=(const Vector3& o)
-		{
-			x = o.x;
-			y = o.y;
-			z = o.z;
-			return (*this);
-		}
+		bool operator == (Vector3 const & other) const;
+		bool operator != (Vector3 const & other) const;
+		Vector3 operator + (Vector3 const & right) const;
+		Vector3 operator - (Vector3 const & right) const;
+		Vector3 operator * (float const & other) const;
+		Vector3 operator / (float const & other) const;
+		float X;
+		float Y;
+		float Z;
 	};
-
-	// Structure: Vertex
-	//
-	// Description: Model Vertex object that holds
-	//	a Position, Normal, and Texture Coordinate
+}
+namespace objl
+{
 	struct Vertex
 	{
-		// Position Vector
 		Vector3 Position;
-
-		// Normal Vector
 		Vector3 Normal;
-
-		Vector3 BiTangent;
-		
-		// Texture Coordinate Vector
 		Vector2 TextureCoordinate;
 	};
-
+}
+namespace objl
+{
 	struct Material
 	{
 		Material();
-
-		// Material Name
 		std::string name;
-		// Ambient Color
 		Vector3 Ka;
-		// Diffuse Color
 		Vector3 Kd;
-		// Specular Color
 		Vector3 Ks;
-		// Specular Exponent
 		float Ns;
-		// Optical Density
 		float Ni;
-		// Dissolve
 		float d;
-		// Illumination
 		int illum;
-		// Ambient Texture Map
 		std::string map_Ka;
-		// Diffuse Texture Map
 		std::string map_Kd;
-		// Specular Texture Map
 		std::string map_Ks;
-		// Specular Hightlight Map
 		std::string map_Ns;
-		// Alpha Texture Map
 		std::string map_d;
-		// Bump Map
 		std::string map_bump;
-
 	};
-
-	// Structure: Mesh
-	//
-	// Description: A Simple Mesh Object that holds
-	//	a name, a vertex list, and an index list
+}
+namespace objl
+{
 	struct Mesh
 	{
-		unsigned int VAO, EBO, VBO;
-		// Default Constructor
 		Mesh();
-		// Variable Set Constructor
-		Mesh(std::vector<Vertex>& _Vertices, std::vector<unsigned int>& _Indices);
-		// Mesh Name
+		Mesh(std::vector <Vertex> & _Vertices, std::vector <unsigned int> & _Indices);
 		std::string MeshName;
-		// Vertex List
-		std::vector<Vertex> Vertices;
-		// Index List
-		std::vector<unsigned int> Indices;
-
-		// Material
+		std::vector <Vertex> Vertices;
+		std::vector <unsigned int> Indices;
 		Material MeshMaterial;
 	};
-
-	// Namespace: Math
-	//
-	// Description: The namespace that holds all of the math
-	//	functions need for OBJL
+}
+namespace objl
+{
 	namespace math
 	{
-		// Vector3 Cross Product
-		Vector3 CrossV3(const Vector3 a, const Vector3 b);
-
-		// Vector3 Magnitude Calculation
-		float MagnitudeV3(const Vector3 in);
-
-		// Vector3 DotProduct
-		float DotV3(const Vector3 a, const Vector3 b);
-
-		// Angle between 2 Vector3 Objects
-		float AngleBetweenV3(const Vector3 a, const Vector3 b);
-
-		// Projection Calculation of a onto b
-		Vector3 ProjV3(const Vector3 a, const Vector3 b);
+		Vector3 CrossV3(Vector3 const a, Vector3 const b);
 	}
-
-	// Namespace: Algorithm
-	//
-	// Description: The namespace that holds all of the
-	// Algorithms needed for OBJL
+}
+namespace objl
+{
+	namespace math
+	{
+		float MagnitudeV3(Vector3 const in);
+	}
+}
+namespace objl
+{
+	namespace math
+	{
+		float DotV3(Vector3 const a, Vector3 const b);
+	}
+}
+namespace objl
+{
+	namespace math
+	{
+		float AngleBetweenV3(Vector3 const a, Vector3 const b);
+	}
+}
+namespace objl
+{
+	namespace math
+	{
+		Vector3 ProjV3(Vector3 const a, Vector3 const b);
+	}
+}
+namespace objl
+{
 	namespace algorithm
 	{
-		// Vector3 Multiplication Opertor Overload
-		Vector3 operator*(const float& left, const Vector3& right);
-
-		// A test to see if P1 is on the same side as P2 of a line segment ab
+		Vector3 operator * (float const & left, Vector3 const & right);
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
 		bool SameSide(Vector3 p1, Vector3 p2, Vector3 a, Vector3 b);
-		// Generate a cross produect normal for a triangle
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
 		Vector3 GenTriNormal(Vector3 t1, Vector3 t2, Vector3 t3);
-		// Check to see if a Vector3 Point is within a 3 Vector3 Triangle
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
 		bool inTriangle(Vector3 point, Vector3 tri1, Vector3 tri2, Vector3 tri3);
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		void split(std::string const & in, std::vector <std::string> & out, std::string token);
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		std::string tail(std::string const & in);
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		std::string firstToken(std::string const & in);
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		template <typename T>
+		T const & getElement(std::vector <T> const & elements, std::string & index);
+	}
+}
+namespace objl
+{
+	class Loader
+	{
+	public:
+		Loader();
+		~Loader();
+		bool LoadFile(std::string Path);
+		std::vector <Mesh> LoadedMeshes;
+		std::vector <Vertex> LoadedVertices;
+		std::vector <unsigned int> LoadedIndices;
+		std::vector <Material> LoadedMaterials;
+	private:
+		void GenVerticesFromRawOBJ(std::vector <Vertex> & oVerts, std::vector <Vector3> const & iPositions, std::vector <Vector2> const & iTCoords, std::vector <Vector3> const & iNormals, std::string icurline);
+		void VertexTriangluation(std::vector <unsigned int> & oIndices, std::vector <Vertex> const & iVerts);
+		bool LoadMaterials(std::string path);
+	};
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		LZZ_INLINE void split(std::string const & in, std::vector <std::string> & out, std::string token)
+		{
+			out.clear();
 
-		// Split a String into a string array at a given token
-		inline void split(const std::string& in,
-			std::vector<std::string>& out,
-			std::string token);
-		// Get tail of string after first token and possibly following spaces
-		inline std::string tail(const std::string& in);
+			std::string temp;
 
-		// Get first token of string
-		inline std::string firstToken(const std::string& in);
+			for (int i = 0; i < int(in.size()); i++)
+			{
+				std::string test = in.substr(i, token.size());
 
-		// Get element at given index position
-		template <class T>
-		inline const T & getElement(const std::vector<T> &elements, std::string &index)
+				if (test == token)
+				{
+					if (!temp.empty())
+					{
+						out.push_back(temp);
+						temp.clear();
+						i += (int)token.size() - 1;
+					}
+					else
+					{
+						out.push_back("");
+					}
+				}
+				else if (i + token.size() >= in.size())
+				{
+					temp += in.substr(i, token.size());
+					out.push_back(temp);
+					break;
+				}
+				else
+				{
+					temp += in[i];
+				}
+			}
+		}
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		LZZ_INLINE std::string tail(std::string const & in)
+		{
+			size_t token_start = in.find_first_not_of(" \t");
+			size_t space_start = in.find_first_of(" \t", token_start);
+			size_t tail_start = in.find_first_not_of(" \t", space_start);
+			size_t tail_end = in.find_last_not_of(" \t");
+			if (tail_start != std::string::npos && tail_end != std::string::npos)
+			{
+				return in.substr(tail_start, tail_end - tail_start + 1);
+			}
+			else if (tail_start != std::string::npos)
+			{
+				return in.substr(tail_start);
+			}
+			return "";
+		}
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		LZZ_INLINE std::string firstToken(std::string const & in)
+		{
+			if (!in.empty())
+			{
+				size_t token_start = in.find_first_not_of(" \t");
+				size_t token_end = in.find_first_of(" \t", token_start);
+				if (token_start != std::string::npos && token_end != std::string::npos)
+				{
+					return in.substr(token_start, token_end - token_start);
+				}
+				else if (token_start != std::string::npos)
+				{
+					return in.substr(token_start);
+				}
+			}
+			return "";
+		}
+	}
+}
+namespace objl
+{
+	namespace algorithm
+	{
+		template <typename T>
+		LZZ_INLINE T const & getElement(std::vector <T> const & elements, std::string & index)
 		{
 			int idx = std::stoi(index);
 			if (idx < 0)
@@ -255,49 +305,6 @@ namespace objl
 			return elements[idx];
 		}
 	}
-
-	// Class: Loader
-	//
-	// Description: The OBJ Model Loader
-	class Loader
-	{
-	public:
-		// Default Constructor
-		Loader();
-		~Loader();
-
-		// Load a file into the loader
-		//
-		// If file is loaded return true
-		//
-		// If the file is unable to be found
-		// or unable to be loaded return false
-		bool LoadFile(std::string Path);
-
-		// Loaded Mesh Objects
-		std::vector<Mesh> LoadedMeshes;
-		// Loaded Vertex Objects
-		std::vector<Vertex> LoadedVertices;
-		// Loaded Index Positions
-		std::vector<unsigned int> LoadedIndices;
-		// Loaded Material Objects
-		std::vector<Material> LoadedMaterials;
-
-	private:
-		// Generate vertices from a list of positions, 
-		//	tcoords, normals and a face line
-		void GenVerticesFromRawOBJ(std::vector<Vertex>& oVerts,
-			const std::vector<Vector3>& iPositions,
-			const std::vector<Vector2>& iTCoords,
-			const std::vector<Vector3>& iNormals,
-			std::string icurline);
-
-		// Triangulate a list of vertices into a face by printing
-		//	inducies corresponding with triangles within it
-		void VertexTriangluation(std::vector<unsigned int>& oIndices,
-			const std::vector<Vertex>& iVerts);
-
-		// Load Materials from .mtl file
-		bool LoadMaterials(std::string path);
-	};
 }
+#undef LZZ_INLINE
+#endif

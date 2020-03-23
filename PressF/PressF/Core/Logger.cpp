@@ -44,6 +44,8 @@ namespace PF
 		while (glGetError() != GL_NO_ERROR);
 	}
 
+
+}
 	std::ostream& operator<<(std::ostream& os, const Vec3& v)
 	{
 		os << "(" << v.x <<	 ", " << v.y << ", " << v.z << ")";
@@ -54,6 +56,4 @@ namespace PF
 		is >> v.x >> v.y >> v.z;
 		return is;
 	}
-
-}
 

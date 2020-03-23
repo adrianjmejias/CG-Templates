@@ -1,7 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
 
-
 template <typename Type>
 struct BaseDataType
 {

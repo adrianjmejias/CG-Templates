@@ -38,3 +38,7 @@ void Rotator::OnDisable()
 void Rotator::Start()
 {
 }
+
+void Rotator::ImGui()
+{
+}

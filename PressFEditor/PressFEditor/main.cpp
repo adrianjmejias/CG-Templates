@@ -9,31 +9,59 @@
 //- Agregar Modelos(Con texturas e iluminación).
 //- Navegar escena. 
 //- Salvar / Cargar escena.
-//- Mostrar / Ocultar FPS(Frames per Second).
 //- Detección de colisiones.
 //- Activar / Desactivar efectos :
+
+
+
 // Estereoscopía.
+
+
+// Necesitamos la distancia intraocular (IOD)
+// distancia del plano imagen 
+
+
+
+
+
+
+
+
+
+
 // Fuego, humo, explosiones o lluvia(o cualquier efecto diseñado mediante
 //	un sistema de partículas).
-//	* Implementar al menos una técnica de post - procesamiento :
 //	* Bloom.
+	
+	//-- Hacer el render normal
+	//-- Hacer un render donde solo esten los objetos que brillen, aplicarle un blur
+	//-- combinar ambos render
+
+
+
+
+
+//	* Implementar al menos una técnica en screen space :
+// SSAO.
+// SSR.
+
+
+
+//	* Implementar al menos una técnica de post - procesamiento :
 //	* Heat Haze(Distorsión por calor)
 //	* Motion Blur.
 //	* Depth of Field.
 //	* Vidrio difuso o sucio
 //	* Otra técnica propuesta por usted(sujeta a previa revisión).
-//	* Implementar al menos una técnica en screen space :
-// SSAO.
-// SSR.
 // Otra técnica propuesta por usted(sujeta a previa revisión).
 //- Las funciones del API deben ser demostradas a través de una aplicación aparte.
 //* Consideraciones
-//- Implementar el API como una librería(estática, dinámica y / o como un archivo
-//	de cabecera).
 //	- Documentar el API con Doxygen(salida en formato HTML).
 //	- En caso de no poder implementar un técnica de screen space, puede
 //	implementar al menos 3 técnicas de post - procesamiento para compezar la
 //	calificación.
+
+
 int main() {
 	Editor editor;
 

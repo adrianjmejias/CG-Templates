@@ -1,9 +1,11 @@
+#pragma once
 #include "PressF/pch.h"
 #include "PressF/AssetsManagement/Scene.h"
 #include "PressF/AssetsManagement/AssetsManager.h"
 #include "PressF/Rendering/Renderer.h"
 #include "PressF/ImGui/imgui_impl_sdl.h"
 #include "PressF/ImGui/imgui_impl_opengl3.h"
+#include "PressF/Core/Window.h"
 
 namespace PF
 {
@@ -43,22 +45,17 @@ namespace PF
 		Renderer* renderer;
 		Scene scene;
 		EngineConfig config;
-
-
-		SDL_Window* win;
 		SDL_GLContext glContext;
-		int win_width = 800;
-		int win_heigth = 600;
+
+		Window* window;
+
+
 		bool running;
 		bool captureMouse = false;
 		bool show_demo_window = true;
 		bool show_another_window = true;	
 		Engine() = default;
-		GameObject& AddGameObject(GameObject* go)
-		{
-			scene.AddGameObject(go);
-			return *go;
-		}
+		GameObject& AddGameObject(GameObject* go);
 		
         void InitContext();
 		void CleanContext();

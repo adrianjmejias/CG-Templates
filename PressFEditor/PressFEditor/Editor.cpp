@@ -46,6 +46,11 @@ void Editor::Init()
 	PF::MeshRenderer* ms = ts1.AddComponent<PF::MeshRenderer>();
 
 	PF::Camera* cam = ts2.AddComponent<PF::Camera>();
+	ts2.AddComponent<CameraController>();
+	cam->Yaw = -5601.39600;
+	cam->Pitch = -70.9999771;
+	cam->transform->SetPosition({ 2.38617706 , 7.60761261, -1.88124359 });
+	cam->updateCameraVectors();
 
 
 	auto model = engine.assetManager.GetModel("quad");

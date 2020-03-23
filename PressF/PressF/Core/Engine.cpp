@@ -1,21 +1,14 @@
 #include "PressF/pch.h"
 #include "Engine.h"
+#include "PressF/Rendering/Utility/Quad.h"
 
-//static void GLAPIENTRY
-//MessageCallback(GLenum source,
-//	GLenum type,
-//	GLuint id,
-//	GLenum severity,
-//	GLsizei length,
-//	const GLchar* message,
-//	const void* userParam)
-//{
-//	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-//		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-//		type, severity, message);
-//}
 namespace PF
 {
+	GameObject& Engine::AddGameObject(GameObject* go)
+	{
+		scene.AddGameObject(go);
+		return *go;
+	}
 	void Engine::InitContext()
 	{
 		/* SDL setup */
@@ -27,15 +20,12 @@ namespace PF
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		win = SDL_CreateWindow("PressF",
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			win_width, win_heigth, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI );
-		glContext = SDL_GL_CreateContext(win);
+		window = Window::GetInstance();
+
+		glContext = SDL_GL_CreateContext(window->win);
 		//SDL_GetWindowSize(win, &win_width, &win_heigth);
-		SDL_SetWindowResizable(win, (SDL_bool)true);
+		SDL_SetWindowResizable(window->win, (SDL_bool)true);
 		//SDL_SetWindowBordered(win, SDL_FALSE);
-
-
 
 		if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
 			__debugbreak();
@@ -50,7 +40,7 @@ namespace PF
 		std::cout << "OpenGL version loaded: " << GLVersion.major << "."
 			<< GLVersion.minor << std::endl;
 		/* OpenGL setup */
-		glViewport(0, 0, win_width, win_heigth);
+		//glViewport(0, 0, win_width, win_heigth);
 	/*	glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);*/
 
@@ -58,14 +48,16 @@ namespace PF
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-		io.WantCaptureKeyboard = false;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.WantCaptureKeyboard = true;
+		io.WantCaptureMouse = true;
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();
-
+		//glad_set_post_callback(_post_call_callback_default);
 		// Setup Platform/Renderer bindings
-		ImGui_ImplSDL2_InitForOpenGL(win, glContext);
+		ImGui_ImplSDL2_InitForOpenGL(window->win, glContext);
 		ImGui_ImplOpenGL3_Init();
 
 		renderer = Renderer::GetInstance();
@@ -78,7 +70,7 @@ namespace PF
 		ImGui::DestroyContext();
 		//nk_sdl_shutdown();
 		SDL_GL_DeleteContext(glContext);
-		SDL_DestroyWindow(win);
+		SDL_DestroyWindow(window->win);
 		SDL_Quit();
 	}
 
@@ -89,9 +81,9 @@ namespace PF
 
 	void Engine::InitRender()
 	{
-			glViewport(0, 0, win_width, win_heigth);
+			//glViewport(0, 0, win_width, win_heigth);
 			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplSDL2_NewFrame(win);
+			ImGui_ImplSDL2_NewFrame(window->win);
 			ImGui::NewFrame();
 
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -102,15 +94,21 @@ namespace PF
 	{
 		auto& io = ImGui::GetIO();
 
-		
+		if (ImGui::Begin("Hierarchy"))
+		{
+			scene.ImGui();
+
+
+			ImGui::End();
+		}
+
+
 		scene.Update(io);
 		renderer->Render();
+		//Quad::Instance()->Bind();
+		//Quad::Instance()->Draw();
 
 
-		//for (auto& s : scenesLoaded)
-		//{
-		//	s->Update(io);
-		//}
 	}
 
 	void Engine::EndRender()
@@ -119,7 +117,7 @@ namespace PF
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		SDL_GL_SwapWindow(win);
+		SDL_GL_SwapWindow(window->win);
 	}
 
 	void Engine::LoopImGui()
@@ -136,6 +134,12 @@ namespace PF
 			}
 
 			ImGui::End();
+
+
+			assetManager.ImGui();
+
+
+
 		}
 
 		ImGui::ShowDemoWindow(&show_demo_window);
@@ -143,7 +147,7 @@ namespace PF
 
 	void Engine::LoopEvents()
 	{
-		SDL_GetWindowSize(win, &win_width, &win_heigth);
+		SDL_GetWindowSize(window->win, &window->width, &window->heigth);
 		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{
@@ -219,6 +223,8 @@ namespace PF
 						e.window.windowID,
 						e.window.data1,
 						e.window.data2);
+
+					glViewport(0, 0, e.window.data1, e.window.data2);
 					break;
 				}
 			}

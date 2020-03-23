@@ -16,6 +16,10 @@ using json = nlohmann::json;
 
 namespace PF
 {
+	struct ImGuiDraw
+	{
+		virtual void ImGuiRender() = 0;
+	};
 	struct Serializable
 	{
 		virtual json Serialize() = 0;

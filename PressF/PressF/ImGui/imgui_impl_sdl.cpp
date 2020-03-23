@@ -106,6 +106,11 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
             return true;
         }
     case SDL_KEYDOWN:
+
+
+
+
+
     case SDL_KEYUP:
         {
             int key = event->key.keysym.scancode;
@@ -147,13 +152,19 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window)
     io.KeyMap[ImGuiKey_Space] = SDL_SCANCODE_SPACE;
     io.KeyMap[ImGuiKey_Enter] = SDL_SCANCODE_RETURN;
     io.KeyMap[ImGuiKey_Escape] = SDL_SCANCODE_ESCAPE;
+
     io.KeyMap[ImGuiKey_A] = SDL_SCANCODE_A;
+    //io.KeyMap[ImGuiKey_B] = SDL_SCANCODE_B;
     io.KeyMap[ImGuiKey_C] = SDL_SCANCODE_C;
     io.KeyMap[ImGuiKey_V] = SDL_SCANCODE_V;
     io.KeyMap[ImGuiKey_X] = SDL_SCANCODE_X;
     io.KeyMap[ImGuiKey_Y] = SDL_SCANCODE_Y;
     io.KeyMap[ImGuiKey_Z] = SDL_SCANCODE_Z;
 
+    //for (size_t ii = SDL_SCANCODE_A; ii <= SDL_SCANCODE_0; ii++)
+    //{
+    //    io.KeyMap[ii] = ii;
+    //}
     io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
     io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
     io.ClipboardUserData = NULL;

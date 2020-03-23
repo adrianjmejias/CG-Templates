@@ -37,9 +37,9 @@ bool GLLogCall(const char* function, const char* file, int line);
 
 void GLClearError();
 
-std::ostream& operator<<(std::ostream& os, const Vec3& v);
-std::istream& operator>> (std::istream& is, Vec3& v);
-
 }
+	std::ostream& operator<<(std::ostream& os, const Vec3& v);
+	std::istream& operator>> (std::istream& is, Vec3& v);
+
 
 // Macros cant be at eof

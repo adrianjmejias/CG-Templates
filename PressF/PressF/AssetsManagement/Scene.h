@@ -18,6 +18,7 @@ namespace PF
 		GameObject& AddGameObject(GameObject* go);
 		void Serialize();
 		void Update(const ImGuiIO& io);
+		void ImGui();
 		void Start();
 	};
 }

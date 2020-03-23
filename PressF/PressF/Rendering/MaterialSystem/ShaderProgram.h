@@ -1,7 +1,7 @@
 #pragma once
 #include "PressF/pch.h"
 #include "PressF/Core/OpenGL.h"
-
+#include "PressF/AssetsManagement/Asset.h"
 namespace PF
 {
 
@@ -32,7 +32,7 @@ namespace PF
 		DISSOLVE,
 	};
 
-    class ShaderProgram : public GPUObject
+    class ShaderProgram : public GPUObject, Asset
     {
     public:
         std::string vPath;
@@ -46,7 +46,7 @@ namespace PF
         ~ShaderProgram();
         
         void ReCompile();
-        
+        virtual void ImGui();
         void Bind() override;
         // utility uniform functions
         // ------------------------------------------------------------------------

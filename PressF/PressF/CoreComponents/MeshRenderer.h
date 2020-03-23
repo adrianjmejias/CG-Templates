@@ -2,7 +2,7 @@
 #include "PressF/pch.h"
 #include "PressF/EntityComponent/Component.h"
 #include "PressF/Rendering/Mesh.h"
-
+#include "PressF/Rendering/MaterialSystem/Material.h"
 
 
 namespace PF
@@ -27,6 +27,10 @@ namespace PF
 		
 		// Inherited via Component
 		virtual void Start() override;
+
+
+		// Inherited via Component
+		virtual void ImGui() override;
 
 	};
 }

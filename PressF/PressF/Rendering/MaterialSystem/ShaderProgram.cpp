@@ -3,13 +3,6 @@
 
 namespace PF
 {
-    // activate the shader
-    // ------------------------------------------------------------------------
-
-
-    // constructor generates the shader on the fly
-    // ------------------------------------------------------------------------
-
      ShaderProgram::ShaderProgram(std::string vertexPath, std::string fragmentPath, std::string geometryPath)
     {
         // 1. retrieve the vertex/fragment source code from filePath
@@ -105,6 +98,12 @@ namespace PF
              glDeleteShader(geometry);
 
      }
+
+	 void ShaderProgram::ImGui()
+	 {
+         Asset::ImGui();
+
+	 }
 
     void ShaderProgram::Bind()
     {

@@ -2,6 +2,18 @@
 
 void CameraController::Update(const ImGuiIO& io)
 {
+
+	
+
+
+	//float scrollAmmount = io.MouseWheel;
+
+
+
+
+	std::cout << "Rotation \t" << transform->GetRotation() << "|";
+	std::cout << "Position \t" << transform->GetPosition();
+	std::cout << std::endl;
 }
 
 void CameraController::HandleEvent(const SDL_Event& e)
@@ -23,4 +35,8 @@ void CameraController::Start()
 json CameraController::Serialize()
 {
 	return json();
+}
+
+void CameraController::ImGui()
+{
 }
