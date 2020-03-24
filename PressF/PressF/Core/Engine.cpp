@@ -220,7 +220,8 @@ namespace PF
 						e.window.data1,
 						e.window.data2);
 
-					glViewport(0, 0, e.window.data1, e.window.data2);
+					renderer->OnResize(e.window.data1, e.window.data2);
+
 					break;
 				}
 			}

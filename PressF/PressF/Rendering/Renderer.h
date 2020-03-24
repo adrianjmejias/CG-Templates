@@ -57,5 +57,11 @@ namespace PF
 		void RenderParticles(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
 
 		void RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs);
+
+
+		void OnResize(int nWidth, int nHeight)
+		{
+			fb.reset(new FrameBuffer(nWidth, nHeight));
+		}
 	};
 }

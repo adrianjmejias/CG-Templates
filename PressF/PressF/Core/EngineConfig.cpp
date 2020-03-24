@@ -35,6 +35,13 @@ namespace PF
 
 		ImGuiRender(useSSAO, "Use SSAO");
 		ImGuiRender(useBloom, "Use Bloom");
+
+		if (useBloom)
+		{
+			ImGuiRender(stepSize, "Step Size", 0.02);
+			ImGuiRender(convSize, "Conv Size", 1);
+			ImGuiRender(convPivot, "Conv Pivot", 1);
+		}
 		ImGuiRender(useDeferredRendering, "Use Deferred Shading");
 	}
 

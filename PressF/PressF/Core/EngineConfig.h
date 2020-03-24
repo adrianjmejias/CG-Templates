@@ -13,6 +13,10 @@ namespace PF
         Bool useSSAO{ true };
         Bool useBloom{ true }; 
         Bool useDeferredRendering{true};
+
+        Float stepSize;
+        Vec2 convSize;
+        Vec2 convPivot;
         void ImGui();
         Float IOD;
         Float zDistance;

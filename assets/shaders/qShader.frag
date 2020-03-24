@@ -10,7 +10,7 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
 
-vec3 blur(sampler2D tex, vec2 convSize, vec2 pivot, vec2 actPos)
+vec3 blur(sampler2D tex, vec2 convSize, vec2 pivot, vec2 actPos, float stepSize)
 {
     int height = int(convSize.y);
     int width = int(convSize.x);
@@ -49,5 +49,5 @@ void main()
 
 
     fragColor = texture(gAlbedoSpec, uv);
-    fragColor = vec4(blur(gAlbedoSpec, vec2(7,7), vec2 (3,3), uv), 1);
+    fragColor = vec4(blur(gAlbedoSpec, vec2(7,7), vec2 (3,3), uv, 1), 1);
 }

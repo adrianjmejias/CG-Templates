@@ -213,6 +213,7 @@ namespace PF
 	}
 
 
+
 	void Renderer::RegisterLight(Light* l)
 	{
 		lights.push_back(l);
@@ -299,6 +300,9 @@ namespace PF
 			geometryPass->Bind();
 			geometryPass->SetUniform("projection", projection);
 			geometryPass->SetUniform("view", view);
+			geometryPass->SetUniform("stepSize", ec.stepSize);
+			geometryPass->SetUniform("convSize", ec.convSize);
+			geometryPass->SetUniform("convPivot", ec.convPivot);
 
 			for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
 			{
@@ -310,6 +314,8 @@ namespace PF
 					{
 						mr->mat->BindParametersOnly(geometryPass.get());
 						geometryPass->SetUniform("model", mr->transform->GetAccumulated());
+
+						geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
 						mesh->Render();
 					}
 				}
@@ -319,55 +325,52 @@ namespace PF
 
 			//// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
 			//	   // -----------------------------------------------------------------------------------------------------------------------
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			//shaderLightingPass->Bind();
-			//shaderLightingPass->SetUniform("gPosition", 0);
-			//shaderLightingPass->SetUniform("gNormal", 1);
-			//shaderLightingPass->SetUniform("gAlbedoSpec", 2);
-			//glActiveTexture(GL_TEXTURE0);
-			//glBindTexture(GL_TEXTURE_2D, *fb->pos);
-			//glActiveTexture(GL_TEXTURE1);
-			//glBindTexture(GL_TEXTURE_2D, *fb->normal);
-			//glActiveTexture(GL_TEXTURE2);
-			//glBindTexture(GL_TEXTURE_2D, *fb->color);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			shaderLightingPass->Bind();
+			shaderLightingPass->SetUniform("gPosition", 0);
+			shaderLightingPass->SetUniform("gNormal", 1);
+			shaderLightingPass->SetUniform("gAlbedoSpec", 2);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, *fb->pos);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, *fb->normal);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, *fb->color);
 
-			//shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
-			//for (int ii = 0; ii < lights.size(); ii++)
-			//{
-			//	auto& l = *lights[ii];
-			//	std::string name = "LIGHTS[" + std::to_string(ii) + "]";
-			//	shaderLightingPass->SetUniform(name + ".Position", l.transform->GetPosition());
-			//	shaderLightingPass->SetUniform(name + ".Color", l.kD);
+			shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
+			for (int ii = 0; ii < lights.size(); ii++)
+			{
+				auto& l = *lights[ii];
+				std::string name = "LIGHTS[" + std::to_string(ii) + "]";
+				shaderLightingPass->SetUniform(name + ".Position", l.transform->GetPosition());
+				shaderLightingPass->SetUniform(name + ".Color", l.kD);
 
-			//	float constant = l.attenuation.x;
-			//	float linear = l.attenuation.y;
-			//	float quadratic = l.attenuation.z;
+				float constant = l.attenuation.x;
+				float linear = l.attenuation.y;
+				float quadratic = l.attenuation.z;
 
-			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Linear", linear);
-			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Quadratic", quadratic);
+				shaderLightingPass->SetUniform(name + ".Linear", linear);
+				shaderLightingPass->SetUniform(name + ".Quadratic", quadratic);
 
-			//	const float maxBrightness = std::fmaxf(std::fmaxf(l.kD.r, l.kD.g), l.kD.b);
-			//	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Radius", radius);
-			//}
-			//
+				const float maxBrightness = std::fmaxf(std::fmaxf(l.kD.r, l.kD.g), l.kD.b);
+				float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+				shaderLightingPass->SetUniform(name + ".Radius", radius);
+			}
+			
 
-			shaderQuad->Bind();
+			//shaderQuad->Bind();
 			Quad::Instance()->Bind();
-			shaderQuad->SetUniform("gPosition", 0);
-			shaderQuad->SetUniform("gNormal", 1);
-			shaderQuad->SetUniform("gAlbedoSpec", 2);
 			Quad::Instance()->Draw();
 
-			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-			//// ----------------------------------------------------------------------------------
-			//glBindFramebuffer(GL_READ_FRAMEBUFFER, *fb);
-			//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-			//// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-			//// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
-			//// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-			//glBlitFramebuffer(0, 0, fb->width, fb->heigth, 0, 0, fb->width, fb->heigth, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+			// ----------------------------------------------------------------------------------
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, *fb);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+			// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+			// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+			// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+			glBlitFramebuffer(0, 0, fb->width, fb->heigth, 0, 0, fb->width, fb->heigth, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			//// 3. render lights on top of scene
 			//// --------------------------------
