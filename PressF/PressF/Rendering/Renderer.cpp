@@ -1,35 +1,172 @@
 #include "PressF/pch.h"
 #include "Renderer.h"
-
+#include "PressF/Core/EngineConfig.h"
+#include "PressF/Core/Window.h"
+#include "Utility/Quad.h"
+//#include "PressF/Core/OpenGL.h"
 
 namespace PF
 {
+	VertexArrayObject cubevao;
+	VertexBufferObject cubevbo;
+	void renderCube()
+	{
+		// initialize (if necessary)
+		if (cubevao.id == 0)
+		{
+			float vertices[] = {
+				// back face
+				-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+				 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+				 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+				 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+				-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+				-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+				// front face
+				-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+				 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+				 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+				 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+				-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+				-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+				// left face
+				-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+				-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+				-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+				-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+				-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+				-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+				// right face
+				 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+				 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+				 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+				 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+				 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+				 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+				// bottom face
+				-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+				 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+				 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+				 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+				-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+				-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+				// top face
+				-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+				 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+				 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+				 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+				-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+				-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+			};
+			glGenVertexArrays(1, &cubevao.id);
+			glGenBuffers(1, &cubevao.id);
+			// fill buffer
+			glBindBuffer(GL_ARRAY_BUFFER, cubevbo);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+			// link vertex attributes
+			glBindVertexArray(cubevao);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindVertexArray(0);
+		}
+		// render Cube
+		glBindVertexArray(cubevao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+	}
 	Owns<Renderer> Renderer::instance = nullptr;
 
 	Renderer* Renderer::GetInstance()
 	{
 		if (instance.get() == nullptr)
 		{
-			instance.reset(new Renderer());
+			auto r = new Renderer();
+			Window* win{ Window::GetInstance() };
+			r->fb.reset(new FrameBuffer(win->width, win->heigth));
+			r->RecompileShaders();
+			instance.reset(r);
 		}
 		return instance.get();
 	}
 
-	void Renderer::RegisterMesh(MeshRenderer* mesh)
+	void Renderer::RecompileShaders()
 	{
-		objects[mesh->mesh].push_back(mesh);
+		geometryPass.reset(new ShaderProgram("../assets/shaders/dfgeo.vert", "../assets/shaders/dfgeo.frag"));
+		shaderLightingPass.reset(new ShaderProgram("../assets/shaders/dflighting.vert", "../assets/shaders/dflighting.frag"));
+		shaderLightBox.reset(new ShaderProgram("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
+		shaderQuad.reset(new ShaderProgram("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
+
+		shaderLightingPass->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, *fb->pos);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, *fb->normal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, *fb->color);
+
+		shaderLightingPass->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, *fb->pos);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, *fb->normal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, *fb->color);
+
+		shaderLightBox->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, *fb->pos);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, *fb->normal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, *fb->color);
+
+		shaderQuad->Bind();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, *fb->pos);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, *fb->normal);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, *fb->color);
 	}
 
+	void Renderer::RegisterMesh(MeshRenderer* mesh, RenderMask renderMask)
+	{
+		UnRegisterMesh(mesh);
+
+		for (int ii = 0; ii < renderMask.size(); ii++)
+		{
+			if (renderMask[ii] == true)
+			{
+				objects[ii][mesh->mesh].push_back(mesh);
+			}
+		}
+
+
+	}
 	void Renderer::UnRegisterMesh(MeshRenderer* mesh)
 	{
-		auto mrList = objects[mesh->mesh];
-		//std::remove(mrList.begin(), mrList.end(), mesh);
-
-		auto it = std::find(mrList.begin(), mrList.end(), mesh);
-
-		if (it != mrList.end())
+		for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
 		{
-			mrList.erase(it);
+			auto& objs = objects[ii];
+
+			auto ito = objs.find(mesh->mesh);
+
+			if (ito != objs.end())
+			{
+				auto mrList = ito->second;
+
+				auto it = std::find(mrList.begin(), mrList.end(), mesh);
+
+				if (it != mrList.end())
+				{
+					mrList.erase(it);
+				}
+			}
 		}
 	}
 
@@ -37,7 +174,6 @@ namespace PF
 	{
 		cameras.push(cam);
 	}
-
 	void Renderer::UnRegisterCamera(Camera* cam)
 	{
 		std::list<Camera*> cams;
@@ -64,7 +200,6 @@ namespace PF
 	{
 		particlesSystems.push_back(ps);
 	}
-
 	void Renderer::UnRegisterParticleSystem(ParticleSystem* ps)
 	{
 		auto it = std::find(particlesSystems.begin(), particlesSystems.end(), ps);
@@ -77,11 +212,11 @@ namespace PF
 
 	}
 
+
 	void Renderer::RegisterLight(Light* l)
 	{
 		lights.push_back(l);
 	}
-
 	void Renderer::UnRegisterLight(Light* l)
 	{
 		auto it = std::find(lights.begin(), lights.end(), l);
@@ -92,12 +227,12 @@ namespace PF
 			lights.pop_back();
 		}
 	}
-	
+
 	void Renderer::BindLigths(ShaderProgram& shader)
 	{
 
 		shader.SetUniform("nLights", static_cast<int>(lights.size()));
-		for (int ii=0; ii < lights.size(); ii++)
+		for (int ii = 0; ii < lights.size(); ii++)
 		{
 			auto& l = *lights[ii];
 			std::string name = "LIGHTS[" + std::to_string(ii) + "]";
@@ -111,12 +246,164 @@ namespace PF
 
 	void Renderer::Render()
 	{
-
-		Camera *c = cameras.top();
+		Window* win{ Window::GetInstance() };
+		Camera* c = cameras.top();
 		c->transform->TryGetClean();
-		const Mat4& projection = c->GetProjectionMatrix();
-		const Mat4& view = c->GetViewMatrix();
 		const Vec3& viewPos = c->transform->GetPosition();
+		EngineConfig& ec = *EngineConfig::GetInstance();
+
+		renderingType = ec.useDeferredRendering ? RenderingType::Deferred : RenderingType::Forward;
+
+
+		if (renderingType == RenderingType::Forward)
+		{
+			if (ec.useStereoscopic)
+			{
+				int hWidth = win->width / 2;
+				int hHeigth = win->heigth / 2;
+				float ar = hWidth / float(win->heigth);
+
+				const Mat4& projection = c->GetProjectionMatrix(ar);
+				auto [vl, vr] = c->GetViewMatrixStereoscopic(ec.IOD, ec.zDistance);
+
+				glViewport(0, 0, hWidth, win->heigth);
+
+				RenderNormal(projection, vl, viewPos);
+
+				glViewport(hWidth, 0, hWidth, win->heigth);
+
+				RenderNormal(projection, vr, viewPos);
+			}
+			else
+			{
+				const Mat4& projection = c->GetProjectionMatrix();
+
+				glViewport(0, 0, win->width, win->heigth);
+
+				const Mat4& view = c->GetViewMatrix();
+				RenderNormal(projection, view, viewPos);
+			}
+		}
+
+		if (renderingType == RenderingType::Deferred)
+		{
+			glViewport(0, 0, win->width, win->heigth);
+
+			const Mat4& projection = c->GetProjectionMatrix();
+			const Mat4& view = c->GetViewMatrix();
+
+			glBindFramebuffer(GL_FRAMEBUFFER, *fb);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			geometryPass->Bind();
+			geometryPass->SetUniform("projection", projection);
+			geometryPass->SetUniform("view", view);
+
+			for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
+			{
+				auto& objs = objects[ii];
+				for (auto [mesh, mrList] : objs)
+				{
+					mesh->Bind();
+					for (auto mr : mrList)
+					{
+						mr->mat->BindParametersOnly(geometryPass.get());
+						geometryPass->SetUniform("model", mr->transform->GetAccumulated());
+						mesh->Render();
+					}
+				}
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			//// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
+			//	   // -----------------------------------------------------------------------------------------------------------------------
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//shaderLightingPass->Bind();
+			//shaderLightingPass->SetUniform("gPosition", 0);
+			//shaderLightingPass->SetUniform("gNormal", 1);
+			//shaderLightingPass->SetUniform("gAlbedoSpec", 2);
+			//glActiveTexture(GL_TEXTURE0);
+			//glBindTexture(GL_TEXTURE_2D, *fb->pos);
+			//glActiveTexture(GL_TEXTURE1);
+			//glBindTexture(GL_TEXTURE_2D, *fb->normal);
+			//glActiveTexture(GL_TEXTURE2);
+			//glBindTexture(GL_TEXTURE_2D, *fb->color);
+
+			//shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
+			//for (int ii = 0; ii < lights.size(); ii++)
+			//{
+			//	auto& l = *lights[ii];
+			//	std::string name = "LIGHTS[" + std::to_string(ii) + "]";
+			//	shaderLightingPass->SetUniform(name + ".Position", l.transform->GetPosition());
+			//	shaderLightingPass->SetUniform(name + ".Color", l.kD);
+
+			//	float constant = l.attenuation.x;
+			//	float linear = l.attenuation.y;
+			//	float quadratic = l.attenuation.z;
+
+			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Linear", linear);
+			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Quadratic", quadratic);
+
+			//	const float maxBrightness = std::fmaxf(std::fmaxf(l.kD.r, l.kD.g), l.kD.b);
+			//	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+			//	shaderLightingPass->SetUniform("lights[" + std::to_string(ii) + "].Radius", radius);
+			//}
+			//
+
+			shaderQuad->Bind();
+			Quad::Instance()->Bind();
+			shaderQuad->SetUniform("gPosition", 0);
+			shaderQuad->SetUniform("gNormal", 1);
+			shaderQuad->SetUniform("gAlbedoSpec", 2);
+			Quad::Instance()->Draw();
+
+			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+			//// ----------------------------------------------------------------------------------
+			//glBindFramebuffer(GL_READ_FRAMEBUFFER, *fb);
+			//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+			//// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+			//// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+			//// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+			//glBlitFramebuffer(0, 0, fb->width, fb->heigth, 0, 0, fb->width, fb->heigth, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			//// 3. render lights on top of scene
+			//// --------------------------------
+			//shaderLightBox->Bind();
+			//shaderLightBox->SetUniform("projection", projection);
+			//shaderLightBox->SetUniform("view", view);
+			//for (unsigned int i = 0; i < lights.size(); i++)
+			//{
+			//	auto& l = *lights[i];
+			//	shaderLightBox->SetUniform("model", l.transform->GetAccumulated());
+			//	shaderLightBox->SetUniform("lightColor", l.kD);
+			//	renderCube();
+			//}
+		}
+
+
+	}
+	void Renderer::RenderNormal(const Mat4& projection, const Mat4& view, const Vec3& viewPos)
+	{
+		RenderParticles(projection, view, viewPos);
+
+		// Renderizo aca
+		RenderMeshes(projection, view, viewPos, objects[PF_BLOOM]);
+
+		// Renderizo aca
+		RenderMeshes(projection, view, viewPos, objects[PF_NORMAL]);
+
+		// Combino bloom y normal
+
+		// TRANSPARENT SORT HERE
+
+		RenderMeshes(projection, view, viewPos, objects[PF_TRANSPARENT]);
+	}
+	
+	void Renderer::RenderParticles(const Mat4& projection, const Mat4& view, const Vec3& viewPos)
+	{
 		for (auto ps : particlesSystems)
 		{
 			//ps->UpdateRender();
@@ -124,7 +411,7 @@ namespace PF
 
 			ps->mesh->Bind();
 			ps->mat->Bind();
-				
+
 			auto shader = ps->mat->shader;
 			const Mat4& parentModel{ ps->transform->GetAccumulated() };
 
@@ -164,30 +451,34 @@ namespace PF
 
 
 		}
-
-		for (auto [mesh, mrList] : objects)
-		{
-			mesh->Bind();
-			for (auto mr : mrList)
-			{
-				mr->mat->Bind();
-
-				auto shader = mr->mat->shader;
-
-				if (mr->mat->usesLight)
-				{
-					BindLigths(*shader);
-				}
-
-				shader->SetUniform("viewPos", viewPos);
-				shader->SetUniform("model", mr->transform->GetAccumulated());
-				shader->SetUniform("view", view);
-				shader->SetUniform("projection", projection);
-
-				mesh->Render();
-			}
-		}
 	}
 
+	void Renderer::RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs)
+	{
+			for (auto [mesh, mrList] : objs)
+			{
+				mesh->Bind();
+				for (auto mr : mrList)
+				{
+					mr->mat->Bind();
+
+					auto shader = mr->mat->shader;
+
+					if (mr->mat->usesLight)
+					{
+						BindLigths(*shader);
+					}
+
+					shader->SetUniform("viewPos", viewPos);
+					shader->SetUniform("model", mr->transform->GetAccumulated());
+					shader->SetUniform("view", view);
+					shader->SetUniform("projection", projection);
+
+					mesh->Render();
+				}
+			}
+
+		
+	}
 
 }

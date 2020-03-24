@@ -7,12 +7,17 @@
 
 namespace PF
 {
+
+
+
+
 	class MeshRenderer : public Component
 	{
 	public:
 		Ref<GPUMesh> mesh;
 		Ref<Material> mat;
-
+		MeshRenderMode renderMode{ MeshRenderMode::Normal };
+		RenderMask renderMask;
 		// Inherited via Component
 		virtual void Update(const ImGuiIO& io) override;
 
@@ -31,6 +36,9 @@ namespace PF
 
 		// Inherited via Component
 		virtual void ImGui() override;
-
+		
+		void SetRenderMode(MeshRenderMode mode);
+		void ApplyRenderMode();
+		void SetGPUMesh(GPUMesh* m);
 	};
 }

@@ -11,6 +11,24 @@ namespace PF
 	constexpr void Assign(Vec2& a, const objl::Vector2& b);
 	class MeshRenderer;
 
+	#define PF_NORMAL 0
+	#define PF_BLOOM 1
+	#define	PF_TRANSPARENT 2
+
+	enum class MeshRenderMode
+	{
+		Normal,
+		Shiny,
+		Transparent,
+		None
+	};
+
+	const int PF_RENDER_MASKS_SIZE = 3;
+	struct RenderMask : public std::bitset<PF_RENDER_MASKS_SIZE>
+	{
+		void SetMode(MeshRenderMode renderMode);
+	};
+
 	struct Vertex {
 		Vec3 pos;
 		Vec3 normal;

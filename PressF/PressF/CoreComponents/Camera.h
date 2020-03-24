@@ -4,6 +4,12 @@
 namespace PF
 {
 
+	enum class RenderType
+	{
+		Stereoscopic,
+		Normal
+	};
+
 	enum class ProjectionType
 	{
 		Perspective,
@@ -27,6 +33,8 @@ namespace PF
 
 		ClearType clearType = ClearType::SolidColor;
 		ProjectionType cameraType = ProjectionType::Perspective;
+		RenderType renderType{ RenderType::Stereoscopic };
+
 		Float fov{ 45 };
 
 		std::bitset<8> cullingMask;
@@ -43,7 +51,7 @@ namespace PF
 		// Inherited via Component
 		virtual void Start() override;
 
-		Mat4 GetProjectionMatrix();
+		Mat4 GetProjectionMatrix(float ar =-1);
 
 		// Inherited via Component
 		virtual void ImGui() override;
@@ -72,7 +80,8 @@ namespace PF
 
 
 		Mat4 GetViewMatrix();
-		
+
+		std::tuple<Mat4, Mat4> GetViewMatrixStereoscopic(float IOD, float zDistance);
 
         // Processes input received from a mouse input system. Expects the offset value in both the x and y direction.
 		void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);

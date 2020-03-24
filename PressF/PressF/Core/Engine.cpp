@@ -125,13 +125,10 @@ namespace PF
 
 		if (ImGui::Begin("Engine"))
 		{
-			ImGui::Checkbox("Show FPS", &config.showFPS);
+			EngineConfig::GetInstance()->ImGui();
+			//ImGui::Checkbox("Show FPS", &config.showFPS);
 				
-			if (config.showFPS)
-			{
-				ImGui::SameLine();
-				ImGui::Text("FPS: %f", io.Framerate);
-			}
+
 
 			ImGui::End();
 
@@ -167,6 +164,8 @@ namespace PF
 					{
 						val->ReCompile();
 					}
+
+					renderer->RecompileShaders();
 
 					/*for (size_t ii = 0; ii < shaders.size(); ii++)
 					{

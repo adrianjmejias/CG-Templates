@@ -12,7 +12,7 @@ namespace PF
 
 
 	Quad::Quad() {
-		const float sz = 0.4f	;
+		const float sz = 1.f;
 		float quadVertices[] = {
 			// positions        	// texture Coords
 			-sz,sz,

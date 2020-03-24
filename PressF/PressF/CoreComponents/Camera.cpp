@@ -5,8 +5,6 @@
 
 namespace PF
 {
-
-	
 	void Camera::Update(const ImGuiIO& io)
 	{	
 		if (io.KeyCtrl)
@@ -65,15 +63,18 @@ namespace PF
 		//transform->Translate(0, 0, -4);
 	}
 
-	Mat4 Camera::GetProjectionMatrix()
+	Mat4 Camera::GetProjectionMatrix(float ar)
 	{
-		//if(transform->)
-		
 		Window* win = Window::GetInstance();
+		
+		if (ar < 0)
+		{
+			ar = win->width / float(win->heigth);
+		}
 
 		if (cameraType == ProjectionType::Perspective)
 		{
-			projection = glm::perspective(glm::radians(*fov), win->width / float(win->heigth), clippingPlanes.x, clippingPlanes.y);
+			projection = glm::perspective(glm::radians(*fov), ar, clippingPlanes.x, clippingPlanes.y);
 		}
 		else
 		{
@@ -85,14 +86,17 @@ namespace PF
 
 	void Camera::ImGui()
 	{
-		ImGui::Text("Camera");
+		if (ImGui::TreeNode("Camera"))
+		{
+			ImGui::DragFloat4("ViewportRect", &viewportRect.x);
+			ImGui::DragFloat2("ClippingPlanes", &clippingPlanes.x);
+			ImGuiRender(priority, "Priority");
+			ImGuiRender(fov, "FOV", 0.2f);
+			ImGuiRender(speed, "Camera Speed", 0.2f);
+			ImGuiRender(MouseSensitivity, "Mouse Sensitivity", 0.2f);
+			ImGui::TreePop();
+		}
 
-		ImGui::DragFloat4("ViewportRect", &viewportRect.x);
-		ImGui::DragFloat2("ClippingPlanes", &clippingPlanes.x);
-		ImGuiRender(priority, "Priority");
-		ImGuiRender(fov, "FOV", 0.2f);
-		ImGuiRender(speed, "Camera Speed", 0.2f);
-		ImGuiRender(MouseSensitivity, "Mouse Sensitivity", 0.2f);
 	}
 
 	glm::mat4 Camera::GetViewMatrix(const Vec3& pos, const Vec3& front, const Vec3& up)
@@ -105,10 +109,21 @@ namespace PF
 		return GetViewMatrix(transform->GetPosition(), Front, Up);
 	}
 
+	std::tuple<Mat4, Mat4> Camera::GetViewMatrixStereoscopic(float IOD, float zDistance)
+	{
+		Vec3 focusPoint = Front * zDistance;
+		Vec3 lPos = transform->GetPosition() - Right * IOD;
+		Vec3 rPos = transform->GetPosition() + Right * IOD;
+		return {
+			GetViewMatrix(lPos, glm::normalize(focusPoint - lPos), Up),
+			GetViewMatrix(rPos, glm::normalize(focusPoint - rPos), Up),
+		};
+	}
+
 	void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
 	{
 		xoffset *= MouseSensitivity;
-		yoffset *= MouseSensitivity;
+		yoffset *= -MouseSensitivity;
 
 		Yaw += xoffset;
 		Pitch += yoffset;
@@ -148,5 +163,4 @@ namespace PF
 		Right = glm::normalize(glm::cross(Front, WorldUp));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
 		Up = glm::normalize(glm::cross(Right, Front));
 	}
-	
 }

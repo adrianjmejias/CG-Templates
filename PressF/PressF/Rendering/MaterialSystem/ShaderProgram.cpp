@@ -191,6 +191,8 @@ namespace PF
             {
                 glGetShaderInfoLog(shader, 1024, NULL, infoLog);
                 std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+                std::cout<< "Vertex\t" << this->vPath << std::endl;
+                std::cout<< "Fragment\t" << this->fPath << std::endl;
             }
         }
         else

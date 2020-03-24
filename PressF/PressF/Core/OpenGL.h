@@ -6,42 +6,32 @@ using glId = unsigned int;
 struct GPUObject
 {
 	glId id = 0;
-	operator unsigned int&() {
-		return id;
-	}
+	operator unsigned int& ();
 	virtual void Bind() = 0;
 };
 
 struct VertexArrayObject : GPUObject{
 
-	virtual void Bind() override
-	{
-		glBindVertexArray(id);
-	}
+	virtual void Bind() override;
 
-	~VertexArrayObject()
-	{
-		if (id)
-		{
-			glDeleteVertexArrays(1, &id);
-		}
-	}
+	~VertexArrayObject();
 };
 
 struct VertexBufferObject : GPUObject{
 	glId type;
-	virtual void Bind() override
+	virtual void Bind() override;
+	~VertexBufferObject();
+};
+
+struct RenderBuffer : GPUObject
+{
+	// Inherited via GPUObject
+	virtual void Bind() override;
+	~RenderBuffer()
 	{
-		__debugbreak();
-		//glBindBuffer(id);
+		glDeleteRenderbuffers(1, &id);
 	}
-	~VertexBufferObject()
-	{
-		if (id)
-		{
-			glDeleteBuffers(1, &id);
-		}
-	}
+
 };
 
 

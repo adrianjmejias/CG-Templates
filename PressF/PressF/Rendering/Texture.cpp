@@ -2,7 +2,25 @@
 #include "Texture.h"
 namespace PF
 {
+	void Texture::Gen()
+	{
+		if (id)
+		{
+			glDeleteTextures(1, &id);
+		}
 
+		glGenTextures(1, &id);
+	}
+	void Texture::SetInterpolationMethod(TexInterpolationMethod s, TexInterpolationMethod t)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<int>(s));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<int>(t));
+	}
+	void Texture::SetClampMethod(TexClampMethod s, TexClampMethod t)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<int>(s));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<int>(t));
+	}
 	Owns<Texture> Texture::TextureFromFile(const std::string& _path)
 	{
 		Owns<Texture> tex{ new Texture() };
@@ -16,13 +34,13 @@ namespace PF
 			switch (tex->nComponents)
 			{
 			case 1:
-				tex->format = static_cast<ColorFormat>(GL_RED);
+				tex->format = static_cast<TexColorFormat>(GL_RED);
 				break;
 			case 3:
-				tex->format = static_cast<ColorFormat>(GL_RGB);
+				tex->format = static_cast<TexColorFormat>(GL_RGB);
 				break;
 			case 4:
-				tex->format = static_cast<ColorFormat>(GL_RGBA);
+				tex->format = static_cast<TexColorFormat>(GL_RGBA);
 				break;
 			default:
 				break;
@@ -47,15 +65,22 @@ namespace PF
 
 		return tex;
 	}
-
 	void Texture::Bind()
 	{
+		glBindTexture(GL_TEXTURE_2D, id);
+	}
 
+	void Texture::UnBind()
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	Texture::~Texture()
 	{
-		glDeleteTextures(1, &id);
+		if (id)
+		{
+			glDeleteTextures(1, &id);
+		}
 	}
 	void Texture::ImGui()
 	{

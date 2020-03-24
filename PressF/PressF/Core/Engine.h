@@ -6,6 +6,8 @@
 #include "PressF/ImGui/imgui_impl_sdl.h"
 #include "PressF/ImGui/imgui_impl_opengl3.h"
 #include "PressF/Core/Window.h"
+#include "EngineConfig.h"
+
 
 namespace PF
 {
@@ -41,7 +43,6 @@ namespace PF
 		AssetsManager assetManager;
 		Renderer* renderer;
 		Scene scene;
-		EngineConfig config;
 		SDL_GLContext glContext;
 
 		Window* window;

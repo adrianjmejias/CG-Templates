@@ -161,4 +161,28 @@ namespace PF
 		glDrawElements(GL_TRIANGLES, nElem, GL_UNSIGNED_INT, 0);
 	}
 
+	void RenderMask::SetMode(MeshRenderMode renderMode)
+	{
+		RenderMask& renderMask = *this;
+
+		switch (renderMode)
+		{
+		case PF::MeshRenderMode::Shiny:
+			renderMask[PF_BLOOM] = true;
+
+		case PF::MeshRenderMode::Normal:
+			renderMask[PF_NORMAL] = true;
+			renderMask[PF_TRANSPARENT] = false;
+
+			break;
+		case PF::MeshRenderMode::Transparent:
+			renderMask[PF_TRANSPARENT] = true;
+			renderMask[PF_NORMAL] = false;
+			renderMask[PF_BLOOM] = false;
+			break;
+		default:
+			break;
+		}
+	}
+
 }

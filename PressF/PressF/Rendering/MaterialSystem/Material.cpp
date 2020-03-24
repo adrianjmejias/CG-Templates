@@ -14,6 +14,19 @@ namespace PF
 			sp->Bind(shader);
 		}
 	}
+
+	void Material::BindParametersOnly(Ref<ShaderProgram> s)
+	{
+		if (s == nullptr)
+		{
+			s = shader;
+		}
+		//ShaderParameter* p = new ShaderInt();
+		for (auto& sp : parameters)
+		{
+			sp->Bind(s);
+		}
+	}
 	Material& Material::operator=(objl::Material& m)
 	{
 		name = m.name;

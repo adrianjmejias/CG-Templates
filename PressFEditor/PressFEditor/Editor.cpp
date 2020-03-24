@@ -1,5 +1,6 @@
 #include "Editor.h"
 
+#define BLOOM 1
 
 namespace PF
 {
@@ -50,6 +51,17 @@ void Editor::Init()
 
 
 	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
+
+
+	{
+		engine.assetManager.LoadModel("thechosenone", "../assets/models/thechosenone.obj");
+		auto model = engine.assetManager.GetModel("thechosenone");
+		PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
+		auto mr = ts1.AddComponent<PF::MeshRenderer>();
+		mr->SetGPUMesh(model->meshes[0].get());
+		mr->SetRenderMode(PF::MeshRenderMode::Shiny);
+
+	}
 
 	auto model = engine.assetManager.GetModel("quad");
 	std::vector<PF::GameObject*> gos = PF::GetAsSeparateGameObjects(*model);

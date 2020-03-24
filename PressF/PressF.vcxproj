@@ -138,6 +138,7 @@
     <ClInclude Include="PressF\AssetsManagement\Scene.h" />
     <ClInclude Include="PressF\AssetsManagement\Serialization.h" />
     <ClInclude Include="PressF\Core\Engine.h" />
+    <ClInclude Include="PressF\Core\EngineConfig.h" />
     <ClInclude Include="PressF\Core\KeyCodes.h" />
     <ClInclude Include="PressF\Core\Logger.h" />
     <ClInclude Include="PressF\Core\OpenGL.h" />
@@ -158,7 +159,6 @@
     <ClInclude Include="PressF\Core\Window.h" />
     <ClInclude Include="PressF\CoreComponents\Camera.h" />
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h" />
-    <ClInclude Include="PressF\CoreComponents\EngineConfig.h" />
     <ClInclude Include="PressF\CoreComponents\Light.h" />
     <ClInclude Include="PressF\CoreComponents\MeshRenderer.h" />
     <ClInclude Include="PressF\CoreComponents\ParticleSystem.h" />
@@ -169,6 +169,7 @@
     <ClInclude Include="PressF\ImGui\imgui_impl_sdl.h" />
     <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h" />
     <ClInclude Include="PressF\PressF.h" />
+    <ClInclude Include="PressF\Rendering\FrameBuffer.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\Material.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderColor.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderFloat.h" />
@@ -189,6 +190,7 @@
     <ClCompile Include="PressF\AssetsManagement\Scene.cpp" />
     <ClCompile Include="PressF\AssetsManagement\Serialization.cpp" />
     <ClCompile Include="PressF\Core\Engine.cpp" />
+    <ClCompile Include="PressF\Core\EngineConfig.cpp" />
     <ClCompile Include="PressF\Core\Logger.cpp" />
     <ClCompile Include="PressF\Core\OpenGL.cpp" />
     <ClCompile Include="PressF\Core\Types\types.cpp" />
@@ -203,6 +205,7 @@
     <ClCompile Include="PressF\ImGui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="PressF\ImGui\imgui_impl_sdl.cpp" />
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp" />
+    <ClCompile Include="PressF\Rendering\FrameBuffer.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\ShaderProgram.cpp" />

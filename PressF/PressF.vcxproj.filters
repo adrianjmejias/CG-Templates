@@ -60,6 +60,9 @@
     <ClInclude Include="PressF\Core\Engine.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="PressF\Core\EngineConfig.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\Core\KeyCodes.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -120,9 +123,6 @@
     <ClInclude Include="PressF\CoreComponents\CoreComponents.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\CoreComponents\EngineConfig.h">
-      <Filter>CoreComponents</Filter>
-    </ClInclude>
     <ClInclude Include="PressF\CoreComponents\Light.h">
       <Filter>CoreComponents</Filter>
     </ClInclude>
@@ -151,6 +151,9 @@
       <Filter>ObjLoader</Filter>
     </ClInclude>
     <ClInclude Include="PressF\PressF.h" />
+    <ClInclude Include="PressF\Rendering\FrameBuffer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
     <ClInclude Include="PressF\Rendering\MaterialSystem\Material.h">
       <Filter>Rendering\MaterialSystem</Filter>
     </ClInclude>
@@ -205,6 +208,9 @@
     <ClCompile Include="PressF\Core\Engine.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="PressF\Core\EngineConfig.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="PressF\Core\Logger.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -246,6 +252,9 @@
     </ClCompile>
     <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp">
       <Filter>ObjLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\FrameBuffer.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp">
       <Filter>Rendering\MaterialSystem</Filter>

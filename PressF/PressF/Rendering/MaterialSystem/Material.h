@@ -24,6 +24,7 @@ namespace PF
 		Material& operator=(objl::Material& m);
 
 		virtual void Bind();
+		void BindParametersOnly(Ref<ShaderProgram> s = nullptr);
 		virtual void ImGui();
 
 		template <typename TT, typename ...Args >

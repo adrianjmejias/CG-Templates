@@ -5,21 +5,36 @@
 #include "PressF/CoreComponents/MeshRenderer.h"
 #include "PressF/CoreComponents/ParticleSystem.h"
 #include "PressF/CoreComponents/Light.h"
+#include "PressF/Rendering/FrameBuffer.h"
 
 namespace PF
 {
+	enum class RenderingType
+	{
+		Deferred, 
+		Forward
+	};
 	static std::function<bool(Camera*,Camera*)> cameraComparer = [](Camera* l, Camera* r) -> bool { return *(l->priority) < *(r->priority); };
 	struct Renderer
 	{
+		Owns<ShaderProgram> geometryPass;
+		Owns<ShaderProgram> shaderLightingPass;
+		Owns<ShaderProgram> shaderLightBox;
+		Owns<ShaderProgram> shaderQuad;
+		Owns<FrameBuffer> fb;
+		RenderingType renderingType{RenderingType::Deferred};
 		static Owns<Renderer> instance;
-		std::unordered_map<GPUMesh*, std::list<MeshRenderer*>> objects;
+		std::array<std::unordered_map<GPUMesh*, std::list<MeshRenderer*>>, PF_RENDER_MASKS_SIZE> objects;
 		std::vector<ParticleSystem*> particlesSystems;
 		std::vector<Light*> lights;
 		std::priority_queue < Camera*, std::vector<Camera*>, decltype(cameraComparer)> cameras{ cameraComparer };
 
 		static Renderer* GetInstance();
 
-		void RegisterMesh(MeshRenderer* mesh);
+
+		void RecompileShaders();
+
+		void RegisterMesh(MeshRenderer* mesh, RenderMask renderMask);
 		void UnRegisterMesh(MeshRenderer* mesh);
 
 
@@ -35,7 +50,12 @@ namespace PF
 
 		void Render();
 
+		void RenderNormal(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
+
 		void BindLigths(ShaderProgram &shader);
 
+		void RenderParticles(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
+
+		void RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs);
 	};
 }
