@@ -9,7 +9,7 @@ uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 
 
-vec3 blur(sampler2D tex, )
+vec3 blur(sampler2D tex)
 {
     // vec3 avg = vec3(0);
 
