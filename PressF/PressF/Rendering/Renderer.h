@@ -23,11 +23,16 @@ namespace PF
 		Owns<ShaderProgram> shaderLightingPass;
 		Owns<ShaderProgram> shaderLightBox;
 		Owns<ShaderProgram> shaderQuad;
+		Owns<ShaderProgram> shaderSSAO;
 
+		Texture noiseTex;
 
 		FrameBuffer fb;
 		std::array<FrameBuffer, 2> pingPong;
+		FrameBuffer ssaofb;
 
+		std::vector<glm::vec3> ssaoKernel;
+		std::vector<glm::vec3> ssaoNoise;
 
 		static Owns<Renderer> instance;
 		std::array<std::unordered_map<GPUMesh*, std::list<MeshRenderer*>>, PF_RENDER_MASKS_SIZE> objects;

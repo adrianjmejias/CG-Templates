@@ -23,6 +23,7 @@ namespace PF
 		RGBA = GL_RGBA,
 		RGB_16F = GL_RGB16F,
 		RGBA_16F = GL_RGBA16F,
+		RGB_32F = GL_RGB32F
 	};
 
 	enum class TexInterpolationMethod
@@ -47,10 +48,10 @@ namespace PF
 		Int width;
 		Int height;
 		Int nComponents;
-		TexPixelType texPixelType;
-		TexClampMethod sClamp, tClamp;
-		TexInterpolationMethod sInterpolation, tInterpolation;
-		TexColorFormat format = TexColorFormat::RED;
+		TexPixelType texPixelType{TexPixelType::FLOAT};
+		TexClampMethod sClamp{TexClampMethod::CLAMP}, tClamp{ TexClampMethod::CLAMP };
+		TexInterpolationMethod sInterpolation{TexInterpolationMethod::NEAREST}, tInterpolation{ TexInterpolationMethod::NEAREST };
+		TexColorFormat format{ TexColorFormat::RED };
 		TexColorFormat internalFormat{TexColorFormat::RGBA_16F};
 		TexType texType{TexType::Texture2D};
 		Texture() = default;
@@ -62,8 +63,8 @@ namespace PF
 			format = f;
 			Generate();
 			Reserve(data);
-			SetInterpolationMethod(TexInterpolationMethod::LINEAR, TexInterpolationMethod::LINEAR);
-			SetClampMethod(TexClampMethod::REPEAT, TexClampMethod::REPEAT);
+			//SetInterpolationMethod(TexInterpolationMethod::LINEAR, TexInterpolationMethod::LINEAR);
+			//SetClampMethod(TexClampMethod::REPEAT, TexClampMethod::REPEAT);
 		}
 
 
@@ -72,8 +73,7 @@ namespace PF
 			glTexImage2D(static_cast<int>(texType), 0, static_cast<int>(format), width, height, 0, static_cast<int>(format), GL_UNSIGNED_BYTE, data);
 		}
 		void Generate();
-		void SetInterpolationMethod(TexInterpolationMethod s, TexInterpolationMethod t);
-		void SetClampMethod(TexClampMethod s, TexClampMethod t);
+
 		static Owns<Texture> Texture::TextureFromFile(const std::string& _path);
 
 		virtual void Bind() override;
@@ -91,6 +91,13 @@ namespace PF
 			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_MIN_FILTER, static_cast<int>(sInterpolation));
 			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_MAG_FILTER, static_cast<int>(tInterpolation));
 
+		}
+
+		void SetSize(int nWidth, int nHeight)
+		{
+			*width = nWidth;
+			*height = nHeight;
+			GPUInstantiate();
 		}
 	};
 

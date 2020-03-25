@@ -101,6 +101,7 @@ namespace PF
 		shaderLightingPass.reset(new ShaderProgram("../assets/shaders/dflighting.vert", "../assets/shaders/dflighting.frag"));
 		shaderLightBox.reset(new ShaderProgram("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
 		shaderQuad.reset(new ShaderProgram("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
+		shaderSSAO.reset(new ShaderProgram("../assets/shaders/ssao.vert", "../assets/shaders/ssao.frag"));
 	}
 
 	void Renderer::RegisterMesh(MeshRenderer* mesh, RenderMask renderMask)
@@ -262,6 +263,10 @@ namespace PF
 			const Mat4& projection = c->GetProjectionMatrix();
 			const Mat4& view = c->GetViewMatrix();
 
+			std::bitset<8> renderStages;
+			// Geometry pass
+
+			
 			glBindFramebuffer(GL_FRAMEBUFFER, fb);
 			{
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -290,15 +295,39 @@ namespace PF
 					}
 				}
 			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, ssaofb);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glClear(GL_COLOR_BUFFER_BIT);
+			shaderSSAO->Bind();
+			
+			for (unsigned int i = 0; i < ssaoKernel.size(); ++i)
+			{
+				shaderSSAO->SetUniform("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+			}
+			shaderSSAO->SetUniform("projection", projection);
+
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, fb.colors[0]);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, fb.colors[1]);
+
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, noiseTex);
+			
+			Quad::Instance()->Bind();
+			Quad::Instance()->Draw();
+
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			/* -------------------*/
-			{
 
-			}
+
+			/*
+
+			// Lighting pass
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
 			shaderLightingPass->Bind();
 
 			glActiveTexture(GL_TEXTURE0);
@@ -335,22 +364,22 @@ namespace PF
 				shaderLightingPass->SetUniform(name + ".Radius", radius);
 			}
 			
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			shaderQuad->Bind();
+			*/
 
 
-			glActiveTexture(GL_TEXTURE0);
-			fb.colors[0].Bind();
+			//shaderQuad->Bind();
+			//glActiveTexture(GL_TEXTURE0);
+			//fb.colors[0].Bind();
 
-			glActiveTexture(GL_TEXTURE1);
-			fb.colors[1].Bind();
+			//glActiveTexture(GL_TEXTURE1);
+			//fb.colors[1].Bind();
 
-			glActiveTexture(GL_TEXTURE2);
-			fb.colors[2].Bind();
+			//glActiveTexture(GL_TEXTURE2);
+			//fb.colors[2].Bind();
 
-			shaderQuad->SetUniform("gPosition", 0);
-			shaderQuad->SetUniform("gNormal", 1);
-			shaderQuad->SetUniform("gAlbedoSpec", 2);
+			//shaderQuad->SetUniform("gPosition", 0);
+			//shaderQuad->SetUniform("gNormal", 1);
+			//shaderQuad->SetUniform("gAlbedoSpec", 2);
 
 			Quad::Instance()->Bind();
 			Quad::Instance()->Draw();
@@ -547,10 +576,63 @@ namespace PF
 			color.tClamp = TexClampMethod::CLAMP;
 			ppfb.SetSize(nWidth, nHeight);
 		}
-
-
 		fb.SetSize(nWidth, nHeight);
 
+
+		ssaofb.AddColorAttachment();
+		{
+			Texture & ssaoColor = ssaofb.colors[0];
+			ssaoColor.internalFormat = TexColorFormat::RED;
+			ssaoColor.format = TexColorFormat::RGB;
+			ssaoColor.texPixelType = TexPixelType::FLOAT;
+		}
+		ssaofb.SetSize(nWidth, nHeight);
+
+
+		EngineConfig& ec = *EngineConfig::GetInstance();
+		ssaoKernel.clear();
+		for (unsigned int i = 0; i < 64; ++i)
+		{
+			glm::vec3 sample(glm::linearRand(0.f, 1.f) * 2.0 - 1.0, glm::linearRand(0.f, 1.f) * 2.0 - 1.0, glm::linearRand(0.f, 1.f));
+			sample = glm::normalize(sample);
+			sample *= glm::linearRand(0.f, 1.f);
+			float scale = float(i) / 64.0;
+
+			// scale samples s.t. they're more aligned to center of kernel
+			scale = glm::mix(0.1f, 1.0f, scale * scale);
+			sample *= scale;
+			ssaoKernel.push_back(sample);
+		}
+
+		// generate noise texture
+		// ----------------------
+		ssaoNoise.clear();
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			glm::vec3 noise{ (glm::linearRand(0.f, 1.f) * 2.0 - 1.0, (glm::linearRand(0.f, 1.f) * 2.0 - 1.0, 0.0f)) }; // rotate around z-axis (in tangent space)
+			ssaoNoise.push_back(noise);
+		}
+
+		noiseTex.internalFormat = TexColorFormat::RGB_32F;
+		noiseTex.format = TexColorFormat::RGB;
+		noiseTex.texPixelType = TexPixelType::FLOAT;
+		noiseTex.sClamp = TexClampMethod::REPEAT;
+		noiseTex.tClamp = TexClampMethod::REPEAT;
+		noiseTex.sInterpolation = TexInterpolationMethod::NEAREST;
+		noiseTex.tInterpolation = TexInterpolationMethod::NEAREST;
+		noiseTex.SetSize(4, 4);
+
+   // -----------------------------------------------------
+		//glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+		//glGenTextures(1, &ssaoColorBufferBlur);
+		//glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
+		//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		//	std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 }

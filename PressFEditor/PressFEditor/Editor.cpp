@@ -47,7 +47,7 @@ void Editor::Init()
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
 
-	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
+	engine.assetManager.LoadModel("quad", "../assets/models/ssao.obj");
 
 
 	{

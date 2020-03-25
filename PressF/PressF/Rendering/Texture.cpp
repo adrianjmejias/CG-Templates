@@ -11,16 +11,6 @@ namespace PF
 
 		glGenTextures(1, &id);
 	}
-	void Texture::SetInterpolationMethod(TexInterpolationMethod s, TexInterpolationMethod t)
-	{
-		sInterpolation = s;
-		tInterpolation = t;
-	}
-	void Texture::SetClampMethod(TexClampMethod s, TexClampMethod t)
-	{
-		sClamp = s;
-		tClamp = t;
-	}
 	Owns<Texture> Texture::TextureFromFile(const std::string& _path)
 	{
 		Owns<Texture> tex{ new Texture() };
