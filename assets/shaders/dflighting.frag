@@ -113,7 +113,8 @@ void main()
 
     // lighting += bloom;
 
-    FragColor = vec4(lighting, 1.0);
+    // FragColor = vec4(lighting, 1.0);
 
     // FragColor = vec4(vec3(gNormal.a), 1);
+    FragColor = vec4(FragPos, 1);
 }

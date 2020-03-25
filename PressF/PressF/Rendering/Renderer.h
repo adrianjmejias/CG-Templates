@@ -17,12 +17,18 @@ namespace PF
 	static std::function<bool(Camera*,Camera*)> cameraComparer = [](Camera* l, Camera* r) -> bool { return *(l->priority) < *(r->priority); };
 	struct Renderer
 	{
+		RenderingType renderingType{RenderingType::Deferred};
+
 		Owns<ShaderProgram> geometryPass;
 		Owns<ShaderProgram> shaderLightingPass;
 		Owns<ShaderProgram> shaderLightBox;
 		Owns<ShaderProgram> shaderQuad;
-		Owns<FrameBuffer> fb;
-		RenderingType renderingType{RenderingType::Deferred};
+
+
+		FrameBuffer fb;
+		std::array<FrameBuffer, 2> pingPong;
+
+
 		static Owns<Renderer> instance;
 		std::array<std::unordered_map<GPUMesh*, std::list<MeshRenderer*>>, PF_RENDER_MASKS_SIZE> objects;
 		std::vector<ParticleSystem*> particlesSystems;
@@ -59,9 +65,6 @@ namespace PF
 		void RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs);
 
 
-		void OnResize(int nWidth, int nHeight)
-		{
-			fb.reset(new FrameBuffer(nWidth, nHeight));
-		}
+		void OnResize(int nWidth, int nHeight);
 	};
 }

@@ -141,7 +141,7 @@ namespace PF
 
 	void Engine::LoopEvents()
 	{
-		SDL_GetWindowSize(window->win, &window->width, &window->heigth);
+		SDL_GetWindowSize(window->win, &window->width, &window->height);
 		SDL_Event e;
 		while (SDL_PollEvent(&e))
 		{

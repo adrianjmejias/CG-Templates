@@ -79,6 +79,7 @@ namespace PF
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 	}
+	
 	Owns<Renderer> Renderer::instance = nullptr;
 
 	Renderer* Renderer::GetInstance()
@@ -87,7 +88,7 @@ namespace PF
 		{
 			auto r = new Renderer();
 			Window* win{ Window::GetInstance() };
-			r->fb.reset(new FrameBuffer(win->width, win->heigth));
+			r->OnResize(win->width, win->height);
 			r->RecompileShaders();
 			instance.reset(r);
 		}
@@ -100,38 +101,6 @@ namespace PF
 		shaderLightingPass.reset(new ShaderProgram("../assets/shaders/dflighting.vert", "../assets/shaders/dflighting.frag"));
 		shaderLightBox.reset(new ShaderProgram("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
 		shaderQuad.reset(new ShaderProgram("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
-
-		shaderLightingPass->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, *fb->pos);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, *fb->normal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, *fb->color);
-
-		shaderLightingPass->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, *fb->pos);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, *fb->normal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, *fb->color);
-
-		shaderLightBox->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, *fb->pos);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, *fb->normal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, *fb->color);
-
-		shaderQuad->Bind();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, *fb->pos);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, *fb->normal);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, *fb->color);
 	}
 
 	void Renderer::RegisterMesh(MeshRenderer* mesh, RenderMask renderMask)
@@ -261,17 +230,17 @@ namespace PF
 			if (ec.useStereoscopic)
 			{
 				int hWidth = win->width / 2;
-				int hHeigth = win->heigth / 2;
-				float ar = hWidth / float(win->heigth);
+				int hHeigth = win->height / 2;
+				float ar = hWidth / float(win->height);
 
 				const Mat4& projection = c->GetProjectionMatrix(ar);
 				auto [vl, vr] = c->GetViewMatrixStereoscopic(ec.IOD, ec.zDistance);
 
-				glViewport(0, 0, hWidth, win->heigth);
+				glViewport(0, 0, hWidth, win->height);
 
 				RenderNormal(projection, vl, viewPos);
 
-				glViewport(hWidth, 0, hWidth, win->heigth);
+				glViewport(hWidth, 0, hWidth, win->height);
 
 				RenderNormal(projection, vr, viewPos);
 			}
@@ -279,7 +248,7 @@ namespace PF
 			{
 				const Mat4& projection = c->GetProjectionMatrix();
 
-				glViewport(0, 0, win->width, win->heigth);
+				glViewport(0, 0, win->width, win->height);
 
 				const Mat4& view = c->GetViewMatrix();
 				RenderNormal(projection, view, viewPos);
@@ -288,54 +257,63 @@ namespace PF
 
 		if (renderingType == RenderingType::Deferred)
 		{
-			glViewport(0, 0, win->width, win->heigth);
+			glViewport(0, 0, win->width, win->height);
 
 			const Mat4& projection = c->GetProjectionMatrix();
 			const Mat4& view = c->GetViewMatrix();
 
-			glBindFramebuffer(GL_FRAMEBUFFER, *fb);
-			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			geometryPass->Bind();
-			geometryPass->SetUniform("projection", projection);
-			geometryPass->SetUniform("view", view);
-			geometryPass->SetUniform("stepSize", ec.stepSize);
-			geometryPass->SetUniform("convSize", ec.convSize);
-			geometryPass->SetUniform("convPivot", ec.convPivot);
-
-			for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
+			glBindFramebuffer(GL_FRAMEBUFFER, fb);
 			{
-				auto& objs = objects[ii];
-				for (auto [mesh, mrList] : objs)
-				{
-					mesh->Bind();
-					for (auto mr : mrList)
-					{
-						mr->mat->BindParametersOnly(geometryPass.get());
-						geometryPass->SetUniform("model", mr->transform->GetAccumulated());
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-						geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
-						mesh->Render();
+				geometryPass->Bind();
+				geometryPass->SetUniform("projection", projection);
+				geometryPass->SetUniform("view", view);
+				geometryPass->SetUniform("stepSize", ec.stepSize);
+				geometryPass->SetUniform("convSize", ec.convSize);
+				geometryPass->SetUniform("convPivot", ec.convPivot);
+
+				for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
+				{
+					auto& objs = objects[ii];
+					for (auto [mesh, mrList] : objs)
+					{
+						mesh->Bind();
+						for (auto mr : mrList)
+						{
+							mr->mat->BindParametersOnly(geometryPass.get());
+							geometryPass->SetUniform("model", mr->transform->GetAccumulated());
+							geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
+
+							mesh->Render();
+						}
 					}
 				}
 			}
-
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			//// 2. lighting pass: calculate lighting by iterating over a screen filled quad pixel-by-pixel using the gbuffer's content.
-			//	   // -----------------------------------------------------------------------------------------------------------------------
+			/* -------------------*/
+			{
+
+			}
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 			shaderLightingPass->Bind();
+
+			glActiveTexture(GL_TEXTURE0);
+			fb.colors[0].Bind();
+
+			glActiveTexture(GL_TEXTURE1);
+			fb.colors[1].Bind();
+
+			glActiveTexture(GL_TEXTURE2);
+			fb.colors[2].Bind();
+
+
 			shaderLightingPass->SetUniform("gPosition", 0);
 			shaderLightingPass->SetUniform("gNormal", 1);
 			shaderLightingPass->SetUniform("gAlbedoSpec", 2);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, *fb->pos);
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, *fb->normal);
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, *fb->color);
 
 			shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
 			for (int ii = 0; ii < lights.size(); ii++)
@@ -357,20 +335,40 @@ namespace PF
 				shaderLightingPass->SetUniform(name + ".Radius", radius);
 			}
 			
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			shaderQuad->Bind();
 
-			//shaderQuad->Bind();
+
+			glActiveTexture(GL_TEXTURE0);
+			fb.colors[0].Bind();
+
+			glActiveTexture(GL_TEXTURE1);
+			fb.colors[1].Bind();
+
+			glActiveTexture(GL_TEXTURE2);
+			fb.colors[2].Bind();
+
+			shaderQuad->SetUniform("gPosition", 0);
+			shaderQuad->SetUniform("gNormal", 1);
+			shaderQuad->SetUniform("gAlbedoSpec", 2);
+
 			Quad::Instance()->Bind();
 			Quad::Instance()->Draw();
 
-			// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
-			// ----------------------------------------------------------------------------------
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, *fb);
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
-			// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
-			// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
-			// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
-			glBlitFramebuffer(0, 0, fb->width, fb->heigth, 0, 0, fb->width, fb->heigth, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
+			//// ----------------------------------------------------------------------------------
+			//glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
+			//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+			//// blit to default framebuffer. Note that this may or may not work as the internal formats of both the FBO and default framebuffer have to match.
+			//// the internal formats are implementation defined. This works on all of my systems, but if it doesn't on yours you'll likely have to write to the 		
+			//// depth buffer in another shader stage (or somehow see to match the default framebuffer's internal format with the FBO's internal format).
+			//glBlitFramebuffer(0, 0, fb.width, fb.height, 0, 0, fb.width, fb.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+
+			/*------------------ */
+
 
 			//// 3. render lights on top of scene
 			//// --------------------------------
@@ -482,6 +480,77 @@ namespace PF
 			}
 
 		
+	}
+
+	void Renderer::OnResize(int nWidth, int nHeight)
+	{
+
+		Window* win{ Window::GetInstance() };
+
+		fb.Clear();
+		fb.width = nWidth;
+		fb.height = nHeight;
+
+		fb.AddColorAttachment();
+		fb.AddColorAttachment();
+		fb.AddColorAttachment();
+
+
+		for (int i = 0; i < fb.colors.size()-1; i++)
+		{
+			Texture& color =  fb.colors[i];
+			color.format = TexColorFormat::RGB;
+			color.internalFormat = TexColorFormat::RGB_16F;
+			color.texPixelType = TexPixelType::FLOAT;
+
+			color.sInterpolation = TexInterpolationMethod::NEAREST;
+			color.tInterpolation = TexInterpolationMethod::NEAREST;
+
+			color.sClamp = TexClampMethod::CLAMP;
+			color.tClamp = TexClampMethod::CLAMP;
+		}
+
+		fb.AddDepthAttachment();
+
+
+		{
+			Texture& color = fb.colors[2];
+
+			color.format = TexColorFormat::RGB;
+			color.internalFormat = TexColorFormat::RGB;
+			color.texPixelType = TexPixelType::UNSIGNED_BYTE;
+
+			color.sInterpolation = TexInterpolationMethod::NEAREST;
+			color.tInterpolation = TexInterpolationMethod::NEAREST;
+
+			color.sClamp = TexClampMethod::CLAMP;
+			color.tClamp = TexClampMethod::CLAMP;
+		}
+
+		
+
+		// ping-pong-framebuffer for blurring
+		for (unsigned int i = 0; i < 2; i++)
+		{
+			auto& ppfb = pingPong[i];
+			ppfb.Clear();
+			auto& color = *ppfb.AddColorAttachment();
+
+			color.format = TexColorFormat::RGBA;
+			color.internalFormat = TexColorFormat::RGBA_16F;
+			color.texPixelType = TexPixelType::FLOAT;
+
+			color.sInterpolation = TexInterpolationMethod::LINEAR;
+			color.tInterpolation = TexInterpolationMethod::LINEAR;
+
+			color.sClamp = TexClampMethod::CLAMP;
+			color.tClamp = TexClampMethod::CLAMP;
+			ppfb.SetSize(nWidth, nHeight);
+		}
+
+
+		fb.SetSize(nWidth, nHeight);
+
 	}
 
 }

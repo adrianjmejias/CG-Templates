@@ -25,12 +25,34 @@ struct VertexBufferObject : GPUObject{
 
 struct RenderBuffer : GPUObject
 {
+	int width, height;
 	// Inherited via GPUObject
 	virtual void Bind() override;
+	void Reset(unsigned int nId = 0)
+	{
+		if (id)
+		{
+			glDeleteRenderbuffers(1, &id);
+		}
+		id = nId;
+	}
 	~RenderBuffer()
 	{
-		glDeleteRenderbuffers(1, &id);
+		Reset();
 	}
+
+	void Generate()
+	{
+
+		if (id)
+		{
+			glDeleteRenderbuffers(1, &id);
+		}
+
+		glGenRenderbuffers(1, &id);
+
+	}
+
 
 };
 

@@ -63,6 +63,12 @@ namespace PF{
 		Float particleLifespan{30.f};
 
 	public:
+
+		void ParticleSystem::SetGPUMesh(GPUMesh* m)
+		{
+			mesh = m;
+			mat = m->defaultMaterial;
+		}
 		// ImRender as values
 		Float spawningRate{ 3 };
 		UInt maxParticles{ 500 };

@@ -38,7 +38,7 @@ namespace PF
 
 		if (useBloom)
 		{
-			ImGuiRender(stepSize, "Step Size", 0.02);
+			ImGuiRender(stepSize, "Step Size", 0.02f);
 			ImGuiRender(convSize, "Conv Size", 1);
 			ImGuiRender(convPivot, "Conv Pivot", 1);
 		}

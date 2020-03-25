@@ -47,9 +47,6 @@ void Editor::Init()
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
 
-
-
-
 	engine.assetManager.LoadModel("quad", "../assets/models/adri.obj");
 
 
@@ -60,6 +57,9 @@ void Editor::Init()
 		auto mr = ts1.AddComponent<PF::MeshRenderer>();
 		mr->SetGPUMesh(model->meshes[0].get());
 		mr->SetRenderMode(PF::MeshRenderMode::Shiny);
+
+		PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
+		ps->SetGPUMesh(model->meshes[0].get());
 
 	}
 
@@ -76,9 +76,7 @@ void Editor::Init()
 	ts1.AddComponent<Rotator>();
 
 
-	//PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
-	//ps->mesh = mesh;
-	//ps->mat = mesh->defaultMaterial;
+
 
 
 
@@ -87,11 +85,12 @@ void Editor::Init()
 	PF::GameObject& ts2 = engine.AddGameObject(new PF::GameObject("test subject 2"));
 	PF::Camera* cam = ts2.AddComponent<PF::Camera>();
 	ts2.AddComponent<CameraController>();
-	cam->Yaw = -5601.39600;
-	cam->Pitch = -70.9999771;
-	cam->transform->SetPosition({ 2.38617706 , 7.60761261, -1.88124359 });
+	cam->Yaw = -5601.39600f;
+	cam->Pitch = -70.9999771f;
+	cam->transform->SetPosition({ 2.38617706f , 7.60761261f, -1.88124359f });
 	cam->updateCameraVectors();
-	*cam->speed = 50.f;
+	*cam->speed = 27.f;
+	*cam->MouseSensitivity = 7.f;
 
 	PF::Light* l = ts2.AddComponent<PF::Light>();
 

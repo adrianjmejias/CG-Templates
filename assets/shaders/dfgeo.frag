@@ -14,6 +14,8 @@ uniform vec3 kD;
 uniform vec3 kS;
 out vec4 fragColor;
 uniform int bloom = 0;
+
+
 void main()
 {    
     // store the fragment position vector in the first gbuffer texture
@@ -27,4 +29,7 @@ void main()
     gAlbedoSpec.rgb = kD; //texture(texture_diffuse1, TexCoords).rgb;
     // store specular intensity in gAlbedoSpec's alpha component
     gAlbedoSpec.a = 0; //texture(texture_specular1, TexCoords).r;
+
+
+    // gPosition = gAlbedoSpec.rgb;
 }

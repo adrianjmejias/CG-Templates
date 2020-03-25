@@ -11,7 +11,7 @@ namespace PF
 		static Window* GetInstance();
 		SDL_Window* win;
 		int width = 800;
-		int heigth = 600;
+		int height = 600;
 		
 		
 	};

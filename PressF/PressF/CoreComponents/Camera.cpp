@@ -36,6 +36,7 @@ namespace PF
 
 
 			Vec3 mDelta{ io.MouseDelta.x * MouseSensitivity, io.MouseDelta.y * MouseSensitivity, 0 };
+			mDelta *= io.DeltaTime;
 			ProcessMouseMovement(mDelta.x, mDelta.y, true);
 			ProcessMouseScroll(io.MouseWheel);
 		}
@@ -69,7 +70,7 @@ namespace PF
 		
 		if (ar < 0)
 		{
-			ar = win->width / float(win->heigth);
+			ar = win->width / float(win->height);
 		}
 
 		if (cameraType == ProjectionType::Perspective)
@@ -78,7 +79,7 @@ namespace PF
 		}
 		else
 		{
-			projection = glm::ortho(0, win->width, 0, win->heigth);
+			projection = glm::ortho(0, win->width, 0, win->height);
 		}
 
 		return projection;

@@ -2,7 +2,7 @@
 #include "Texture.h"
 namespace PF
 {
-	void Texture::Gen()
+	void Texture::Generate()
 	{
 		if (id)
 		{
@@ -13,13 +13,13 @@ namespace PF
 	}
 	void Texture::SetInterpolationMethod(TexInterpolationMethod s, TexInterpolationMethod t)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<int>(s));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<int>(t));
+		sInterpolation = s;
+		tInterpolation = t;
 	}
 	void Texture::SetClampMethod(TexClampMethod s, TexClampMethod t)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<int>(s));
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<int>(t));
+		sClamp = s;
+		tClamp = t;
 	}
 	Owns<Texture> Texture::TextureFromFile(const std::string& _path)
 	{
@@ -67,12 +67,12 @@ namespace PF
 	}
 	void Texture::Bind()
 	{
-		glBindTexture(GL_TEXTURE_2D, id);
+		glBindTexture(static_cast<int>(texType), id);
 	}
 
 	void Texture::UnBind()
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(static_cast<int>(texType), 0);
 	}
 
 	Texture::~Texture()
