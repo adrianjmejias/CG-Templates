@@ -178,10 +178,11 @@
     <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameters.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\Parameters\ShaderVec3.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\ShaderProgram.h" />
-    <ClInclude Include="PressF\Rendering\Mesh.h" />
+    <ClInclude Include="PressF\Rendering\ModelImporter.h" />
     <ClInclude Include="PressF\Rendering\Renderer.h" />
     <ClInclude Include="PressF\Rendering\Texture.h" />
     <ClInclude Include="PressF\Rendering\Utility\Quad.h" />
+    <ClInclude Include="PressF\Rendering\loglMesh.h" />
     <ClInclude Include="PressF\pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -209,10 +210,10 @@
     <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\ShaderProgram.cpp" />
-    <ClCompile Include="PressF\Rendering\Mesh.cpp" />
     <ClCompile Include="PressF\Rendering\Renderer.cpp" />
     <ClCompile Include="PressF\Rendering\Texture.cpp" />
     <ClCompile Include="PressF\Rendering\Utility\Quad.cpp" />
+    <ClCompile Include="PressF\Rendering\loglMesh.cpp" />
     <ClCompile Include="PressF\pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -223,6 +224,9 @@
     </ProjectReference>
     <ProjectReference Include="..\dependencies\imgui\ImGui.vcxproj">
       <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\dependencies\assimp\build\code\assimp.vcxproj">
+      <Project>{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -46,7 +46,7 @@ namespace PF
 	void MeshRenderer::SetGPUMesh(GPUMesh* m)
 	{
 		mesh = m;
-		mat = m->defaultMaterial;
+		mat = m->mat;
 	}
 
 	void MeshRenderer::ApplyRenderMode()

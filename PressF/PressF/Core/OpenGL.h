@@ -13,12 +13,12 @@ struct GPUObject
 struct VertexArrayObject : GPUObject{
 
 	virtual void Bind() override;
-
+	
 	~VertexArrayObject();
 };
 
 struct VertexBufferObject : GPUObject{
-	glId type;
+	//glId type;
 	virtual void Bind() override;
 	~VertexBufferObject();
 };

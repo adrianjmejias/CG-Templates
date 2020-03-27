@@ -268,6 +268,7 @@ namespace PF
 
 			
 			glBindFramebuffer(GL_FRAMEBUFFER, fb);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			{
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -286,18 +287,20 @@ namespace PF
 						mesh->Bind();
 						for (auto mr : mrList)
 						{
-							mr->mat->BindParametersOnly(geometryPass.get());
+							//mr->mat->BindParametersOnly(geometryPass.get());
 							geometryPass->SetUniform("model", mr->transform->GetAccumulated());
 							geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
 
 							mesh->Render();
+							//mesh->Draw(*geometryPass.get());
 						}
 					}
 				}
 			}
 
+			/*
 			glBindFramebuffer(GL_FRAMEBUFFER, ssaofb);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glClear(GL_COLOR_BUFFER_BIT);
 			shaderSSAO->Bind();
 			
@@ -321,6 +324,7 @@ namespace PF
 			Quad::Instance()->Draw();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			*/
 
 
 
@@ -381,8 +385,8 @@ namespace PF
 			//shaderQuad->SetUniform("gNormal", 1);
 			//shaderQuad->SetUniform("gAlbedoSpec", 2);
 
-			Quad::Instance()->Bind();
-			Quad::Instance()->Draw();
+			//Quad::Instance()->Bind();
+			//Quad::Instance()->Draw();
 
 			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
 			//// ----------------------------------------------------------------------------------
@@ -596,7 +600,7 @@ namespace PF
 			glm::vec3 sample(glm::linearRand(0.f, 1.f) * 2.0 - 1.0, glm::linearRand(0.f, 1.f) * 2.0 - 1.0, glm::linearRand(0.f, 1.f));
 			sample = glm::normalize(sample);
 			sample *= glm::linearRand(0.f, 1.f);
-			float scale = float(i) / 64.0;
+			float scale = float(i) / 64.0f;
 
 			// scale samples s.t. they're more aligned to center of kernel
 			scale = glm::mix(0.1f, 1.0f, scale * scale);

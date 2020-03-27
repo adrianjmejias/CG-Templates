@@ -1,8 +1,13 @@
 #pragma once
 #include "PressF/pch.h"
-#include "PressF/Rendering/Mesh.h"
+//#include "PressF/Rendering/Mesh.h"
 #include "AssetMap.h"
+#include "PressF/Rendering/loglModel.h"
+#include "PressF/Rendering/loglMesh.h"
 //#include "PressF/Rendering/MaterialSystem/Material.h"
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+
 
 namespace PF
 {
@@ -32,5 +37,7 @@ namespace PF
 		Model* GetModel(const std::string& key);
 
 		bool LoadModel(const std::string& key, const std::string& path);
+		GPUMesh* ProcessMesh(aiMesh* mesh, const aiScene* scene);
+		void loadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string&);
 	};
 }

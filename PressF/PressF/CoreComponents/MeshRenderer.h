@@ -1,9 +1,8 @@
 #pragma once
 #include "PressF/pch.h"
 #include "PressF/EntityComponent/Component.h"
-#include "PressF/Rendering/Mesh.h"
+#include "PressF/Rendering/loglMesh.h"
 #include "PressF/Rendering/MaterialSystem/Material.h"
-
 
 namespace PF
 {

@@ -23,7 +23,8 @@ namespace PF
 		RGBA = GL_RGBA,
 		RGB_16F = GL_RGB16F,
 		RGBA_16F = GL_RGBA16F,
-		RGB_32F = GL_RGB32F
+		RGB_32F = GL_RGB32F,
+		UBYTE = GL_UNSIGNED_BYTE
 	};
 
 	enum class TexInterpolationMethod
@@ -44,6 +45,11 @@ namespace PF
 		Texture2D = GL_TEXTURE_2D
 	};
 
+	struct TexMaterialRole
+	{
+		static const std::string Diffuse;
+	};
+
 	struct Texture : GPUObject, Asset {
 		Int width;
 		Int height;
@@ -54,6 +60,7 @@ namespace PF
 		TexColorFormat format{ TexColorFormat::RED };
 		TexColorFormat internalFormat{TexColorFormat::RGBA_16F};
 		TexType texType{TexType::Texture2D};
+		Bool generateMipMaps{ false };
 		Texture() = default;
 		Texture(TexColorFormat f, TexColorFormat inf, TexPixelType pType,int w, int h, unsigned char* data = nullptr)
 		{
@@ -81,11 +88,15 @@ namespace PF
 		~Texture();
 
 		virtual void ImGui();
-		void GPUInstantiate()
+		void GPUInstantiate(unsigned char* data = nullptr)
 		{
 			Generate();
 			Bind();
-			glTexImage2D(static_cast<int>(texType), 0, static_cast<int>(internalFormat), width, height, 0, static_cast<int>(format), static_cast<int>(texPixelType), NULL);
+			glTexImage2D(static_cast<int>(texType), 0, static_cast<int>(internalFormat), width, height, 0, static_cast<int>(format), static_cast<int>(texPixelType), data);
+			if (generateMipMaps)
+			{
+				glGenerateMipmap(GL_TEXTURE_2D);
+			}
 			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_WRAP_S, static_cast<int>(sClamp));
 			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_WRAP_T, static_cast<int>(tClamp));
 			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_MIN_FILTER, static_cast<int>(sInterpolation));

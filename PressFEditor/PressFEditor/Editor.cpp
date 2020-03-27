@@ -14,8 +14,9 @@ namespace PF
 		{
 			GameObject* go{ new GameObject(m->name) };
 			MeshRenderer* mr = go->AddComponent<MeshRenderer>();
+			
 			mr->mesh = m.get();
-			mr->mat = m->defaultMaterial;
+			mr->mat = m->mat;
 			gos.push_back(go);
 		}
 		return gos;
@@ -47,26 +48,26 @@ void Editor::Init()
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
 
-	engine.assetManager.LoadModel("quad", "../assets/models/ssao.obj");
+	engine.assetManager.LoadModel("quad", "../assets/models/crysis.fbx");
 
 
 	{
-		engine.assetManager.LoadModel("thechosenone", "../assets/models/thechosenone.obj");
-		auto model = engine.assetManager.GetModel("thechosenone");
-		PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
-		auto mr = ts1.AddComponent<PF::MeshRenderer>();
-		mr->SetGPUMesh(model->meshes[0].get());
-		mr->SetRenderMode(PF::MeshRenderMode::Shiny);
+		//engine.assetManager.LoadModel("thechosenone", "../assets/models/thechosenone.obj");
+		//auto model = engine.assetManager.GetModel("thechosenone");
+		//PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
+		//auto mr = ts1.AddComponent<PF::MeshRenderer>();
+		//mr->SetGPUMesh(&model->meshes[0]);
+		//mr->SetRenderMode(PF::MeshRenderMode::Shiny);
 
-		PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
-		ps->SetGPUMesh(model->meshes[0].get());
+		//PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
+		//ps->SetGPUMesh(&model->meshes[0]);
 
 	}
 
+
+
 	auto model = engine.assetManager.GetModel("quad");
 	std::vector<PF::GameObject*> gos = PF::GetAsSeparateGameObjects(*model);
-
-
 	for (auto go : gos)
 	{
 		engine.AddGameObject(go);

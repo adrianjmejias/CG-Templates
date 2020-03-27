@@ -154,6 +154,9 @@
     <ProjectReference Include="..\dependencies\imgui\ImGui.vcxproj">
       <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\dependencies\assimp\build\code\assimp.vcxproj">
+      <Project>{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PressF\PressF.vcxproj">
       <Project>{18FBC3CA-049D-EEA0-ED57-02F5D99875F1}</Project>
     </ProjectReference>

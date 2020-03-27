@@ -27,7 +27,7 @@ group "Dependencies"
 
 
    externalproject "assimp"
-      location "dependencies/assimp"
+      location "dependencies/assimp/build/code"
       uuid "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
       kind "StaticLib"
       language "C++"
@@ -78,7 +78,7 @@ project "PressF"
       "glad",
       "SDL2",
       "ImGui",
-      -- "assimp"
+      "assimp"
       -- "ObjLoader"
    }
 
@@ -129,6 +129,7 @@ links {
    "glad",
    "SDL2",
    "ImGui",
+   "assimp",
    "PressF"
 }
 

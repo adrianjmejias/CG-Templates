@@ -178,7 +178,7 @@
     <ClInclude Include="PressF\Rendering\MaterialSystem\ShaderProgram.h">
       <Filter>Rendering\MaterialSystem</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\Rendering\Mesh.h">
+    <ClInclude Include="PressF\Rendering\ModelImporter.h">
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\Rendering\Renderer.h">
@@ -189,6 +189,9 @@
     </ClInclude>
     <ClInclude Include="PressF\Rendering\Utility\Quad.h">
       <Filter>Rendering\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="PressF\Rendering\loglMesh.h">
+      <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="PressF\pch.h" />
   </ItemGroup>
@@ -265,9 +268,6 @@
     <ClCompile Include="PressF\Rendering\MaterialSystem\ShaderProgram.cpp">
       <Filter>Rendering\MaterialSystem</Filter>
     </ClCompile>
-    <ClCompile Include="PressF\Rendering\Mesh.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="PressF\Rendering\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -276,6 +276,9 @@
     </ClCompile>
     <ClCompile Include="PressF\Rendering\Utility\Quad.cpp">
       <Filter>Rendering\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="PressF\Rendering\loglMesh.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\pch.cpp" />
   </ItemGroup>

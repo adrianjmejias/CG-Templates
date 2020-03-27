@@ -67,7 +67,7 @@ namespace PF{
 		void ParticleSystem::SetGPUMesh(GPUMesh* m)
 		{
 			mesh = m;
-			mat = m->defaultMaterial;
+			mat = m->mat;
 		}
 		// ImRender as values
 		Float spawningRate{ 3 };
