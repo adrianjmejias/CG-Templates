@@ -31,5 +31,6 @@ void main()
     gAlbedoSpec.a = 0; //texture(texture_specular1, TexCoords).r;
 
 
+    // gPosition.rgb = k;
     // gPosition = gAlbedoSpec.rgb;
 }

@@ -281,5 +281,6 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="PressF\pch.cpp" />
+    <ClCompile Include="PressF\Core\Types\Extensions\Range.cpp" />
   </ItemGroup>
 </Project>

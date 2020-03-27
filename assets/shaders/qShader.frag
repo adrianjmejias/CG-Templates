@@ -5,9 +5,8 @@ out vec4 fragColor;
 
 uniform float stepSize = 1.f;
 
-uniform sampler2D gNormal;
-uniform sampler2D gPosition;
-uniform sampler2D gAlbedoSpec;
+uniform sampler2D img;
+
 
 
 vec3 blur(sampler2D tex, vec2 convSize, vec2 pivot, vec2 actPos, float stepSize)
@@ -46,6 +45,6 @@ void main()
 {    
     vec2 texCoord = uv;
 
-    // fragColor = texture(gPosition, uv);
-    fragColor = vec4(blur(gPosition, vec2(7,7), vec2 (3,3), uv, 1), 1);
+    fragColor = texture(img, uv);
+    // fragColor = vec4(blur(img, vec2(7,7), vec2 (3,3), uv, 1), 1);
 }

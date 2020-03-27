@@ -217,6 +217,8 @@ namespace PF
 
 	void Renderer::Render()
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0, 0, 0, 1);
 		Window* win{ Window::GetInstance() };
 		Camera* c = cameras.top();
 		c->transform->TryGetClean();
@@ -268,16 +270,16 @@ namespace PF
 
 			
 			glBindFramebuffer(GL_FRAMEBUFFER, fb);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			{
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 				geometryPass->Bind();
 				geometryPass->SetUniform("projection", projection);
 				geometryPass->SetUniform("view", view);
-				geometryPass->SetUniform("stepSize", ec.stepSize);
-				geometryPass->SetUniform("convSize", ec.convSize);
-				geometryPass->SetUniform("convPivot", ec.convPivot);
+				//geometryPass->SetUniform("stepSize", ec.stepSize);
+				//geometryPass->SetUniform("convSize", ec.convSize);
+				//geometryPass->SetUniform("convPivot", ec.convPivot);
 
 				for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
 				{
@@ -287,7 +289,7 @@ namespace PF
 						mesh->Bind();
 						for (auto mr : mrList)
 						{
-							//mr->mat->BindParametersOnly(geometryPass.get());
+							mr->mat->BindParametersOnly(geometryPass.get());
 							geometryPass->SetUniform("model", mr->transform->GetAccumulated());
 							geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
 
@@ -298,7 +300,7 @@ namespace PF
 				}
 			}
 
-			/*
+			
 			glBindFramebuffer(GL_FRAMEBUFFER, ssaofb);
 			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -324,7 +326,7 @@ namespace PF
 			Quad::Instance()->Draw();
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			*/
+			
 
 
 
@@ -371,8 +373,11 @@ namespace PF
 			*/
 
 
-			//shaderQuad->Bind();
-			//glActiveTexture(GL_TEXTURE0);
+			shaderQuad->Bind();
+			glActiveTexture(GL_TEXTURE0);
+			renderTextures[ec.showTex]->Bind();
+
+
 			//fb.colors[0].Bind();
 
 			//glActiveTexture(GL_TEXTURE1);
@@ -381,12 +386,10 @@ namespace PF
 			//glActiveTexture(GL_TEXTURE2);
 			//fb.colors[2].Bind();
 
-			//shaderQuad->SetUniform("gPosition", 0);
-			//shaderQuad->SetUniform("gNormal", 1);
-			//shaderQuad->SetUniform("gAlbedoSpec", 2);
+			shaderQuad->SetUniform("img", 0);
 
-			//Quad::Instance()->Bind();
-			//Quad::Instance()->Draw();
+			Quad::Instance()->Bind();
+			Quad::Instance()->Draw();
 
 			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
 			//// ----------------------------------------------------------------------------------
@@ -518,6 +521,7 @@ namespace PF
 	void Renderer::OnResize(int nWidth, int nHeight)
 	{
 
+		renderTextures.clear();
 		Window* win{ Window::GetInstance() };
 
 		fb.Clear();
@@ -531,6 +535,7 @@ namespace PF
 
 		for (int i = 0; i < fb.colors.size()-1; i++)
 		{
+			renderTextures.push_back(&fb.colors[i]);
 			Texture& color =  fb.colors[i];
 			color.format = TexColorFormat::RGB;
 			color.internalFormat = TexColorFormat::RGB_16F;
@@ -544,9 +549,9 @@ namespace PF
 		}
 
 		fb.AddDepthAttachment();
-
-
 		{
+			renderTextures.push_back(&fb.colors[2]);
+
 			Texture& color = fb.colors[2];
 
 			color.format = TexColorFormat::RGB;
@@ -568,6 +573,7 @@ namespace PF
 			auto& ppfb = pingPong[i];
 			ppfb.Clear();
 			auto& color = *ppfb.AddColorAttachment();
+			renderTextures.push_back(&color);
 
 			color.format = TexColorFormat::RGBA;
 			color.internalFormat = TexColorFormat::RGBA_16F;
@@ -585,6 +591,7 @@ namespace PF
 
 		ssaofb.AddColorAttachment();
 		{
+			renderTextures.push_back(&ssaofb.colors[0]);
 			Texture & ssaoColor = ssaofb.colors[0];
 			ssaoColor.internalFormat = TexColorFormat::RED;
 			ssaoColor.format = TexColorFormat::RGB;

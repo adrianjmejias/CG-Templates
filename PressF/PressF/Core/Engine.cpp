@@ -43,7 +43,10 @@ namespace PF
 		//glViewport(0, 0, win_width, win_heigth);
 	/*	glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);*/
+		glEnable(GL_DEPTH_TEST);
 
+		//glDepthMask(GL_FALSE);
+		//glDepthFunc(GL_LESS);
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -86,8 +89,7 @@ namespace PF
 			ImGui_ImplSDL2_NewFrame(window->win);
 			ImGui::NewFrame();
 
-			glClear(GL_COLOR_BUFFER_BIT);
-			glClearColor(0,0,0, 1);
+
 	}
 
 	void Engine::LoopUpdate()

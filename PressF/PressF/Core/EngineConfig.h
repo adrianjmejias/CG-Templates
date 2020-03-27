@@ -13,7 +13,7 @@ namespace PF
         Bool useSSAO{ true };
         Bool useBloom{ true }; 
         Bool useDeferredRendering{true};
-
+        Int showTex{ 0 };
         Float stepSize;
         Vec2 convSize;
         Vec2 convPivot;

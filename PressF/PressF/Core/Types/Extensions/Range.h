@@ -30,3 +30,6 @@ struct RangeInt : public Range<Int>
 struct RangeVec3 : public Range<Vec3>
 {
 };
+
+
+void ImGuiRender(RangeInt value, const char* label, int v[2], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d");

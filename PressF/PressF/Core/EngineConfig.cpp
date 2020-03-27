@@ -43,6 +43,11 @@ namespace PF
 			ImGuiRender(convPivot, "Conv Pivot", 1);
 		}
 		ImGuiRender(useDeferredRendering, "Use Deferred Shading");
+
+		if (useDeferredRendering)
+		{
+			ImGuiRender(showTex, "Texture Number", 1, 0, 5);
+		}
 	}
 
 }

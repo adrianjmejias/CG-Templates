@@ -108,6 +108,7 @@ void main()
         }
     }    
 
+FragColor = vec4(lighting, 1);
 
     // vec3 bloom = blur(gAlbedoSpec, vec2(9,9), vec2(5,5), TexCoords, 1);
 
@@ -116,5 +117,5 @@ void main()
     // FragColor = vec4(lighting, 1.0);
 
     // FragColor = vec4(vec3(gNormal.a), 1);
-    FragColor = vec4(FragPos, 1);
+    // FragColor = vec4(FragPos, 1);
 }

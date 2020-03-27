@@ -194,6 +194,7 @@
     <ClCompile Include="PressF\Core\EngineConfig.cpp" />
     <ClCompile Include="PressF\Core\Logger.cpp" />
     <ClCompile Include="PressF\Core\OpenGL.cpp" />
+    <ClCompile Include="PressF\Core\Types\Extensions\Range.cpp" />
     <ClCompile Include="PressF\Core\Types\types.cpp" />
     <ClCompile Include="PressF\Core\Window.cpp" />
     <ClCompile Include="PressF\CoreComponents\Camera.cpp" />

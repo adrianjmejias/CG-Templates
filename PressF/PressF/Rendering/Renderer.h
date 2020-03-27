@@ -39,7 +39,7 @@ namespace PF
 		std::vector<ParticleSystem*> particlesSystems;
 		std::vector<Light*> lights;
 		std::priority_queue < Camera*, std::vector<Camera*>, decltype(cameraComparer)> cameras{ cameraComparer };
-
+		std::vector<Texture*> renderTextures;
 		static Renderer* GetInstance();
 
 
