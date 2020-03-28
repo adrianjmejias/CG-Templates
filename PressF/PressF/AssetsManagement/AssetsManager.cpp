@@ -6,14 +6,6 @@
 //#include "PressF/Rendering/MaterialSystem/Material.h"
 namespace PF
 {
-	std::vector<Texture> ExtractTextures(objl::Material mat)
-	{
-		std::vector<Texture> texs;
-
-		return texs;
-	}
-
-
 
 	void AssetsManager::ImGui()
 	{
@@ -28,7 +20,7 @@ namespace PF
 		return models[key].get();
 	}
 
-	bool AssetsManager::LoadModel(const std::string& key, const std::string& path) {
+	Ref<Model> AssetsManager::LoadModel(const std::string& key, const std::string& path) {
 
 		//ModelImporter importer(path, true);
 
@@ -39,34 +31,22 @@ namespace PF
 		// check for errors
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 		{
-			std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+			PF_WARN("ERROR::ASSIMP:: {}", importer.GetErrorString());
 			return false;
 		}
 		// retrieve the directory path of the filepath
-		//directory = path.substr(0, path.find_last_of('/'));
+		const std::string directory = path.substr(0, path.find_last_of('/'));
 		m = new Model();
+		actModel = m;
 		auto& meshes = m->meshes;
 		std::queue<aiNode*> nodes;
 
 		nodes.push(scene->mRootNode);
-		ShaderProgram* s;
+		Ref<ShaderProgram> s;
 
-		auto its = shaders.find("defaultShader");
-		if (its != shaders.end())
-		{
-			s = its->second.get();
-		}
-		else
-		{
-			s = new ShaderProgram({
-				"../assets/shaders/COOK.vert",
-				"../assets/shaders/COOK.frag"
-				});
 
-			shaders["defaultShader"].reset(s);
-
-		}
-
+		
+		s = LoadShader("defaultShader", "../assets/shaders/COOK.vert", "../assets/shaders/COOK.frag");
 		while (!nodes.empty())
 		{
 			aiNode* act = { nodes.front() };
@@ -79,7 +59,7 @@ namespace PF
 				aiMesh* mesh = scene->mMeshes[act->mMeshes[i]];
 
 				
-				meshes.emplace_back (ProcessMesh(mesh, scene));
+				meshes.emplace_back (ProcessMesh(mesh, scene, directory));
 
 
 			}
@@ -93,53 +73,10 @@ namespace PF
 
 		models[key].reset(m);
 
-
-		//Owns<Model> model(m);
-		//auto& gpum = model->meshes;
-		//auto& loader = model->meshData;
-
-		//if (!loader.LoadFile(path))
-		//{
-		//	//PF_ERROR("Failed to load model {0}", objPath);
-		//	__debugbreak();
-		//}
-
-		//auto gpumeshes = loader.GPUInstantiate();
-
-		//gpum.reserve(gpumeshes.size());
-		//std::transform(gpumeshes.begin(), gpumeshes.end(), std::back_inserter(gpum), [](GPUMesh* d)-> Owns<GPUMesh> {
-		//	return Owns<GPUMesh>(d);
-		//	});
-
-		//model->name = key;
-		//model->path = path;
-		//models[key] = std::move(model);
-
-		//for (auto& mat : loader.LoadedMaterials)
-		//{
-
-		//	Owns<Material> mPtr{ new Material() };
-		//	ShaderProgram* s;
-
-		//	*mPtr = mat;
-	
-
-			//mPtr->shader = s;
-
-		//	//textures[] = Texture::TextureFromFile(mat.map_d);
-		//	materials[mat.name] = std::move(mPtr);
-
-		//}
-
-		//for (int ii = 0; ii < gpumeshes.size(); ii++)
-		//{
-		//	gpumeshes[ii]->defaultMaterial = materials[loader.LoadedMeshes[ii].MeshMaterial.name].get();
-		//}
-
-		return true; 
+		return m; 
 	}
 
-	GPUMesh* AssetsManager::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+	GPUMesh* AssetsManager::ProcessMesh(aiMesh* mesh, const aiScene* scene, const std::string& directory)
 	{
 		// data to fill
 		std::vector<Vertex> vertices;
@@ -220,6 +157,7 @@ namespace PF
 		if (itm == materials.end())
 		{
 			mat =  new Material();
+			actModel->materials.push_back(mat);
 			mat->shader = shaders["defaultShader"].get();
 	/*		
 			material->Get("COLOR_DIFFUSE", kd);
@@ -233,18 +171,13 @@ namespace PF
 			kd.b = color.b;
 			mat->AddParameter<ShaderVec3>("kD", kd);
 			// 1. diffuse maps
-			//std::vector<PF::Texture> diffuseMaps = 
-				loadMaterialTextures(material, aiTextureType_DIFFUSE, TexMaterialRole::Diffuse);
-			//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+			loadMaterialTextures(material, mat, directory, aiTextureType_DIFFUSE, TexMaterialRole::Diffuse);
 			// 2. specular maps
-			//std::vector<PF::Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-			//textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+			loadMaterialTextures(material,  mat, directory, aiTextureType_SPECULAR, "texture_specular");
 			//// 3. normal maps
-			//std::vector<PF::Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-			//textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+			loadMaterialTextures(material, mat, directory, aiTextureType_HEIGHT, "texture_normal");
 			//// 4. height maps
-			//std::vector<PF::Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-			//textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+			loadMaterialTextures(material, mat, directory, aiTextureType_AMBIENT, "texture_height");
 
 			// return a mesh object created from the extracted mesh data
 
@@ -261,7 +194,7 @@ namespace PF
 		return mptr;
 	}
 
-	void AssetsManager::loadMaterialTextures(aiMaterial* mat, aiTextureType type, const std::string& role)
+	void AssetsManager::loadMaterialTextures(aiMaterial* mat, Material *mmat, const std::string& directory, aiTextureType type, const std::string& role)
 	{
 		for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 		{
@@ -271,13 +204,18 @@ namespace PF
 			auto it = textures.find(str.C_Str());
 			if (it == textures.end())
 			{
-				textures[str.C_Str()] =  std::move(Texture::TextureFromFile(str.C_Str()));
+				std::string path = directory +"/"+ str.C_Str();
+				Owns<Texture> texPtr{ Texture::TextureFromFile(path) };
 
-				//texture.id = TextureFromFile(.C_Str(), );
-				//texture.type = typeName;
-				//texture.path = str.C_Str();
-				//texturesl.push_back(texture);
-				//textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+				if (texPtr.get())
+				{
+					mmat->AddTexture(role, *texPtr);
+					textures[str.C_Str()] = std::move(texPtr);
+				}
+				else
+				{
+					PF_WARN("Texture not found: {}", path);
+				}
 			}
 
 		}

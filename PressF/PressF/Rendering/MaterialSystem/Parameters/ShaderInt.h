@@ -3,17 +3,17 @@
 
 namespace PF
 {
-	//struct ShaderInt : Int, ShaderParameterValue
-	//{
-	//	ShaderInt(const Int& val) : Int(val) {}
+	struct ShaderInt : Int, ShaderParameterValue
+	{
+		ShaderInt(const Int& val) : Int(val) {}
+		ShaderInt(const int& val) : Int(val){}
+		virtual void Bind(const std::string name, const Ref<ShaderProgram>& shader) override
+		{
+			shader->SetUniform(name, value);
+		}
 
-	//	virtual void Bind(const std::string name, const Ref<ShaderProgram>& shader) override
-	//	{
-	//		shader->SetUniform(name, value);
-	//	}
+		SP_IMGUI_RENDER_VARIABLE()
+	};
 
-	//	SP_IMGUI_RENDER_VARIABLE()
-	//};
-
-	SP_CLASS_VARIABLE(Int);
+	//SP_CLASS_VARIABLE(int, Int);
 }

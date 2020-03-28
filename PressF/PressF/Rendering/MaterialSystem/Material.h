@@ -9,15 +9,13 @@
 
 namespace PF
 {
-	Vec3 ToVec3(const objl::Vector3& v);
-	Vec2 ToVec2(const objl::Vector2& v);
-	Vec4 ToVec4(const objl::Vector3& v);
-
 
 	struct Material : Asset
 	{
 	public:
 		std::vector<Shares<ShaderParameter>> parameters;
+		std::vector <Ref<Texture>> textures;
+		std::vector<Shares<ShaderParameter>> texturesId;
 		Ref<ShaderProgram> shader;
 		bool usesLight = true;
 
@@ -25,6 +23,10 @@ namespace PF
 
 		virtual void Bind();
 		void BindParametersOnly(Ref<ShaderProgram> s = nullptr);
+		void BindTexturesOnly(Ref<ShaderProgram> s = nullptr);
+
+
+		void AddTexture(const std::string& name, Texture& tex);
 		virtual void ImGui();
 
 		template <typename TT, typename ...Args >

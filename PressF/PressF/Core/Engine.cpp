@@ -128,14 +128,8 @@ namespace PF
 		if (ImGui::Begin("Engine"))
 		{
 			EngineConfig::GetInstance()->ImGui();
-			//ImGui::Checkbox("Show FPS", &config.showFPS);
-				
-
-
-			ImGui::End();
-
-
 			assetManager.ImGui();
+			ImGui::End();
 		}
 
 		ImGui::ShowDemoWindow(&show_demo_window);
@@ -168,47 +162,7 @@ namespace PF
 					}
 
 					renderer->RecompileShaders();
-
-					/*for (size_t ii = 0; ii < shaders.size(); ii++)
-					{
-					auto shader = shaders[ii];
-					shader->ReCompile();
-					}*/
 					break;
-				case SDL_Scancode::SDL_SCANCODE_C:
-					if (SDL_SetRelativeMouseMode(static_cast<SDL_bool>(captureMouse)) == -1) {
-						__debugbreak();
-					}
-					captureMouse = !captureMouse;
-					break;
-
-				case SDL_Scancode::SDL_SCANCODE_0:
-					//renderPlane = !renderPlane;
-					break;
-				case SDL_Scancode::SDL_SCANCODE_9:
-					//renderScene = !renderScene;
-					break;
-				case SDL_Scancode::SDL_SCANCODE_1:
-				case SDL_Scancode::SDL_SCANCODE_2:
-				case SDL_Scancode::SDL_SCANCODE_3:
-				case SDL_Scancode::SDL_SCANCODE_4:
-				case SDL_Scancode::SDL_SCANCODE_5:
-				{
-					int newCam = static_cast<int>(keyPressed) - static_cast<int>(SDL_Scancode::SDL_SCANCODE_1);
-					//if (actCam != newCam) {
-					//	PF_INFO("Swapped to Camera {0}", newCam);
-					//	/*if (newCam < cameras.size()) {
-					//		actCam = newCam;
-					//		mainCamera = cameras[actCam];
-					//		mainCamera->gameObject->AddComponent(fc);
-					//		mainCamera->transform->SetDirty(Dirty::Model);
-					//	}
-					//	else {
-					//		PF_WARN("Camera {0} not available", newCam);
-					//	}*/
-					//}
-				}
-				break;
 				default:
 					break;
 				}

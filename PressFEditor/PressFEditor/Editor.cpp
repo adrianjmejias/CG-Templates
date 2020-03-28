@@ -2,6 +2,7 @@
 
 #define BLOOM 1
 
+using namespace PF;
 namespace PF
 {
 	std::vector<GameObject*> GetAsSeparateGameObjects(Model& model)
@@ -47,26 +48,33 @@ void Editor::Init()
 
 	fbrowser.SetTitle("title");
 	fbrowser.SetTypeFilters({ ".h", ".cpp" });
+	PF::AssetsManager& am = engine.assetManager;
 
-	engine.assetManager.LoadModel("quad", "../assets/models/crysis.fbx");
 
+	Ref<PF::Model> modelQuad = am.LoadModel("quad", "../assets/models/house/cottage_fbx.fbx");
+	Ref<Texture> texHouse = am.LoadTexture("diffuseHouse", "../assets/models/house/cottage_diffuse.png");
+
+	engine.renderer->externalTexId = *texHouse;
+	for (auto mat : modelQuad->materials)
+	{
+		mat->AddTexture("texture_diffuse", *texHouse);
+	}
 
 	{
 		//engine.assetManager.LoadModel("thechosenone", "../assets/models/thechosenone.obj");
 		//auto model = engine.assetManager.GetModel("thechosenone");
 		//PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
 		//auto mr = ts1.AddComponent<PF::MeshRenderer>();
-		//mr->SetGPUMesh(&model->meshes[0]);
+		//mr->SetGPUMesh(model->meshes[0].get());
 		//mr->SetRenderMode(PF::MeshRenderMode::Shiny);
 
 		//PF::ParticleSystem* ps = ts1.AddComponent<PF::ParticleSystem>();
-		//ps->SetGPUMesh(&model->meshes[0]);
-
+		//ps->SetGPUMesh(model->meshes[0].get());
 	}
 
 
 
-	auto model = engine.assetManager.GetModel("quad");
+	auto model = am.GetModel("quad");
 	std::vector<PF::GameObject*> gos = PF::GetAsSeparateGameObjects(*model);
 	for (auto go : gos)
 	{
@@ -75,7 +83,6 @@ void Editor::Init()
 
 	PF::GameObject& ts1 = engine.AddGameObject(new PF::GameObject("test subject 1"));
 	ts1.AddComponent<Rotator>();
-
 
 
 

@@ -167,7 +167,6 @@
     <ClInclude Include="PressF\EntityComponent\Transform.h" />
     <ClInclude Include="PressF\ImGui\imgui_impl_opengl3.h" />
     <ClInclude Include="PressF\ImGui\imgui_impl_sdl.h" />
-    <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h" />
     <ClInclude Include="PressF\PressF.h" />
     <ClInclude Include="PressF\Rendering\FrameBuffer.h" />
     <ClInclude Include="PressF\Rendering\MaterialSystem\Material.h" />
@@ -206,7 +205,6 @@
     <ClCompile Include="PressF\EntityComponent\Transform.cpp" />
     <ClCompile Include="PressF\ImGui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="PressF\ImGui\imgui_impl_sdl.cpp" />
-    <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp" />
     <ClCompile Include="PressF\Rendering\FrameBuffer.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\Material.cpp" />
     <ClCompile Include="PressF\Rendering\MaterialSystem\Parameters\ShaderParameter.cpp" />

@@ -4,6 +4,7 @@
 #include "PressF/Core/Window.h"
 #include "Utility/Quad.h"
 //#include "PressF/Core/OpenGL.h"
+#include "PressF/AssetsManagement/AssetsManager.h"
 
 namespace PF
 {
@@ -97,11 +98,11 @@ namespace PF
 
 	void Renderer::RecompileShaders()
 	{
-		geometryPass.reset(new ShaderProgram("../assets/shaders/dfgeo.vert", "../assets/shaders/dfgeo.frag"));
-		shaderLightingPass.reset(new ShaderProgram("../assets/shaders/dflighting.vert", "../assets/shaders/dflighting.frag"));
-		shaderLightBox.reset(new ShaderProgram("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
-		shaderQuad.reset(new ShaderProgram("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
-		shaderSSAO.reset(new ShaderProgram("../assets/shaders/ssao.vert", "../assets/shaders/ssao.frag"));
+		geometryPass = std::move(ShaderProgram::FromFiles("../assets/shaders/dfgeo.vert", "../assets/shaders/dfgeo.frag"));
+		shaderLightingPass = std::move(ShaderProgram::FromFiles("../assets/shaders/dflighting.vert", "../assets/shaders/dflighting.frag"));
+		shaderLightBox = std::move(ShaderProgram::FromFiles("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
+		shaderQuad = std::move(ShaderProgram::FromFiles("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
+		shaderSSAO = std::move(ShaderProgram::FromFiles("../assets/shaders/ssao.vert", "../assets/shaders/ssao.frag"));
 	}
 
 	void Renderer::RegisterMesh(MeshRenderer* mesh, RenderMask renderMask)
@@ -218,7 +219,11 @@ namespace PF
 	void Renderer::Render()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		
 		glClearColor(0, 0, 0, 1);
+
+
 		Window* win{ Window::GetInstance() };
 		Camera* c = cameras.top();
 		c->transform->TryGetClean();
@@ -290,11 +295,13 @@ namespace PF
 						for (auto mr : mrList)
 						{
 							mr->mat->BindParametersOnly(geometryPass.get());
+							mr->mat->BindTexturesOnly(geometryPass.get());
+
+							
 							geometryPass->SetUniform("model", mr->transform->GetAccumulated());
 							geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
 
 							mesh->Render();
-							//mesh->Draw(*geometryPass.get());
 						}
 					}
 				}
@@ -302,7 +309,6 @@ namespace PF
 
 			
 			glBindFramebuffer(GL_FRAMEBUFFER, ssaofb);
-			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glClear(GL_COLOR_BUFFER_BIT);
 			shaderSSAO->Bind();
 			
@@ -325,9 +331,7 @@ namespace PF
 			Quad::Instance()->Bind();
 			Quad::Instance()->Draw();
 
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			
-
 
 
 			/*
@@ -373,23 +377,29 @@ namespace PF
 			*/
 
 
+
+
+
+
+
+				
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 			shaderQuad->Bind();
 			glActiveTexture(GL_TEXTURE0);
+			*ec.showTex = glm::clamp(ec.showTex.value, 0, int(renderTextures.size()) - 1);
 			renderTextures[ec.showTex]->Bind();
 
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, externalTexId);
 
-			//fb.colors[0].Bind();
-
-			//glActiveTexture(GL_TEXTURE1);
-			//fb.colors[1].Bind();
-
-			//glActiveTexture(GL_TEXTURE2);
-			//fb.colors[2].Bind();
+			//AssetsManager::GetInstance()
 
 			shaderQuad->SetUniform("img", 0);
 
 			Quad::Instance()->Bind();
 			Quad::Instance()->Draw();
+			
 
 			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
 			//// ----------------------------------------------------------------------------------
@@ -418,10 +428,10 @@ namespace PF
 			//	shaderLightBox->SetUniform("lightColor", l.kD);
 			//	renderCube();
 			//}
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
-
-
 	}
+
 	void Renderer::RenderNormal(const Mat4& projection, const Mat4& view, const Vec3& viewPos)
 	{
 		RenderParticles(projection, view, viewPos);

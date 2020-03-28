@@ -77,7 +77,7 @@ namespace PF
     struct Model
     {
         std::vector<Owns<GPUMesh>> meshes;
-
+        std::vector<Ref<Material>> materials;
         void ImGui()
         {
 

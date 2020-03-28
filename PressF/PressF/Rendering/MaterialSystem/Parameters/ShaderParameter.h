@@ -22,14 +22,15 @@ namespace PF
 	}\
 
 
-	#define SP_DEFAULT_CONSTRUCTOR(TYPE)\
-	Shader##TYPE(const TYPE & val) : TYPE(val) {}\
+	#define SP_DEFAULT_CONSTRUCTOR(TYPE, NAME)\
+	Shader##NAME(const TYPE & val) : value(val) {}\
+	
 
 
-	#define SP_CLASS_VARIABLE(TYPE)\
-	struct Shader##TYPE : TYPE, ShaderParameterValue\
+	#define SP_CLASS_VARIABLE(TYPE, NAME)\
+	struct Shader##NAME : BaseDataType<##TYPE>, ShaderParameterValue\
 	{\
-		SP_DEFAULT_CONSTRUCTOR(TYPE)\
+		SP_DEFAULT_CONSTRUCTOR(TYPE, NAME)\
 \
 		SP_BIND_VARIABLE()\
 \
@@ -54,6 +55,7 @@ namespace PF
 		Shares<ShaderParameterValue> value;
 
 		ShaderParameter();
+		ShaderParameter(const std::string n, ShaderParameterValue* val);
 
 		template <typename TT, typename ...Args>
 		static ShaderParameter* Create(const std::string& _name, Args&&... params);

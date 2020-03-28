@@ -46,7 +46,7 @@ namespace PF
 
 		if (useDeferredRendering)
 		{
-			ImGuiRender(showTex, "Texture Number", 1, 0, 5);
+			ImGuiRender(showTex, "Texture Number", 0.2f, 0, 5);
 		}
 	}
 

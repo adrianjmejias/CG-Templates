@@ -3,15 +3,16 @@
 
 namespace PF
 {
-     ShaderProgram::ShaderProgram(std::string vertexPath, std::string fragmentPath, std::string geometryPath)
+    Owns<ShaderProgram> ShaderProgram::FromFiles(const std::string& vertexPath, const std::string& fragmentPath, const std::string& geometryPath)
     {
-        // 1. retrieve the vertex/fragment source code from filePath
-         vPath = (vertexPath);
-         fPath = (fragmentPath);
-         ReCompile();
-    }
+        Owns<ShaderProgram> s{ new ShaderProgram() };
+        s->vPath = vertexPath;
+        s->fPath = fragmentPath;
+        s->ReCompile();
 
-     void ShaderProgram::ReCompile()
+        return s;
+    }
+    void ShaderProgram::ReCompile()
      {
          const char* geometryPath = nullptr;
 
@@ -96,6 +97,7 @@ namespace PF
          glDeleteShader(fragment);
          if (geometryPath != nullptr)
              glDeleteShader(geometry);
+
 
      }
 

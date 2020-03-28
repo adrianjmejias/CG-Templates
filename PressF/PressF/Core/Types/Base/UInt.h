@@ -4,7 +4,7 @@
 struct UInt : BaseDataType<unsigned int> {
 };
 
-inline bool ImGuiRender(UInt& val, const std::string& name = "", float v_speed = 1.0, int v_min = 0, int v_max = 0, const char* format = "%d")
+inline bool ImGuiRender(BaseDataType<unsigned int>& val, const std::string& name = "", float v_speed = 1.0, int v_min = 0, int v_max = 0, const char* format = "%d")
 {
 
 	if (v_min < 0)

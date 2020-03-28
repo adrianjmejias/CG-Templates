@@ -6,6 +6,11 @@ namespace PF
 	ShaderParameter::ShaderParameter()
 	{
 	}
+	ShaderParameter::ShaderParameter(const std::string n, ShaderParameterValue* val)
+	{
+		value.reset(val);
+		name = n;
+	}
 	void ShaderParameter::ImGui()
 	{
 		value->ImGui(name.c_str());

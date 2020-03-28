@@ -7,7 +7,12 @@ namespace PF
 	{
 		// Inherited via ShaderParameterValue
 		
-		SP_DEFAULT_CONSTRUCTOR(Color)
+		ShaderColor(Color c): Color(c)
+		{
+
+		}
+
+
 
 		SP_BIND_VARIABLE();
 

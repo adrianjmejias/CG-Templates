@@ -25,9 +25,6 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{C0FF640D-2C14-8DBE-F595-301E616989EF}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ObjLoader">
-      <UniqueIdentifier>{57A7ABEE-C311-6065-0C50-110B78F93DBA}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Rendering">
       <UniqueIdentifier>{E3AE1F7C-4F19-D4F2-9857-85980401B247}</UniqueIdentifier>
     </Filter>
@@ -147,9 +144,6 @@
     <ClInclude Include="PressF\ImGui\imgui_impl_sdl.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="PressF\ObjLoader\OBJ_Loader.h">
-      <Filter>ObjLoader</Filter>
-    </ClInclude>
     <ClInclude Include="PressF\PressF.h" />
     <ClInclude Include="PressF\Rendering\FrameBuffer.h">
       <Filter>Rendering</Filter>
@@ -252,9 +246,6 @@
     </ClCompile>
     <ClCompile Include="PressF\ImGui\imgui_impl_sdl.cpp">
       <Filter>ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="PressF\ObjLoader\OBJ_Loader.cpp">
-      <Filter>ObjLoader</Filter>
     </ClCompile>
     <ClCompile Include="PressF\Rendering\FrameBuffer.cpp">
       <Filter>Rendering</Filter>

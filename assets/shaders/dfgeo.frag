@@ -7,7 +7,7 @@ in vec2 TexCoords;
 in vec3 FragPos;
 in vec3 Normal;
 
-// uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_diffuse;
 // uniform sampler2D texture_specular1;
 
 uniform vec3 kD;
@@ -26,11 +26,12 @@ void main()
     gNormal.a = 1 - bloom;
 
     // and the diffuse per-fragment color
-    gAlbedoSpec.rgb = kD; //texture(texture_diffuse1, TexCoords).rgb;
+    gAlbedoSpec.rgb =texture(texture_diffuse, TexCoords).rgb;
+    gAlbedoSpec.rgb = kD;
     // store specular intensity in gAlbedoSpec's alpha component
     gAlbedoSpec.a = 0; //texture(texture_specular1, TexCoords).r;
 
-
-    // gPosition.rgb = k;
+    // gPosition = gAlbedoSpec.rgb;
+    // gPosition = gAlbedoSpec.rgb;  
     // gPosition = gAlbedoSpec.rgb;
 }

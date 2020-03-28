@@ -25,6 +25,7 @@ namespace PF
 		Owns<ShaderProgram> shaderQuad;
 		Owns<ShaderProgram> shaderSSAO;
 
+		unsigned int externalTexId = 0;
 		Texture noiseTex;
 
 		FrameBuffer fb;
@@ -61,6 +62,7 @@ namespace PF
 
 		void Render();
 
+		void Blur(Texture& tex);
 		void RenderNormal(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
 
 		void BindLigths(ShaderProgram &shader);

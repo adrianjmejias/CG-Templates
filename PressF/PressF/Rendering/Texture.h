@@ -62,23 +62,10 @@ namespace PF
 		TexType texType{TexType::Texture2D};
 		Bool generateMipMaps{ false };
 		Texture() = default;
-		Texture(TexColorFormat f, TexColorFormat inf, TexPixelType pType,int w, int h, unsigned char* data = nullptr)
-		{
-			*width = w;
-			*height = h;
-			internalFormat = inf;
-			format = f;
-			Generate();
-			Reserve(data);
-			//SetInterpolationMethod(TexInterpolationMethod::LINEAR, TexInterpolationMethod::LINEAR);
-			//SetClampMethod(TexClampMethod::REPEAT, TexClampMethod::REPEAT);
-		}
+		Texture(TexColorFormat f, TexColorFormat inf, TexPixelType pType, int w, int h, unsigned char* data = nullptr);
 
 
-		void Reserve(unsigned char* data = nullptr)
-		{
-			glTexImage2D(static_cast<int>(texType), 0, static_cast<int>(format), width, height, 0, static_cast<int>(format), GL_UNSIGNED_BYTE, data);
-		}
+		void Reserve(unsigned char* data = nullptr);
 		void Generate();
 
 		static Owns<Texture> Texture::TextureFromFile(const std::string& _path);
@@ -88,28 +75,9 @@ namespace PF
 		~Texture();
 
 		virtual void ImGui();
-		void GPUInstantiate(unsigned char* data = nullptr)
-		{
-			Generate();
-			Bind();
-			glTexImage2D(static_cast<int>(texType), 0, static_cast<int>(internalFormat), width, height, 0, static_cast<int>(format), static_cast<int>(texPixelType), data);
-			if (generateMipMaps)
-			{
-				glGenerateMipmap(GL_TEXTURE_2D);
-			}
-			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_WRAP_S, static_cast<int>(sClamp));
-			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_WRAP_T, static_cast<int>(tClamp));
-			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_MIN_FILTER, static_cast<int>(sInterpolation));
-			glTexParameteri(static_cast<int>(texType), GL_TEXTURE_MAG_FILTER, static_cast<int>(tInterpolation));
+		void GPUInstantiate(unsigned char* data = nullptr);
 
-		}
-
-		void SetSize(int nWidth, int nHeight)
-		{
-			*width = nWidth;
-			*height = nHeight;
-			GPUInstantiate();
-		}
+		void SetSize(int nWidth, int nHeight);
 	};
 
 }
