@@ -24,11 +24,13 @@ namespace PF
 		Owns<ShaderProgram> shaderLightBox;
 		Owns<ShaderProgram> shaderQuad;
 		Owns<ShaderProgram> shaderSSAO;
-
-		unsigned int externalTexId = 0;
+		Owns<ShaderProgram> shaderBlur;
+		Owns<ShaderProgram> shaderFinal;
 		Texture noiseTex;
 
 		FrameBuffer fb;
+		FrameBuffer fbFinal;
+		FrameBuffer fbBackFaces;
 		std::array<FrameBuffer, 2> pingPong;
 		FrameBuffer ssaofb;
 
@@ -36,11 +38,13 @@ namespace PF
 		std::vector<glm::vec3> ssaoNoise;
 
 		static Owns<Renderer> instance;
+		std::vector<Texture*> renderTextures;
+		std::vector<Texture*> finalRenderTextures;
+
 		std::array<std::unordered_map<GPUMesh*, std::list<MeshRenderer*>>, PF_RENDER_MASKS_SIZE> objects;
 		std::vector<ParticleSystem*> particlesSystems;
 		std::vector<Light*> lights;
 		std::priority_queue < Camera*, std::vector<Camera*>, decltype(cameraComparer)> cameras{ cameraComparer };
-		std::vector<Texture*> renderTextures;
 		static Renderer* GetInstance();
 
 
@@ -62,12 +66,13 @@ namespace PF
 
 		void Render();
 
-		void Blur(Texture& tex);
 		void RenderNormal(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
 
 		void BindLigths(ShaderProgram &shader);
 
 		void RenderParticles(const Mat4& projection, const Mat4& view, const Vec3& viewPos);
+
+		void RenderMeshesDeferred(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map<GPUMesh*, std::list<MeshRenderer*>> objs);
 
 		void RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs);
 

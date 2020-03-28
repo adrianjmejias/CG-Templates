@@ -103,6 +103,13 @@ namespace PF
 		shaderLightBox = std::move(ShaderProgram::FromFiles("../assets/shaders/slb.vert", "../assets/shaders/slb.frag"));
 		shaderQuad = std::move(ShaderProgram::FromFiles("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
 		shaderSSAO = std::move(ShaderProgram::FromFiles("../assets/shaders/ssao.vert", "../assets/shaders/ssao.frag"));
+
+		//shaderBlur = std::move(ShaderProgram::FromFiles("../assets/shaders/qShader.vert", "../assets/shaders/qShader.frag"));
+		shaderBlur = std::move(ShaderProgram::FromFiles("../assets/shaders/qShader.vert", "../assets/shaders/blur.frag"));
+		
+		
+		
+		shaderFinal = std::move(ShaderProgram::FromFiles("../assets/shaders/qShader.vert", "../assets/shaders/shaderFinal.frag"));
 	}
 
 	void Renderer::RegisterMesh(MeshRenderer* mesh, RenderMask renderMask)
@@ -209,10 +216,11 @@ namespace PF
 			auto& l = *lights[ii];
 			std::string name = "LIGHTS[" + std::to_string(ii) + "]";
 			shader.SetUniform(name + ".position", l.transform->GetPosition());
-			shader.SetUniform(name + ".kA", l.kA);
-			shader.SetUniform(name + ".kD", l.kD);
-			shader.SetUniform(name + ".kS", l.kS);
+			shader.SetUniform(name + ".color", l.kD);
 			shader.SetUniform(name + ".attenuation", l.attenuation);
+			//shader.SetUniform(name + ".color", l.kA);
+			//shader.SetUniform(name + ".kD", l.kD);
+			//shader.SetUniform(name + ".kS", l.kS);
 		}
 	}
 
@@ -285,26 +293,8 @@ namespace PF
 				//geometryPass->SetUniform("stepSize", ec.stepSize);
 				//geometryPass->SetUniform("convSize", ec.convSize);
 				//geometryPass->SetUniform("convPivot", ec.convPivot);
-
-				for (int ii = 0; ii < PF_RENDER_MASKS_SIZE; ii++)
-				{
-					auto& objs = objects[ii];
-					for (auto [mesh, mrList] : objs)
-					{
-						mesh->Bind();
-						for (auto mr : mrList)
-						{
-							mr->mat->BindParametersOnly(geometryPass.get());
-							mr->mat->BindTexturesOnly(geometryPass.get());
-
-							
-							geometryPass->SetUniform("model", mr->transform->GetAccumulated());
-							geometryPass->SetUniform("bloom", ec.useBloom && int(mr->renderMask[PF_BLOOM]));
-
-							mesh->Render();
-						}
-					}
-				}
+				
+				RenderMeshesDeferred(projection, view, viewPos, objects[PF_NORMAL]);
 			}
 
 			
@@ -331,15 +321,55 @@ namespace PF
 			Quad::Instance()->Bind();
 			Quad::Instance()->Draw();
 
-			
 
 
-			/*
 
-			// Lighting pass
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			shaderLightingPass->Bind();
 
+
+
+
+
+
+
+			bool horizontal = true, first_iteration = true;
+			int amount = ec.boolBlurAmmount;
+
+			shaderBlur->Bind();
+			glActiveTexture(GL_TEXTURE0);
+			Quad::Instance()->Bind();
+
+
+			for (unsigned int i = 0; i < amount; i++)
+			{
+				glBindFramebuffer(GL_FRAMEBUFFER, pingPong[horizontal]);
+				shaderBlur->SetUniform("horizontal", horizontal);
+				
+				glBindTexture(
+					GL_TEXTURE_2D, first_iteration ? *renderTextures[2] : pingPong[!horizontal].colors[0]
+				);
+
+				Quad::Instance()->Draw();
+				horizontal = !horizontal;
+				if (first_iteration)
+					first_iteration = false;
+			}
+		
+
+
+			glBindFramebuffer(GL_FRAMEBUFFER, fbFinal);
+
+			shaderFinal->Bind();
+	
+			shaderFinal->SetUniform("tex_position", 0);
+			shaderFinal->SetUniform("tex_normal", 1);
+			shaderFinal->SetUniform("tex_bloom", 2);
+			shaderFinal->SetUniform("tex_albedo", 3);
+			shaderFinal->SetUniform("tex_ssao", 4);
+			shaderFinal->SetUniform("useBloom", int(ec.useBloom.value));
+			shaderFinal->SetUniform("useSSAO", int(ec.useSSAO.value));
+			shaderFinal->SetUniform("exposure", int(ec.HDRExposure.value));
+			shaderFinal->SetUniform("gamma", int(ec.HDRGamma.value));
+			BindLigths(*shaderFinal);
 			glActiveTexture(GL_TEXTURE0);
 			fb.colors[0].Bind();
 
@@ -347,59 +377,81 @@ namespace PF
 			fb.colors[1].Bind();
 
 			glActiveTexture(GL_TEXTURE2);
-			fb.colors[2].Bind();
+			pingPong[0].colors[0].Bind();
 
+			glActiveTexture(GL_TEXTURE3);
+			fb.colors[3].Bind();
 
-			shaderLightingPass->SetUniform("gPosition", 0);
-			shaderLightingPass->SetUniform("gNormal", 1);
-			shaderLightingPass->SetUniform("gAlbedoSpec", 2);
-
-			shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
-			for (int ii = 0; ii < lights.size(); ii++)
-			{
-				auto& l = *lights[ii];
-				std::string name = "LIGHTS[" + std::to_string(ii) + "]";
-				shaderLightingPass->SetUniform(name + ".Position", l.transform->GetPosition());
-				shaderLightingPass->SetUniform(name + ".Color", l.kD);
-
-				float constant = l.attenuation.x;
-				float linear = l.attenuation.y;
-				float quadratic = l.attenuation.z;
-
-				shaderLightingPass->SetUniform(name + ".Linear", linear);
-				shaderLightingPass->SetUniform(name + ".Quadratic", quadratic);
-
-				const float maxBrightness = std::fmaxf(std::fmaxf(l.kD.r, l.kD.g), l.kD.b);
-				float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-				shaderLightingPass->SetUniform(name + ".Radius", radius);
-			}
+			glActiveTexture(GL_TEXTURE4);
+			ssaofb.colors[0].Bind();
+			//shaderFinal->SetUniform("img", 0);
 			
-			*/
+			//glActiveTexture(GL_TEXTURE1);
+			//fb.colors[1].Bind();
+				
+				
+
+			//BindLigths(*shaderFinal);
+
+			//shaderFinal->SetUniform("viewPos", viewPos);
+			Quad::Instance()->Bind();
+			Quad::Instance()->Draw();
 
 
 
 
-
-
-
+			
+ 			*ec.showTex = glm::clamp(ec.showTex.value, 0, int(renderTextures.size()-1));
 				
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 			shaderQuad->Bind();
 			glActiveTexture(GL_TEXTURE0);
-			*ec.showTex = glm::clamp(ec.showTex.value, 0, int(renderTextures.size()) - 1);
 			renderTextures[ec.showTex]->Bind();
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, externalTexId);
-
-			//AssetsManager::GetInstance()
-
-			shaderQuad->SetUniform("img", 0);
-
-			Quad::Instance()->Bind();
-			Quad::Instance()->Draw();
+			Quad::BindDraw();
 			
+
+			/*
+
+// Lighting pass
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+shaderLightingPass->Bind();
+
+glActiveTexture(GL_TEXTURE0);
+fb.colors[0].Bind();
+
+glActiveTexture(GL_TEXTURE1);
+fb.colors[1].Bind();
+
+glActiveTexture(GL_TEXTURE2);
+fb.colors[2].Bind();
+
+
+shaderLightingPass->SetUniform("gPosition", 0);
+shaderLightingPass->SetUniform("gNormal", 1);
+shaderLightingPass->SetUniform("gAlbedoSpec", 2);
+
+shaderLightingPass->SetUniform("nLights", static_cast<int>(lights.size()));
+for (int ii = 0; ii < lights.size(); ii++)
+{
+	auto& l = *lights[ii];
+	std::string name = "LIGHTS[" + std::to_string(ii) + "]";
+	shaderLightingPass->SetUniform(name + ".Position", l.transform->GetPosition());
+	shaderLightingPass->SetUniform(name + ".Color", l.kD);
+
+	float constant = l.attenuation.x;
+	float linear = l.attenuation.y;
+	float quadratic = l.attenuation.z;
+
+	shaderLightingPass->SetUniform(name + ".Linear", linear);
+	shaderLightingPass->SetUniform(name + ".Quadratic", quadratic);
+
+	const float maxBrightness = std::fmaxf(std::fmaxf(l.kD.r, l.kD.g), l.kD.b);
+	float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
+	shaderLightingPass->SetUniform(name + ".Radius", radius);
+}
+*/
 
 			//// 2.5. copy content of geometry's depth buffer to default framebuffer's depth buffer
 			//// ----------------------------------------------------------------------------------
@@ -411,7 +463,10 @@ namespace PF
 			//glBlitFramebuffer(0, 0, fb.width, fb.height, 0, 0, fb.width, fb.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+			
 
+
+			
 
 			/*------------------ */
 
@@ -499,6 +554,22 @@ namespace PF
 
 		}
 	}
+	void Renderer::RenderMeshesDeferred(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs)
+	{
+		EngineConfig& ec = *EngineConfig::GetInstance();
+		for (auto [mesh, mrList] : objs)
+		{
+			mesh->Bind();
+			for (auto mr : mrList)
+			{
+				mr->mat->BindParametersOnly(geometryPass.get());
+				mr->mat->BindTexturesOnly(geometryPass.get());
+				geometryPass->SetUniform("model", mr->transform->GetAccumulated());
+				geometryPass->SetUniform("bloomThreshold", ec.bloomThreshold);
+				mesh->Render();
+			}
+		}
+	}
 
 	void Renderer::RenderMeshes(const Mat4& projection, const Mat4& view, const Vec3& viewPos, std::unordered_map < GPUMesh*, std::list<MeshRenderer*>> objs)
 	{
@@ -532,18 +603,18 @@ namespace PF
 	{
 
 		renderTextures.clear();
+		finalRenderTextures.clear();
 		Window* win{ Window::GetInstance() };
 
 		fb.Clear();
-		fb.width = nWidth;
-		fb.height = nHeight;
-
+		
 		fb.AddColorAttachment();
 		fb.AddColorAttachment();
 		fb.AddColorAttachment();
+		fb.AddColorAttachment();
 
 
-		for (int i = 0; i < fb.colors.size()-1; i++)
+		for (int i = 0; i < fb.colors.size(); i++)
 		{
 			renderTextures.push_back(&fb.colors[i]);
 			Texture& color =  fb.colors[i];
@@ -559,23 +630,7 @@ namespace PF
 		}
 
 		fb.AddDepthAttachment();
-		{
-			renderTextures.push_back(&fb.colors[2]);
-
-			Texture& color = fb.colors[2];
-
-			color.format = TexColorFormat::RGB;
-			color.internalFormat = TexColorFormat::RGB;
-			color.texPixelType = TexPixelType::UNSIGNED_BYTE;
-
-			color.sInterpolation = TexInterpolationMethod::NEAREST;
-			color.tInterpolation = TexInterpolationMethod::NEAREST;
-
-			color.sClamp = TexClampMethod::CLAMP;
-			color.tClamp = TexClampMethod::CLAMP;
-		}
-
-		
+		fb.SetSize(nWidth, nHeight);
 
 		// ping-pong-framebuffer for blurring
 		for (unsigned int i = 0; i < 2; i++)
@@ -583,22 +638,24 @@ namespace PF
 			auto& ppfb = pingPong[i];
 			ppfb.Clear();
 			auto& color = *ppfb.AddColorAttachment();
-			renderTextures.push_back(&color);
 
-			color.format = TexColorFormat::RGBA;
-			color.internalFormat = TexColorFormat::RGBA_16F;
+			color.format = TexColorFormat::RGB;
+			color.internalFormat = TexColorFormat::RGB_16F;
 			color.texPixelType = TexPixelType::FLOAT;
 
-			color.sInterpolation = TexInterpolationMethod::LINEAR;
-			color.tInterpolation = TexInterpolationMethod::LINEAR;
+			color.sInterpolation = TexInterpolationMethod::NEAREST;
+			color.tInterpolation = TexInterpolationMethod::NEAREST;
 
 			color.sClamp = TexClampMethod::CLAMP;
 			color.tClamp = TexClampMethod::CLAMP;
+
 			ppfb.SetSize(nWidth, nHeight);
 		}
-		fb.SetSize(nWidth, nHeight);
+		renderTextures.push_back(&pingPong[0].colors[0]);
 
 
+
+		ssaofb.Clear();
 		ssaofb.AddColorAttachment();
 		{
 			renderTextures.push_back(&ssaofb.colors[0]);
@@ -643,17 +700,28 @@ namespace PF
 		noiseTex.tInterpolation = TexInterpolationMethod::NEAREST;
 		noiseTex.SetSize(4, 4);
 
-   // -----------------------------------------------------
-		//glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-		//glGenTextures(1, &ssaoColorBufferBlur);
-		//glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
-		//if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		//	std::cout << "SSAO Blur Framebuffer not complete!" << std::endl;
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		fbFinal.Clear();
+		{
+			fbFinal.AddColorAttachment();
+
+			Texture& color = fbFinal.colors[0];
+			renderTextures.push_back(&color);
+			renderTextures.push_back(&color);
+			renderTextures.push_back(&color);
+			renderTextures.push_back(&color);
+
+			color.format = TexColorFormat::RGB;
+			color.internalFormat = TexColorFormat::RGB_16F;
+			color.texPixelType = TexPixelType::FLOAT;
+
+			color.sInterpolation = TexInterpolationMethod::NEAREST;
+			color.tInterpolation = TexInterpolationMethod::NEAREST;
+
+			color.sClamp = TexClampMethod::CLAMP;
+			color.tClamp = TexClampMethod::CLAMP;
+		}
+		fbFinal.SetSize(nWidth, nHeight);
 	}
 
 }

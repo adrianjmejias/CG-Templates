@@ -38,6 +38,11 @@ namespace PF
 
 		if (useBloom)
 		{
+			ImGuiRender(HDRGamma, "HDR Gamma", 0.01f);
+			ImGuiRender(HDRExposure, "HDR Exposure", 0.1);
+
+			ImGuiRender(boolBlurAmmount, "Boom Blur", 0.2f, 0, 30);
+			ImGuiRender(bloomThreshold, "Boom Threshold", 0.02f, 0, 1);
 			ImGuiRender(stepSize, "Step Size", 0.02f);
 			ImGuiRender(convSize, "Conv Size", 1);
 			ImGuiRender(convPivot, "Conv Pivot", 1);
@@ -46,7 +51,7 @@ namespace PF
 
 		if (useDeferredRendering)
 		{
-			ImGuiRender(showTex, "Texture Number", 0.2f, 0, 5);
+			ImGuiRender(showTex, "Texture Number", 0.2f);
 		}
 	}
 

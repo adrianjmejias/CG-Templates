@@ -51,4 +51,10 @@ namespace PF
 
 		return instance;
 	}
+	void Quad::BindDraw()
+	{
+		Quad* instance = Instance();
+		instance->Bind();
+		instance->Draw();
+	}
 }

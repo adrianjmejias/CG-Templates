@@ -51,10 +51,9 @@ void Editor::Init()
 	PF::AssetsManager& am = engine.assetManager;
 
 
-	Ref<PF::Model> modelQuad = am.LoadModel("quad", "../assets/models/house/cottage_fbx.fbx");
+	Ref<PF::Model> modelQuad = am.LoadModel("quad", "../assets/models/ssao.obj");
 	Ref<Texture> texHouse = am.LoadTexture("diffuseHouse", "../assets/models/house/cottage_diffuse.png");
 
-	engine.renderer->externalTexId = *texHouse;
 	for (auto mat : modelQuad->materials)
 	{
 		mat->AddTexture("texture_diffuse", *texHouse);
@@ -100,13 +99,17 @@ void Editor::Init()
 	*cam->speed = 27.f;
 	*cam->MouseSensitivity = 7.f;
 
-	PF::Light* l = ts2.AddComponent<PF::Light>();
+	//PF::Light* l = ts2.AddComponent<PF::Light>();
 
 
 	//json j = ts1.Serialize();
 
 	//std::ofstream o("pretty.json");
 	//o << j << std::endl;
+
+
+	PF::GameObject& ts3 = engine.AddGameObject(new PF::GameObject("Light"));
+	ts3.AddComponent<PF::Light>();
 
 	engine.Start();
 	while (engine.running)

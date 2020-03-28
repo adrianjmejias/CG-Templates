@@ -19,6 +19,7 @@ namespace PF
 		void Draw();
 		void Bind();
 		static Quad* Instance();
+		static void BindDraw();
 	};
 }
 

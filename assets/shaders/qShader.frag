@@ -9,36 +9,36 @@ uniform sampler2D img;
 
 
 
-vec3 blur(sampler2D tex, vec2 convSize, vec2 pivot, vec2 actPos, float stepSize)
-{
-    int height = int(convSize.y);
-    int width = int(convSize.x);
+// vec3 blur(sampler2D tex, vec2 convSize, vec2 pivot, vec2 actPos, float stepSize)
+// {
+//     int height = int(convSize.y);
+//     int width = int(convSize.x);
 
-    vec3 avg = vec3(0);
+//     vec3 avg = vec3(0);
 
-    ivec2 texsz = textureSize(tex, 0);
-    float imgWidth = texsz.x;
-    float imgHeight = texsz.y;
-    vec2 d = vec2(1.f/imgWidth, 1.f/imgHeight) * stepSize;
+//     ivec2 texsz = textureSize(tex, 0);
+//     float imgWidth = texsz.x;
+//     float imgHeight = texsz.y;
+//     vec2 d = vec2(1.f/imgWidth, 1.f/imgHeight) * stepSize;
 
-    vec2 uAcum = vec2(0);
-    int convI = 0;
+//     vec2 uAcum = vec2(0);
+//     int convI = 0;
 
-    vec2 pivotDisplacement = pivot * d;
-    vec2 initPos = actPos - pivotDisplacement; 
+//     vec2 pivotDisplacement = pivot * d;
+//     vec2 initPos = actPos - pivotDisplacement; 
 
-    float box = 1.f/(height * width);
+//     float box = 1.f/(height * width);
 
-    for(int yy = 0; yy < height; yy++, uAcum.y += d.y){
-        uAcum.x = 0;
-        for(int xx = 0; xx < width; xx++, uAcum.x += d.x, convI++){
-            vec2 nUv = initPos + uAcum;
-            avg += texture(tex, nUv).xyz * box;
-        }
-    }
+//     for(int yy = 0; yy < height; yy++, uAcum.y += d.y){
+//         uAcum.x = 0;
+//         for(int xx = 0; xx < width; xx++, uAcum.x += d.x, convI++){
+//             vec2 nUv = initPos + uAcum;
+//             avg += texture(tex, nUv).xyz * box;
+//         }
+//     }
 
-    return avg;
-}
+//     return avg;
+// }
 
 
 void main()

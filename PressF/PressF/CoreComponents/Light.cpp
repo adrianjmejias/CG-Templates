@@ -39,7 +39,7 @@ namespace PF
 	{
 		if (ImGui::TreeNode("Light"))
 		{
-			ImGuiRender(attenuation, "Light Attenuation", 0.01f);
+			ImGuiRender(attenuation, "Light Attenuation", 0.0002f);
 			ImGuiRenderColor(kA, "kA");
 			ImGuiRenderColor(kD, "kD");
 			ImGuiRenderColor(kS, "kS");
